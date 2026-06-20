@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factorization — KOC S3 Math</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/topic-shell.css">
+  <script defer src="factorization-tools.js"></script>
+  <script defer src="factorization-game.js"></script>
+  <script defer src="factorization-worked.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #16213a; --panel2: #1b2945; --ink: #e5e7eb; --dim: #94a3b8;
+      --a: #4FC3F7; --b: #FFD54F; --ab: #81C784; --line: #28365c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: "Hanken Grotesk", system-ui, sans-serif;
+    }
+    header {
+      padding: 18px 28px; border-bottom: 1px solid var(--line);
+      display: flex; align-items: baseline; gap: 14px;
+    }
+    header h1 { font-size: 22px; margin: 0; font-weight: 700; }
+    header .crumb { color: var(--dim); font-size: 13px; }
+    .tabs { display: flex; gap: 6px; padding: 14px 28px 0; }
+    .tab {
+      background: none; border: none; color: var(--dim); font: inherit; font-weight: 600;
+      padding: 10px 16px; cursor: pointer; border-radius: 8px 8px 0 0; font-size: 15px;
+    }
+    .tab.active { color: var(--ink); background: var(--panel); box-shadow: inset 0 -2px 0 var(--a); }
+    .subnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .chip {
+      background: var(--panel); border: 1px solid var(--line); color: var(--dim);
+      font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+      font-size: 14px; transition: all .15s;
+    }
+    .chip:hover { color: var(--ink); }
+    .chip.active { color: #06283d; background: var(--a); border-color: var(--a); }
+    /* Tab 1: slide deck — height from topic-shell.css */
+    .deck-wrap {
+      background: #000; border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+    }
+    .hint { color: var(--dim); font-size: 13px; text-align: center; margin-top: 10px; }
+    /* Tab 2: tools */
+    .tool-layout { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: stretch; }
+    @media (max-width: 880px) { .tool-layout { grid-template-columns: 1fr; } }
+    .figure-card, .control-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+    }
+    #tool-svg { width: 100%; height: auto; display: block; }
+    .control-card h3 { margin: 2px 0 14px; font-size: 15px; color: var(--dim); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .05em; }
+    .slider-row { display: grid; grid-template-columns: 28px 1fr 36px; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .slider-name { font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 18px; }
+    .slider-val { font-family: "JetBrains Mono", monospace; text-align: right; color: var(--ink); }
+    input[type=range] { -webkit-appearance: none; appearance: none; height: 5px; border-radius: 999px;
+      background: var(--panel2); outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--a); cursor: pointer; border: 2px solid #0b1324; }
+    input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--a);
+      cursor: pointer; border: 2px solid #0b1324; }
+    .tool-action { margin-top: 6px; width: 100%; background: var(--panel2); color: var(--ink); border: 1px solid var(--line);
+      font: inherit; font-weight: 600; padding: 10px; border-radius: 9px; cursor: pointer; }
+    .tool-action:hover { border-color: var(--a); }
+    #tool-eq { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .eq-line { font-size: 19px; margin: 12px 0; }
+    .legend { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .legend-title { margin: 0 0 10px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+    .lg-item { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 14px; color: var(--ink); }
+    .lg-item .sw { width: 15px; height: 15px; border-radius: 4px; flex: none; }
+    .lg-item .lg-sym { min-width: 34px; }
+    .lg-item em { font-style: normal; color: var(--dim); }
+    /* ── Cross method calculator ── */
+    .tool-layout.hidden { display: none; }
+    .calc-tool.hidden { display: none; }
+    .calc-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      padding: 22px; max-width: 880px; }
+    .calc-card h3 { margin: 0 0 6px; font-size: 15px; color: var(--dim); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .05em; }
+    .calc-sub { color: var(--dim); font-size: 14px; margin: 0 0 18px; }
+    .calc-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .calc-num { width: 64px; background: var(--panel2); color: var(--ink); border: 1px solid var(--line);
+      border-radius: 9px; padding: 10px 8px; font: inherit; font-size: 18px; font-weight: 700; text-align: center;
+      font-family: "JetBrains Mono", monospace; }
+    .calc-num:focus { outline: none; border-color: var(--a); }
+    .calc-term { font-size: 19px; min-width: 26px; }
+    .calc-op { font-size: 20px; color: var(--dim); font-weight: 700; }
+    .calc-go { margin-left: 8px; background: var(--a); color: #06283d; border: none; font: inherit;
+      font-weight: 700; padding: 11px 22px; border-radius: 9px; cursor: pointer; font-size: 15px; }
+    .calc-go:hover { filter: brightness(1.07); }
+    .calc-result { margin-top: 22px; }
+    .calc-headline { font-size: 22px; margin: 4px 0 18px; }
+    .calc-note { color: var(--dim); font-size: 13px; text-transform: uppercase; letter-spacing: .06em;
+      font-weight: 700; margin: 0 0 12px; }
+    .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 12px; }
+    .calc-cell { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 16px 12px; position: relative; }
+    .calc-cell.ok { border-color: var(--ab); background: rgba(129,199,132,.13); box-shadow: 0 0 0 1px var(--ab) inset; }
+    .calc-cross-svg { width: 100%; height: auto; display: block; }
+    .calc-cell-form { font-size: 18px; text-align: center; margin-top: 6px; padding-top: 10px;
+      border-top: 1px solid var(--line); }
+    .calc-mark { position: absolute; top: 10px; right: 12px; font-size: 18px; font-weight: 700; z-index: 1; }
+    .calc-cell.ok .calc-mark { color: var(--ab); }
+    .calc-cell:not(.ok) .calc-mark { color: #E57373; opacity: .55; }
+    .calc-invalid { background: rgba(229,115,115,.12); border: 1px solid #E57373; border-radius: 12px;
+      padding: 18px 20px; }
+    .calc-invalid b { color: #E57373; font-size: 20px; display: block; margin-bottom: 4px; }
+    .calc-invalid span { color: var(--dim); font-size: 14px; }
+    /* ── Game ── */
+    .game-hud { display: flex; align-items: center; gap: 18px; max-width: 1000px; margin: 0 auto 12px; flex-wrap: wrap; }
+    .hud-item { color: var(--dim); font-size: 14px; font-weight: 600; }
+    .hud-item b { color: var(--ink); font-family: "JetBrains Mono", monospace; font-size: 20px; margin-left: 6px; }
+    .hud-speed { color: var(--dim); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .hud-speed input { width: 110px; }
+    .hud-toggle { background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+      font-size: 18px; width: 42px; height: 38px; border-radius: 9px; cursor: pointer; }
+    .hud-toggle:hover { border-color: var(--a); }
+    #game-stage { position: relative; max-width: 1000px; height: 560px; margin: 0 auto; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 16px;
+      background: radial-gradient(120% 80% at 50% -10%, #1b2c52 0%, #0b1224 55%, #070d1c 100%); }
+    #game-stage.shake { animation: shake .3s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+    #game-prompt { position: absolute; top: 0; left: 0; right: 0; height: 66px; display: flex; align-items: center;
+      justify-content: center; font-size: 30px; color: var(--ink); text-shadow: 0 0 18px rgba(79,195,247,.35); z-index: 3;
+      background: linear-gradient(180deg, rgba(11,18,36,.95), rgba(11,18,36,0)); border-bottom: 1px solid rgba(79,195,247,.15); }
+    #game-enemies { position: absolute; inset: 0; }
+    .enemy { position: absolute; min-height: 52px; display: flex; align-items: center; justify-content: center;
+      padding: 8px 10px; border-radius: 12px; cursor: pointer; font-size: 17px; color: #06122a;
+      background: linear-gradient(180deg, #9fe0ff, #4FC3F7); border: 2px solid #bfeaff;
+      box-shadow: 0 6px 16px rgba(0,0,0,.45), inset 0 0 10px rgba(255,255,255,.4); text-align: center; }
+    .enemy:hover { filter: brightness(1.08); }
+    .laser-beam { position: absolute; bottom: 84px; width: 6px; height: 460px; border-radius: 3px;
+      background: linear-gradient(180deg, rgba(129,231,160,0), #b9ffce 40%, #6cff9a);
+      box-shadow: 0 0 16px #81e7a0; z-index: 2; }
+    #game-cannon { position: absolute; bottom: 18px; width: 58px; height: 58px; z-index: 4;
+      background: conic-gradient(from 180deg at 50% 50%, #4FC3F7, #2b8fcf, #4FC3F7);
+      clip-path: polygon(50% 0, 100% 78%, 78% 100%, 22% 100%, 0 78%);
+      box-shadow: 0 0 18px rgba(79,195,247,.6); transition: left .07s linear; }
+    .boom { position: absolute; height: 52px; border-radius: 12px; z-index: 5; pointer-events: none;
+      animation: boom .42s ease-out forwards; }
+    .boom-ok { background: radial-gradient(circle, #d7ffe6, #81e7a0 50%, rgba(129,231,160,0)); }
+    .boom-bad { background: radial-gradient(circle, #ffd9d9, #E57373 50%, rgba(229,115,115,0)); }
+    @keyframes boom { 0%{transform:scale(.6);opacity:1} 100%{transform:scale(1.6);opacity:0} }
+    .game-countdown { position: absolute; inset: 0; z-index: 8; display: flex; align-items: center; justify-content: center;
+      font-size: 120px; font-weight: 800; color: var(--a); text-shadow: 0 0 30px rgba(79,195,247,.6); pointer-events: none; }
+    .game-countdown.hidden { display: none; }
+    .cd-pop { animation: cdpop .5s ease-out; }
+    @keyframes cdpop { 0%{transform:scale(.4);opacity:0} 40%{transform:scale(1.15);opacity:1} 100%{transform:scale(1);opacity:.85} }
+    .game-overlay { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+      background: rgba(7,13,28,.72); backdrop-filter: blur(2px); }
+    .game-overlay.hidden { display: none; }
+    .ov-card { text-align: center; max-width: 560px; width: 92%; padding: 24px; }
+    .ov-card.hidden { display: none; }
+    .ov-card h2 { font-size: 30px; margin: 0 0 14px; color: var(--a); letter-spacing: .02em; }
+    .ov-card p { color: var(--dim); margin: 8px 0; }
+    .ov-keys b { color: var(--ink); }
+    .ov-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+    .ov-row.ov-center { gap: 14px; }
+    .ov-label { color: var(--ink); font-weight: 600; min-width: 76px; text-align: right; }
+    .ov-row input[type=range] { width: 180px; }
+    .ov-row b { color: var(--a); font-family: "JetBrains Mono", monospace; min-width: 24px; }
+    .ov-note { font-size: 13px; color: var(--dim); margin: 2px 0 6px; }
+    .modebtn { background: var(--panel2); border: 1px solid var(--line); color: var(--dim); font: inherit; font-weight: 600;
+      padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+    .modebtn.active { background: var(--a); color: #06283d; border-color: var(--a); }
+    .play-btn { margin-top: 12px; background: var(--a); color: #06283d; border: none; font: inherit; font-weight: 700;
+      font-size: 18px; padding: 12px 28px; border-radius: 999px; cursor: pointer; box-shadow: 0 6px 18px rgba(79,195,247,.4); }
+    .play-btn:hover { filter: brightness(1.06); }
+    .play-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+    /* ── Worked solutions ── */
+    .worked-layout { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 16px; align-items: start; }
+    @media (max-width: 980px) { .worked-layout { grid-template-columns: 1fr; } }
+    .q-list { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; max-height: 640px; overflow-y: auto; }
+    .q-list-title { margin: 2px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+    /* collapsible source groups */
+    .src-group { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+    .src-head { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: var(--panel2); border: 0;
+      color: var(--ink); font: inherit; font-weight: 700; font-size: 12.5px; padding: 10px 11px; cursor: pointer; }
+    .src-head:hover { background: #1d2c4d; }
+    .src-head .src-name { flex: 1; line-height: 1.25; }
+    .src-head .src-badge { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #06283d; background: var(--a);
+      border-radius: 6px; padding: 1px 7px; flex: none; }
+    .src-head .src-caret { flex: none; transition: transform .18s; color: var(--dim); }
+    .src-head.collapsed .src-caret { transform: rotate(-90deg); }
+    .src-body { padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .src-body.hidden { display: none; }
+    .sub-head { grid-column: 1 / -1; margin: 6px 2px 0; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+    .q-row { position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; background: var(--panel2); border: 1px solid var(--line);
+      color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; font-family: "JetBrains Mono", monospace;
+      padding: 8px 6px; border-radius: 8px; cursor: pointer; }
+    .q-row:hover { border-color: var(--a); }
+    .q-row.active { background: var(--a); color: #06283d; border-color: var(--a); }
+    .q-row .dot { font-size: 10px; line-height: 1; }
+    .q-row .dot.built { color: var(--ab); }
+    .q-row.active .dot.built { color: #06283d; }
+    .no-sol { padding: 22px 16px; text-align: center; color: var(--dim); font-size: 13.5px; line-height: 1.6; }
+    .deck-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--dim); font-size: 14px; text-align: center; padding: 20px; }
+    .deck-empty.hidden { display: none; }
+    .worked-deck iframe.hidden { display: none; }
+    .panel-wrap { position: relative; }
+    .panel-enlarge-btn { position: absolute; top: 10px; right: 10px; z-index: 4; background: rgba(8,16,32,.82);
+      border: 1px solid var(--line); color: var(--ink); font: inherit; font-size: 12px; font-weight: 700;
+      padding: 5px 10px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+      backdrop-filter: blur(4px); }
+    .panel-enlarge-btn:hover { border-color: var(--a); color: var(--a); background: rgba(8,16,32,.95); }
+    .worked-deck { background: #000; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; aspect-ratio: 16/9; }
+    .worked-deck iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .worked-sub { position: relative; margin-top: 12px; background: linear-gradient(180deg,#16243f,#101b30);
+      border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 10px; }
+    .worked-sub.hidden { display: none; }
+    .worked-sub .sub-label { position: absolute; top: 10px; left: 14px; font-size: 11px; text-transform: uppercase;
+      letter-spacing: .07em; font-weight: 700; color: var(--ab); background: rgba(129,231,160,.12);
+      border: 1px solid rgba(129,231,160,.3); padding: 3px 9px; border-radius: 7px; }
+    #sub-svg { width: 100%; height: auto; display: block; }
+    .worked-controls { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .wbtn { background: var(--panel); border: 1px solid var(--line); color: var(--ink); font: inherit; font-weight: 600;
+      padding: 9px 16px; border-radius: 9px; cursor: pointer; }
+    .wbtn:hover { border-color: var(--a); }
+    .wbtn.primary { background: var(--a); color: #06283d; border-color: var(--a); }
+    .wbtn:disabled { opacity: .4; cursor: not-allowed; }
+    .w-progress { flex: 1; }
+    .w-progress span { font-size: 12px; color: var(--dim); }
+    .w-bar { height: 5px; background: var(--panel2); border-radius: 999px; margin-top: 5px; overflow: hidden; }
+    #w-bar-fill { height: 100%; width: 9%; background: var(--a); transition: width .25s; }
+    .solution-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; max-height: 620px; }
+    .sp-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#16233d,var(--panel));
+      border-radius: 14px 14px 0 0; flex: none; position: sticky; top: 0; z-index: 3; }
+    .sp-head h3 { margin: 0; font-size: 17px; color: var(--a); }
+    .sp-head p { margin: 4px 0 0; font-size: 12px; color: var(--dim); }
+    .sp-q { margin-top: 10px; padding: 9px 12px; background: var(--bg); border: 1px solid var(--line);
+      border-radius: 9px; display: flex; flex-direction: column; gap: 4px; }
+    .sp-q .sp-q-row { font-size: 15px; }
+    .sp-q .katex { color: var(--ink); }
+    .solution-scroll { padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .step-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; cursor: pointer; transition: all .15s; }
+    .step-card:hover { border-color: var(--a); }
+    .step-card.active { border-color: var(--a); box-shadow: inset 3px 0 0 var(--a); background: #1d2c4d; }
+    .step-card .sc-head { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+    .step-card .sc-idx { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); color: var(--ink); font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex: none; }
+    .step-card.active .sc-idx { background: var(--a); color: #06283d; }
+    .step-card .sc-title { font-size: 13px; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: .03em; }
+    .step-card .sc-body { font-size: 14px; color: #cdd6e4; line-height: 1.5; }
+    .step-card .sc-body .katex { color: var(--ink); }
+    .method-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(129,231,160,.16); color: var(--ab);
+      border: 1px solid rgba(129,231,160,.4); border-radius: 7px; padding: 1px 7px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .method-chip .katex { font-size: 1em; color: inherit; }
+    .method-chip .m { display: inline; line-height: 1; }
+    .method-chip:hover { background: rgba(129,231,160,.28); }
+    .method-chip.identity { background: rgba(79,195,247,.16); color: var(--a); border-color: rgba(79,195,247,.4); }
+    .method-chip.identity:hover { background: rgba(79,195,247,.28); }
+    /* enlarge lightbox for animation panels */
+    .panel-enlarge { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+      background: rgba(3,8,20,.82); backdrop-filter: blur(4px); padding: 16px; }
+    .panel-enlarge.hidden { display: none; }
+    .pe-card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.65); width: min(96vw, 1280px); max-height: 96vh; display: flex; flex-direction: column; overflow: hidden; }
+    .pe-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px;
+      border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#16233d,var(--panel)); flex: none; }
+    .pe-head span { font-size: 13px; font-weight: 700; color: var(--a); text-transform: uppercase; letter-spacing: .04em; }
+    .pe-close { background: none; border: none; color: var(--dim); font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px; }
+    .pe-close:hover { color: var(--ink); }
+    .pe-body { padding: 12px; overflow: auto; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; }
+    .pe-deck { background: #000; border-radius: 12px; overflow: hidden; width: min(92vw, calc((96vh - 90px) * 16 / 9)); aspect-ratio: 16/9; max-height: calc(96vh - 90px); }
+    .pe-deck iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .pe-sub { width: min(92vw, 920px); background: linear-gradient(180deg,#16243f,#101b30); border: 1px solid var(--line);
+      border-radius: 12px; padding: 14px; }
+    .pe-sub svg { width: 100%; height: auto; display: block; }
+    /* method modal */
+    .method-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+      background: rgba(3,8,20,.74); backdrop-filter: blur(3px); padding: 20px; }
+    .method-modal.hidden { display: none; }
+    .mm-card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px 26px;
+      max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+    .mm-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--dim); font-size: 26px; cursor: pointer; line-height: 1; }
+    .mm-close:hover { color: var(--ink); }
+    .mm-card h3 { margin: 0 0 4px; color: var(--a); font-size: 20px; }
+    .mm-tag { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ab); font-weight: 700; }
+    .mm-row { font-size: 17px; margin: 12px 0; }
+    .mm-note { font-size: 14px; color: var(--dim); line-height: 1.55; }
+    .mm-svg { width: 100%; height: auto; display: block; margin: 8px 0 4px; }
+    .mm-map { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 10px 0; font-size: 15px; }
+    .mm-map .mm-pair b { color: var(--a); }
+    #sum-stats { color: var(--ink); font-size: 16px; margin: 4px 0 12px; }
+    .sum-list { max-height: 320px; overflow-y: auto; text-align: left; border: 1px solid var(--line); border-radius: 12px;
+      padding: 6px 10px; background: rgba(7,13,28,.5); }
+    .sum-row { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid rgba(40,54,92,.5); font-size: 15px; }
+    .sum-row:last-child { border-bottom: none; }
+    .sum-mark { font-size: 18px; width: 22px; flex: none; text-align: center; }
+    .sum-ok { color: var(--ab); } .sum-bad { color: #E57373; }
+    .sum-q { flex: none; min-width: 96px; color: var(--ink); }
+    .sum-arrow { color: var(--dim); }
+    .sum-ans { color: var(--ink); }
+    .sum-correct { color: var(--ab); margin-left: auto; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Factorization</h1>
+    <span class="crumb">KOC S3 Math · Summer 2026 · L01–02 More about Factorization</span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="slides">Concept &amp; Formula</button>
+    <button class="tab" data-tab="tools">Interactive Tools</button>
+    <button class="tab" data-tab="game">Game</button>
+    <button class="tab" data-tab="worked">Worked Solutions</button>
+  </nav>
+
+  <!-- TAB 1: slide decks -->
+  <section id="panel-slides" class="panel">
+    <div class="subnav">
+      <button class="chip active" data-deck="../../slides/factorization/perfect-square-sum/index.html" data-tex="(a+b)^2"></button>
+      <button class="chip" data-deck="../../slides/factorization/perfect-square-diff/index.html" data-tex="(a-b)^2"></button>
+      <button class="chip" data-deck="../../slides/factorization/difference-of-squares/index.html" data-tex="a^2-b^2"></button>
+    </div>
+    <div class="deck-wrap">
+      <iframe id="deck-frame" src="../../slides/factorization/perfect-square-sum/index.html" title="Geometry proof slides"></iframe>
+    </div>
+    <p class="hint">Use → / Space to advance, ← to go back. Each slide animates the geometric (area-model) proof.</p>
+  </section>
+
+  <!-- TAB 2: interactive tools -->
+  <section id="panel-tools" class="panel hidden">
+    <div class="subnav">
+      <button class="chip active" data-tool="sum" data-tex="(a+b)^2"></button>
+      <button class="chip" data-tool="diff" data-tex="(a-b)^2"></button>
+      <button class="chip" data-tool="dos" data-tex="a^2-b^2"></button>
+      <button class="chip" data-tool="cross">Cross method</button>
+      <button class="chip" data-tool="calc">Cross calculator</button>
+    </div>
+    <div class="tool-layout">
+      <div class="figure-card">
+        <svg id="tool-svg" viewBox="0 0 400 380" role="img" aria-label="interactive area model"></svg>
+      </div>
+      <div class="control-card">
+        <h3>Drag the variables</h3>
+        <div id="tool-controls"></div>
+        <div id="tool-eq"></div>
+        <div class="legend">
+          <p class="legend-title">Colour key</p>
+          <div class="lg-item"><i class="sw" style="background:var(--a)"></i><span class="lg-sym" data-tex="a,\;x"></span><em>variable</em></div>
+          <div class="lg-item"><i class="sw" style="background:var(--b)"></i><span class="lg-sym" data-tex="b"></span><em>constant number</em></div>
+          <div class="lg-item"><i class="sw" style="background:var(--ab)"></i><span class="lg-sym" data-tex="ab"></span><em>product / middle term</em></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross method calculator -->
+    <div id="calc-tool" class="calc-tool hidden">
+      <div class="calc-card">
+        <h3>Cross method calculator</h3>
+        <p class="calc-sub">Enter the coefficients of the trinomial, then factorise it by the cross method.</p>
+        <div class="calc-form">
+          <input id="calc-a" class="calc-num" type="number" value="2" aria-label="x squared coefficient">
+          <span class="calc-term" data-tex="x^2"></span>
+          <span class="calc-op">+</span>
+          <input id="calc-b" class="calc-num" type="number" value="7" aria-label="xy coefficient">
+          <span class="calc-term" data-tex="xy"></span>
+          <span class="calc-op">+</span>
+          <input id="calc-c" class="calc-num" type="number" value="3" aria-label="y squared coefficient">
+          <span class="calc-term" data-tex="y^2"></span>
+          <button id="calc-go" class="calc-go">Calculate</button>
+        </div>
+        <div id="calc-result" class="calc-result"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: game -->
+  <section id="panel-game" class="panel hidden">
+    <div class="game-hud">
+      <div class="hud-item">Score <b id="g-score">0</b></div>
+      <div class="hud-item">Q <b id="g-qnum">0/0</b></div>
+      <div class="hud-item">Accuracy <b id="g-acc">100%</b></div>
+      <div class="hud-item">Streak <b id="g-streak">0</b></div>
+      <label class="hud-speed">Speed <input id="g-speed" type="range" min="1" max="10" value="2"></label>
+      <button id="g-restart" class="hud-toggle" title="restart round">&#8635;</button>
+      <button id="g-sound" class="hud-toggle" title="toggle sound">&#128266;</button>
+    </div>
+    <div id="game-stage">
+      <div id="game-prompt"></div>
+      <div id="game-enemies"></div>
+      <div id="game-cannon"></div>
+      <div id="game-countdown" class="game-countdown hidden"></div>
+      <div id="game-overlay" class="game-overlay">
+        <div class="ov-card" id="ov-setup">
+          <h2>Factor&nbsp;Blaster</h2>
+          <div class="ov-row">
+            <span class="ov-label">Mode</span>
+            <button class="modebtn active" data-mode="expand">Expand</button>
+            <button class="modebtn" data-mode="factorize">Factorize</button>
+            <button class="modebtn" data-mode="identify">Identify (x, y)</button>
+          </div>
+          <p class="ov-note" id="ov-mode-note">Expand: match the factored form to its expansion (4 answers).</p>
+          <div class="ov-row">
+            <span class="ov-label">Questions</span>
+            <input id="ov-count" type="range" min="3" max="15" value="10">
+            <b id="ov-count-val">10</b>
+          </div>
+          <div class="ov-row">
+            <span class="ov-label">Speed</span>
+            <input id="ov-speed" type="range" min="1" max="10" value="2">
+            <b id="ov-speed-val">2</b>
+          </div>
+          <p class="ov-keys"><b>&larr; &rarr;</b> move &nbsp;·&nbsp; <b>Space / &uarr;</b> shoot &nbsp;·&nbsp; or <b>click</b> an answer</p>
+          <button id="g-start" class="play-btn">&#9654; Start</button>
+        </div>
+        <div class="ov-card hidden" id="ov-summary">
+          <h2>Round complete</h2>
+          <p id="sum-stats"></p>
+          <div id="sum-list" class="sum-list"></div>
+          <div class="ov-row ov-center">
+            <button id="g-again" class="play-btn">&#9654; Play again</button>
+            <button id="g-settings" class="play-btn ghost">Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">One shot per question — the round ends after your chosen number of questions, then you get a summary.</p>
+  </section>
+
+  <!-- TAB 4: worked solutions — full L01-02 PowerPoint export -->
+  <section id="panel-worked" class="panel hidden">
+    <div class="ppt-worked-wrap">
+      <iframe id="worked-ppt-frame" src="../../slides/factorization/l01-02-main-deck/index.html" title="Pre S3 Maths L01-02 More about Factorization (2025)"></iframe>
+    </div>
+    <p class="hint">Export <code>l01-02-main.mp4</code> into <code>slides/factorization/l01-02-main-deck/</code>. Space = play/pause · ← rewinds 5s.</p>
+  </section>
+
+  <!-- method popup modal -->
+  <div id="method-modal" class="method-modal hidden">
+    <div class="mm-card">
+      <button id="mm-close" class="mm-close" title="close">&times;</button>
+      <div id="mm-body"></div>
+    </div>
+  </div>
+
+  <!-- enlarge lightbox for main / sub animation panels -->
+  <div id="panel-enlarge" class="panel-enlarge hidden" role="dialog" aria-modal="true" aria-label="Enlarged animation">
+    <div class="pe-card">
+      <div class="pe-head">
+        <span id="pe-title">Animation</span>
+        <button id="pe-close" class="pe-close" title="Close">&times;</button>
+      </div>
+      <div id="pe-body" class="pe-body"></div>
+    </div>
+  </div>
+</body>
+</html>

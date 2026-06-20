@@ -1,0 +1,123 @@
+/* Topic dashboard shell — natural one-page layout for slides/tools/game.
+   KOC flex fill applies only while Worked Solutions tab is active. */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: var(--bg, #0f172a);
+  overflow-x: hidden;
+}
+
+.panel {
+  padding: 12px 24px 16px;
+}
+.panel.hidden {
+  display: none;
+}
+
+/* ── Slides: classic 16:9 deck (sizes from width — worked well before) ── */
+#panel-slides .subnav {
+  margin-bottom: 12px;
+}
+#panel-slides .deck-wrap {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  display: block;
+  overflow: hidden;
+}
+#panel-slides .deck-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+#panel-slides .hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+/* ── Tools / game: natural block flow (no flex clip) ── */
+#panel-tools .subnav,
+#panel-game > .subnav:first-child,
+#panel-game .pg-game-subnav {
+  margin-bottom: 12px;
+}
+#panel-tools .tool-layout {
+  align-items: stretch;
+}
+#panel-tools .figure-card,
+#panel-tools .control-card {
+  min-height: 0;
+}
+#panel-game > .hint,
+#panel-game > .mg-done {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+/* ── Worked tab only: viewport-height flex shell ── */
+body:has(#panel-worked:not(.hidden)) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+body:has(#panel-worked:not(.hidden)) header,
+body:has(#panel-worked:not(.hidden)) .tabs {
+  flex: none;
+}
+body:has(#panel-worked:not(.hidden)) #panel-worked {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 6px 20px 10px;
+}
+/* Full PPT export deck in Worked Solutions */
+#panel-worked .ppt-worked-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#panel-worked .ppt-worked-wrap iframe {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: #000;
+}
+#panel-worked > .hint { flex: none; margin-top: 8px; }
+#koc-worked-mount {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.koc-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--dim, #94a3b8);
+  font-size: 15px;
+  line-height: 1.55;
+  border: 1px dashed var(--line, #28365c);
+  border-radius: 14px;
+  background: var(--panel, #16213a);
+}
+.koc-empty strong {
+  display: block;
+  color: var(--ink, #e5e7eb);
+  font-size: 17px;
+  margin-bottom: 8px;
+}

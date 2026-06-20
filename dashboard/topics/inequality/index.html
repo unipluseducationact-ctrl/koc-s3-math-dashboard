@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inequality — KOC S3 Math</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../../shared/topic-shell.css">
+  <script defer src="inequality-tools.js"></script>
+  <script defer src="inequality-game.js"></script>
+  <script defer src="inequality-worked-data.js"></script>
+  <script defer src="inequality-worked.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #16213a; --panel2: #1b2945; --ink: #e5e7eb; --dim: #94a3b8;
+      --a: #4FC3F7; --line: #28365c;
+      --gt: #66BB6A; --ge: #AB47BC; --lt: #FFD54F; --le: #4FC3F7; --red: #EF5350;
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--ink);
+      font-family: "Hanken Grotesk", system-ui, sans-serif; }
+    header { padding: 18px 28px; border-bottom: 1px solid var(--line);
+      display: flex; align-items: baseline; gap: 14px; }
+    header h1 { font-size: 22px; margin: 0; font-weight: 700; }
+    header .crumb { color: var(--dim); font-size: 13px; }
+    .tabs { display: flex; gap: 6px; padding: 14px 28px 0; }
+    .tab { background: none; border: none; color: var(--dim); font: inherit; font-weight: 600;
+      padding: 10px 16px; cursor: pointer; border-radius: 8px 8px 0 0; font-size: 15px; }
+    .tab.active { color: var(--ink); background: var(--panel); box-shadow: inset 0 -2px 0 var(--a); }
+    .subnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
+    .chip { background: var(--panel); border: 1px solid var(--line); color: var(--dim);
+      font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+      font-size: 14px; transition: all .15s; }
+    .chip:hover { color: var(--ink); }
+    .chip.active { color: #06283d; background: var(--a); border-color: var(--a); }
+    /* Tab 1: slide deck — height from topic-shell.css */
+    .deck-wrap { background: #000; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .hint { color: var(--dim); font-size: 13px; text-align: center; margin-top: 10px; }
+    /* placeholder */
+    .soon { background: var(--panel); border: 1px dashed var(--line); border-radius: 14px;
+      padding: 60px 24px; text-align: center; color: var(--dim); max-width: 1100px; margin: 0 auto; }
+    .soon h3 { color: var(--ink); margin: 0 0 8px; }
+
+    /* ───────── grapher tool ───────── */
+    .grapher { max-width: 1100px; margin: 0 auto; }
+    .gr-controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      padding: 16px 18px; margin-bottom: 16px; }
+    .gr-field { display: flex; flex-direction: column; gap: 7px; }
+    .gr-field label { font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--dim); }
+    .gr-select { background: var(--panel2); color: var(--ink); border: 1px solid var(--line);
+      border-radius: 9px; padding: 10px 12px; font: inherit; font-weight: 600; font-size: 14px;
+      cursor: pointer; min-width: 280px; }
+    .gr-select:focus { outline: none; border-color: var(--a); }
+    .gr-rel { display: flex; gap: 6px; }
+    .gr-rel button { background: var(--panel2); color: var(--dim); border: 1px solid var(--line);
+      border-radius: 9px; min-width: 46px; padding: 9px 10px; font: inherit; font-weight: 700;
+      font-size: 17px; cursor: pointer; transition: all .12s; }
+    .gr-rel button:hover { color: var(--ink); }
+    .gr-rel button.active { color: #06283d; background: var(--a); border-color: var(--a); }
+
+    .gr-stage { background: #0b1222; border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; }
+    #gr-canvas { width: 100%; aspect-ratio: 16 / 10; display: block; touch-action: none; }
+
+    .gr-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    @media (max-width: 760px) { .gr-readout { grid-template-columns: 1fr; } }
+    .gr-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      padding: 14px 18px; }
+    .gr-card h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+      color: var(--dim); font-weight: 700; }
+    .gr-card .big { font-size: 22px; }
+    .gr-card .sol { font-size: 22px; color: var(--a); }
+    .gr-card p { margin: 8px 0 0; font-size: 14px; color: var(--dim); line-height: 1.5; }
+    .gr-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 10px; font-size: 13px; color: var(--dim); }
+    .gr-legend .li { display: flex; align-items: center; gap: 7px; }
+    .gr-legend .sw { width: 22px; height: 12px; border-radius: 3px; flex: none; }
+    .gr-legend .dotmark { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+
+    /* ───────── match-up game ───────── */
+    .mg-hud { display: flex; align-items: center; gap: 22px; max-width: 920px; margin: 0 auto 12px; flex-wrap: wrap; }
+    .mg-stat { color: var(--dim); font-size: 14px; font-weight: 600; }
+    .mg-stat b { color: var(--ink); font-family: "JetBrains Mono", monospace; font-size: 20px; margin: 0 3px; }
+    .mg-stat .pip { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-left: 3px;
+      border: 1.5px solid var(--line); vertical-align: middle; }
+    .mg-stat .pip.on { background: var(--gt); border-color: var(--gt); }
+    .mg-btn { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); font: inherit;
+      font-weight: 700; padding: 9px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: all .15s; }
+    .mg-btn:hover { border-color: var(--a); }
+    .mg-btn.primary { background: var(--a); color: #06283d; border-color: var(--a); }
+    .mg-btn.primary:hover { filter: brightness(1.07); }
+    .mg-btn.hidden { display: none; }
+    .mg-restart { margin-left: auto; }
+
+    .mg-bar { display: flex; align-items: center; gap: 16px; max-width: 920px; margin: 0 auto 16px; }
+    .mg-msg { flex: 1; color: var(--dim); font-size: 15px; margin: 0; line-height: 1.45; }
+    .mg-msg b { color: var(--ink); }
+
+    .mg-stage { position: relative; max-width: 920px; margin: 0 auto; min-height: 120px; }
+    .mcard { position: absolute; top: 0; left: 0; cursor: pointer;
+      transition: transform .42s cubic-bezier(.45,.05,.25,1); will-change: transform; perspective: 800px; }
+    .mcard.locked, .mcard.matched { cursor: default; }
+    .mc-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .45s; }
+    .mcard.up .mc-inner { transform: rotateY(180deg); }
+    .mc-face { position: absolute; inset: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; border: 1px solid var(--line); }
+    .mc-back { background: linear-gradient(135deg, #20305a 0%, #16213a 100%); }
+    .mc-back::after { content: "\003C  \2265"; font-family: "JetBrains Mono", monospace; font-size: 26px; font-weight: 800;
+      color: var(--a); opacity: .35; letter-spacing: 4px; }
+    .mc-front { transform: rotateY(180deg); background: #0e1830; }
+    .mcard.matched .mc-front { background: rgba(102,187,106,.14); box-shadow: 0 0 0 2px var(--gt) inset; }
+    .mcard.bad .mc-front { background: rgba(239,83,80,.13); box-shadow: 0 0 0 2px var(--red) inset; }
+    .mc-note { font-size: 30px; color: var(--ink); }
+    .mc-front svg { width: 90%; height: auto; display: block; }
+
+    .mg-done { max-width: 920px; margin: 14px auto 0; text-align: center; color: var(--dim); font-size: 13px; }
+
+    /* ───────── worked solutions ───────── */
+    .worked-layout { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 16px; align-items: start; }
+    @media (max-width: 980px) { .worked-layout { grid-template-columns: 1fr; } }
+    .q-list { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; max-height: 640px; overflow-y: auto; }
+    .q-list-title { margin: 2px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+    .src-group { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+    .src-head { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: var(--panel2); border: 0;
+      color: var(--ink); font: inherit; font-weight: 700; font-size: 12.5px; padding: 10px 11px; cursor: pointer; }
+    .src-head:hover { background: #1d2c4d; }
+    .src-head .src-name { flex: 1; line-height: 1.25; }
+    .src-head .src-badge { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #06283d; background: var(--a);
+      border-radius: 6px; padding: 1px 7px; flex: none; }
+    .src-head .src-caret { flex: none; transition: transform .18s; color: var(--dim); }
+    .src-head.collapsed .src-caret { transform: rotate(-90deg); }
+    .src-body { padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .src-body.hidden { display: none; }
+    .sub-head { grid-column: 1 / -1; margin: 6px 2px 0; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+    .q-row { position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; background: var(--panel2); border: 1px solid var(--line);
+      color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; font-family: "JetBrains Mono", monospace;
+      padding: 8px 6px; border-radius: 8px; cursor: pointer; }
+    .q-row:hover { border-color: var(--a); }
+    .q-row.active { background: var(--a); color: #06283d; border-color: var(--a); }
+    .q-row .dot.built { font-size: 10px; color: var(--gt); }
+    .q-row.active .dot.built { color: #06283d; }
+    .no-sol { padding: 22px 16px; text-align: center; color: var(--dim); font-size: 13.5px; line-height: 1.6; }
+    .deck-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--dim); font-size: 14px; text-align: center; padding: 20px; }
+    .deck-empty.hidden { display: none; }
+    .worked-deck iframe.hidden { display: none; }
+    .worked-deck { background: #000; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; aspect-ratio: 16/9; }
+    .worked-deck iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .worked-sub { position: relative; margin-top: 12px; background: linear-gradient(180deg,#16243f,#101b30);
+      border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 10px; }
+    .worked-sub.hidden { display: none; }
+    .worked-sub .sub-label { position: absolute; top: 10px; left: 14px; font-size: 11px; text-transform: uppercase;
+      letter-spacing: .07em; font-weight: 700; color: var(--gt); background: rgba(102,187,106,.12);
+      border: 1px solid rgba(102,187,106,.3); padding: 3px 9px; border-radius: 7px; }
+    #sub-svg { width: 100%; height: auto; display: block; }
+    .worked-controls { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .wbtn { background: var(--panel); border: 1px solid var(--line); color: var(--ink); font: inherit; font-weight: 600;
+      padding: 9px 16px; border-radius: 9px; cursor: pointer; }
+    .wbtn:hover { border-color: var(--a); }
+    .wbtn.primary { background: var(--a); color: #06283d; border-color: var(--a); }
+    .wbtn:disabled { opacity: .4; cursor: not-allowed; }
+    .w-progress { flex: 1; }
+    .w-progress span { font-size: 12px; color: var(--dim); }
+    .w-bar { height: 5px; background: var(--panel2); border-radius: 999px; margin-top: 5px; overflow: hidden; }
+    #w-bar-fill { height: 100%; width: 9%; background: var(--a); transition: width .25s; }
+    .solution-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; max-height: 620px; }
+    .sp-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#16233d,var(--panel)); border-radius: 14px 14px 0 0; flex: none; }
+    .sp-head h3 { margin: 0; font-size: 17px; color: var(--a); }
+    .sp-head p { margin: 4px 0 0; font-size: 12px; color: var(--dim); }
+    .sp-q { margin-top: 10px; padding: 9px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; }
+    .sp-q .sp-q-row { font-size: 15px; margin: 4px 0; }
+    .solution-scroll { padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .step-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; cursor: pointer; transition: all .15s; }
+    .step-card:hover { border-color: var(--a); }
+    .step-card.active { border-color: var(--a); box-shadow: inset 3px 0 0 var(--a); background: #1d2c4d; }
+    .step-card .sc-head { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+    .step-card .sc-idx { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); color: var(--ink); font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex: none; }
+    .step-card.active .sc-idx { background: var(--a); color: #06283d; }
+    .step-card .sc-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+    .step-card .sc-body { font-size: 14px; color: #cdd6e4; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Inequality</h1>
+    <span class="crumb">KOC S3 Math · Summer 2026 · Inequality</span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="slides">Concept &amp; Formula</button>
+    <button class="tab" data-tab="tools">Interactive Tool</button>
+    <button class="tab" data-tab="game">Match-up Game</button>
+    <button class="tab" data-tab="worked">Worked Solutions</button>
+  </nav>
+
+  <!-- TAB 1: concept slide decks -->
+  <section id="panel-slides" class="panel">
+    <div class="subnav">
+      <button class="chip active" data-deck="../../slides/inequality/signs/index.html">Signs &amp; number line</button>
+      <button class="chip" data-deck="../../slides/inequality/negative-coefficient/index.html">Multiply / divide by a negative</button>
+    </div>
+    <div class="deck-wrap">
+      <iframe id="deck-frame" src="../../slides/inequality/signs/index.html" title="Inequality concept slides"></iframe>
+    </div>
+    <p class="hint">Use → / Space to advance, ← to go back. Each slide builds the idea step by step.</p>
+  </section>
+
+  <!-- TAB 2: interactive grapher -->
+  <section id="panel-tools" class="panel hidden">
+    <div class="subnav">
+      <button class="chip active" data-mode="1d">Number line · 1 variable</button>
+      <button class="chip" data-mode="2d">Plane region · 2 variables</button>
+      <button class="chip" data-mode="3d">In 3D · surfaces</button>
+    </div>
+
+    <div class="grapher">
+      <div class="gr-controls">
+        <div class="gr-field">
+          <label>Equation / figure</label>
+          <select id="gr-preset" class="gr-select"></select>
+        </div>
+        <div class="gr-field">
+          <label>Relation (against 0)</label>
+          <div id="gr-relations" class="gr-rel"></div>
+        </div>
+      </div>
+
+      <div class="gr-readout">
+        <div class="gr-card">
+          <h4>Inequality</h4>
+          <div id="gr-eq" class="big"></div>
+          <div id="gr-legend" class="gr-legend"></div>
+        </div>
+        <div class="gr-card">
+          <h4>Solution</h4>
+          <div id="gr-sol" class="sol"></div>
+          <p id="gr-note"></p>
+        </div>
+      </div>
+
+      <div class="gr-stage">
+        <canvas id="gr-canvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: match-up memory game -->
+  <section id="panel-game" class="panel hidden">
+    <div class="mg-hud">
+      <div class="mg-stat">Round <b id="mg-round">1</b><span style="color:var(--dim)">/3</span>
+        <span id="mg-pips"></span></div>
+      <div class="mg-stat">Matched <b id="mg-matched">0</b><span style="color:var(--dim)">/4</span></div>
+      <div class="mg-stat">Moves <b id="mg-moves">0</b></div>
+      <button id="mg-restart" class="mg-btn mg-restart" title="restart the game">&#8635; Restart</button>
+    </div>
+
+    <div class="mg-bar">
+      <p id="mg-msg" class="mg-msg"></p>
+      <button id="mg-action" class="mg-btn primary"></button>
+    </div>
+
+    <div id="mg-stage" class="mg-stage"></div>
+
+    <p class="mg-done">Match each inequality (<span style="font-family:monospace">x&ge;0, x&gt;0, x&le;0, x&lt;0</span>)
+      to its number-line picture &mdash; filled dot = &ldquo;or equal&rdquo;, hollow dot = strict.</p>
+  </section>
+
+  <!-- TAB 4: worked solutions — full L03 PowerPoint export -->
+  <section id="panel-worked" class="panel hidden">
+    <div class="ppt-worked-wrap">
+      <iframe id="worked-ppt-frame" src="../../slides/inequality/l03-main-deck/index.html" title="Pre S3 Maths L03 Inequality (2025)"></iframe>
+    </div>
+    <p class="hint">Export <code>l03-main.mp4</code> into <code>slides/inequality/l03-main-deck/</code>. Space = play/pause · ← rewinds 5s.</p>
+  </section>
+</body>
+</html>

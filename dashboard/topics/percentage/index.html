@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Percentages — KOC S3 Math</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../shared/topic-shell.css">
+  <script defer src="percentage-game-engine.js"></script>
+  <script defer src="percentage-calc.js"></script>
+  <script defer src="percentage-game.js"></script>
+  <script defer src="percentage-bank-game.js"></script>
+  <script defer src="percentage-worked-data.js"></script>
+  <script defer src="percentage-worked.js"></script>
+  <script defer src="percentage-tools.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #16213a; --panel2: #1b2945; --ink: #e5e7eb; --dim: #94a3b8;
+      --a: #4FC3F7; --line: #28365c;
+      --old: #4FC3F7; --new: #FFD54F; --factor: #CE93D8; --up: #66BB6A; --down: #F06292;
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--ink);
+      font-family: "Hanken Grotesk", system-ui, sans-serif; }
+    header { padding: 18px 28px; border-bottom: 1px solid var(--line);
+      display: flex; align-items: baseline; gap: 14px; }
+    header h1 { font-size: 22px; margin: 0; font-weight: 700; }
+    header .crumb { color: var(--dim); font-size: 13px; }
+    .tabs { display: flex; gap: 6px; padding: 14px 28px 0; }
+    .tab { background: none; border: none; color: var(--dim); font: inherit; font-weight: 600;
+      padding: 10px 16px; cursor: pointer; border-radius: 8px 8px 0 0; font-size: 15px; }
+    .tab.active { color: var(--ink); background: var(--panel); box-shadow: inset 0 -2px 0 var(--a); }
+    .subnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
+    .chip { background: var(--panel); border: 1px solid var(--line); color: var(--dim);
+      font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+      font-size: 14px; transition: all .15s; }
+    .chip:hover { color: var(--ink); }
+    .chip.active { color: #06283d; background: var(--a); border-color: var(--a); }
+    /* Tab 1: slide deck — height from topic-shell.css */
+    .deck-wrap { background: #000; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .hint { color: var(--dim); font-size: 13px; text-align: center; margin-top: 10px; }
+    /* placeholder */
+    .soon { background: var(--panel); border: 1px dashed var(--line); border-radius: 14px;
+      padding: 60px 24px; text-align: center; color: var(--dim); max-width: 1100px; margin: 0 auto; }
+    .soon h3 { color: var(--ink); margin: 0 0 8px; }
+
+    /* ───────────────── Simple vs Compound interest tool ───────────────── */
+    .it-wrap { max-width: 1100px; margin: 0 auto; }
+    .it-controls { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; margin-bottom: 16px; }
+    .it-field { display: flex; flex-direction: column; gap: 9px; flex: 1; min-width: 190px; }
+    .it-field > label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+      color: var(--dim); display: flex; justify-content: space-between; align-items: baseline; }
+    .it-field .v { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700; }
+    .it-field.p .v { color: var(--new); } .it-field.r .v { color: var(--up); } .it-field.t .v { color: var(--a); }
+    .it-range { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 999px;
+      background: var(--panel2); outline: none; cursor: grab; }
+    .it-range:active { cursor: grabbing; }
+    .it-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 50%;
+      background: var(--a); border: 3px solid #0b1324; box-shadow: 0 2px 8px rgba(0,0,0,.5); cursor: grab; }
+    .it-range::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: var(--a);
+      border: 3px solid #0b1324; box-shadow: 0 2px 8px rgba(0,0,0,.5); cursor: grab; }
+    .it-field.p .it-range::-webkit-slider-thumb { background: var(--new); } .it-field.p .it-range::-moz-range-thumb { background: var(--new); }
+    .it-field.r .it-range::-webkit-slider-thumb { background: var(--up); } .it-field.r .it-range::-moz-range-thumb { background: var(--up); }
+    .it-hint-mini { font-size: 11px; color: var(--dim); }
+    .it-legend { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--dim); margin: 4px 2px 14px; }
+    .it-legend .li { display: flex; align-items: center; gap: 8px; }
+    .it-legend .dot { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: inset -2px -2px 3px rgba(0,0,0,.3); }
+    .it-lanes { display: flex; flex-direction: column; gap: 14px; }
+    .lane { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 8px; overflow: hidden; }
+    .lane-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+    .lane-head h3 { margin: 0; font-size: 16px; }
+    .lane-head .tot { margin-left: auto; font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 16px; }
+    .lane.simple { box-shadow: inset 4px 0 0 var(--a); }
+    .lane.compound { box-shadow: inset 4px 0 0 var(--up); }
+    .lane.simple .lane-head .tot { color: var(--a); }
+    .lane.compound .lane-head .tot { color: var(--up); }
+    .lane .sub { margin: 0 0 6px; font-size: 12.5px; color: var(--dim); }
+    .lane svg { width: 100%; height: auto; display: block; }
+    .coin-pop { animation: coinpop .35s ease both; }
+    @keyframes coinpop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .it-formulas { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    @media (max-width: 900px) { .it-formulas { grid-template-columns: 1fr; } }
+    .fcard { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+    .fcard.simple { box-shadow: inset 4px 0 0 var(--a); } .fcard.compound { box-shadow: inset 4px 0 0 var(--up); }
+    .fcard h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+    .fcard .eq { font-size: 18px; margin: 10px 0; }
+    .fcard .note { font-size: 13px; color: var(--dim); line-height: 1.55; margin-top: 8px; }
+    .it-diff { grid-column: 1 / -1; background: linear-gradient(180deg,#16243f,#101b30); border: 1px solid var(--line);
+      border-radius: 14px; padding: 14px 18px; text-align: center; font-size: 15.5px; }
+    .it-diff b { color: var(--up); font-family: "JetBrains Mono", monospace; }
+    .it-diff .sm { color: var(--a); font-family: "JetBrains Mono", monospace; }
+
+    /* ───────────────── Super Mart RPG (Game Boy) ───────────────── */
+    .pg-wrap { max-width: 780px; margin: 0 auto; }
+    .pg-hint { color: var(--dim); font-size: 13px; text-align: center; margin-top: 14px; line-height: 1.6; }
+    .pg-shell {
+      background: linear-gradient(180deg, #b8c4a8 0%, #9aab88 100%);
+      border-radius: 28px;
+      padding: 22px 22px 28px;
+      box-shadow: inset 0 0 0 4px #7a8668, inset 0 -6px 0 #6d785e, 0 16px 48px rgba(0,0,0,.45);
+    }
+    .pg-label {
+      font-family: "Press Start 2P", monospace;
+      font-size: 10px;
+      color: #3d4a32;
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .pg-screen {
+      background: #9bbc0f;
+      border: 4px solid #0f380f;
+      border-radius: 4px;
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      image-rendering: pixelated;
+      box-shadow: inset 0 0 80px rgba(15,56,15,.15);
+    }
+    .pg-scene {
+      flex: none;
+      min-height: 72px;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(15,56,15,.04) 3px,
+        rgba(15,56,15,.04) 4px
+      );
+      border-bottom: 3px solid #0f380f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    .pg-pixel-art {
+      font-family: "Press Start 2P", monospace;
+      font-size: 34px;
+      color: #306230;
+      text-shadow: 2px 2px 0 #8bac0f;
+      letter-spacing: 4px;
+    }
+    .pg-dialog {
+      padding: 18px 20px 12px;
+      flex: 1;
+    }
+    #pg-text,
+    #bg-text,
+    .pg-dialog-text {
+      margin: 0;
+      font-family: "Press Start 2P", monospace;
+      font-size: 13px;
+      line-height: 1.95;
+      color: #0f380f;
+      white-space: pre-wrap;
+      min-height: 100px;
+    }
+    .gb-title-main { font-size: 22px; text-align: center; margin-bottom: 18px; }
+    .gb-title-sub { font-size: 11px; text-align: center; color: #306230; margin-bottom: 44px; }
+    .gb-title-start { font-size: 11px; text-align: center; color: #306230; }
+    .gb-title-start.blink { opacity: 1; animation: pgblink 1s step-end infinite; }
+    @keyframes pgblink { 50% { opacity: 0; } }
+
+    /* choice menu — boxed JRPG style, not a plain > list */
+    .pg-choices {
+      margin: 0 14px 14px;
+      padding: 12px;
+      border: 4px solid #0f380f;
+      background: rgba(48, 98, 48, 0.18);
+      box-shadow: inset 0 0 0 2px rgba(155, 188, 15, 0.45);
+    }
+    .pg-choices.hidden { display: none; }
+    .pg-opt-head {
+      font-family: "Press Start 2P", monospace;
+      font-size: 9px;
+      color: #306230;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px dashed rgba(15, 56, 15, 0.35);
+    }
+    .pg-opt-list { display: flex; flex-direction: column; gap: 10px; }
+    .pg-opt {
+      width: 100%;
+      font-family: "Press Start 2P", monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      background: #8bac0f;
+      color: #0f380f;
+      border: 3px solid #0f380f;
+      border-radius: 2px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-align: left;
+      box-shadow: 3px 3px 0 #306230;
+      transition: background 0.1s, color 0.1s, box-shadow 0.1s, transform 0.08s;
+    }
+    .pg-opt:hover { background: #a5c451; }
+    .pg-opt:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #306230; }
+    .pg-opt.sel {
+      background: #0f380f;
+      color: #9bbc0f;
+      box-shadow: inset 0 0 0 2px #8bac0f, 3px 3px 0 #306230;
+      transform: translate(-1px, -1px);
+    }
+    .pg-opt-key {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      border: 2px solid currentColor;
+      background: rgba(155, 188, 15, 0.25);
+    }
+    .pg-opt.sel .pg-opt-key {
+      background: #306230;
+      border-color: #9bbc0f;
+      color: #9bbc0f;
+    }
+    .pg-opt-body { flex: 1; min-width: 0; }
+    .pg-opt-label { display: block; font-size: 13px; word-break: break-word; }
+    .pg-opt-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: 8px;
+      opacity: 0.65;
+      letter-spacing: 0.5px;
+    }
+    .pg-opt.sel .pg-opt-hint { opacity: 0.85; }
+    .pg-opt-cursor {
+      flex: none;
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 10px solid transparent;
+      opacity: 0;
+    }
+    .pg-opt.sel .pg-opt-cursor {
+      opacity: 1;
+      border-left-color: #9bbc0f;
+      animation: pgcursor 0.55s step-end infinite;
+    }
+    @keyframes pgcursor { 50% { opacity: 0.35; } }
+
+    .pg-hud {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 14px;
+      font-family: "Press Start 2P", monospace;
+      font-size: 9px;
+      color: #3d4a32;
+    }
+    .pg-controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .pg-btn {
+      font-family: "Press Start 2P", monospace;
+      font-size: 9px;
+      background: #8bac0f;
+      color: #0f380f;
+      border: 3px solid #0f380f;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 #0f380f;
+    }
+    .pg-btn:hover { background: #9bbc0f; }
+    .pg-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+    .pg-btn.hidden { display: none; }
+    .pg-dpad {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 18px;
+      font-family: "Press Start 2P", monospace;
+      font-size: 8px;
+      color: #5a6648;
+    }
+    .pg-dpad span { background: #7a8668; border: 2px solid #5a6648; border-radius: 4px; padding: 6px 10px; }
+    @media (max-width: 520px) {
+      #pg-text, #bg-text, .pg-dialog-text, .pg-opt-label { font-size: 11px; }
+      .pg-opt { font-size: 11px; padding: 12px 12px; }
+      .gb-title-main { font-size: 18px; }
+    }
+
+    .pg-game-mode.hidden { display: none; }
+    .pg-game-subnav { margin-bottom: 16px; }
+    .pg-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 250px;
+      gap: 18px;
+      align-items: start;
+    }
+    .pg-games-col { min-width: 0; }
+    @media (max-width: 920px) {
+      .pg-layout { grid-template-columns: 1fr; }
+    }
+
+    /* pocket calculator — same DMG palette */
+    .pg-calc {
+      background: linear-gradient(180deg, #b8c4a8 0%, #9aab88 100%);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: inset 0 0 0 3px #7a8668, inset 0 -4px 0 #6d785e, 0 12px 32px rgba(0,0,0,.35);
+    }
+    .pg-calc-label {
+      font-family: "Press Start 2P", monospace;
+      font-size: 8px;
+      color: #3d4a32;
+      text-align: center;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .pg-calc-screen {
+      background: #8bac0f;
+      border: 3px solid #0f380f;
+      border-radius: 2px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      min-height: 72px;
+      box-shadow: inset 0 2px 6px rgba(15,56,15,.2);
+    }
+    .pg-calc-expr {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: #306230;
+      min-height: 18px;
+      word-break: break-all;
+      text-align: right;
+    }
+    .pg-calc-result {
+      font-family: "Press Start 2P", monospace;
+      font-size: 14px;
+      color: #0f380f;
+      text-align: right;
+      margin-top: 8px;
+      min-height: 22px;
+      word-break: break-all;
+    }
+    .pg-calc-result.err { color: #5a1020; font-size: 11px; }
+    .pg-calc-keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .pg-calc-key {
+      font-family: "Press Start 2P", monospace;
+      font-size: 10px;
+      background: #9bbc0f;
+      color: #0f380f;
+      border: 2px solid #0f380f;
+      border-radius: 2px;
+      padding: 12px 4px;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 #306230;
+      transition: transform 0.06s, background 0.06s;
+    }
+    .pg-calc-key:hover { background: #b5d43a; }
+    .pg-calc-key:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #306230; }
+    .pg-calc-key.wide { grid-column: span 2; }
+    .pg-calc-key.op { background: #8bac0f; }
+    .pg-calc-key.fn { background: #7a9668; font-size: 8px; }
+    .pg-calc-key.eq {
+      background: #306230;
+      color: #9bbc0f;
+    }
+    .pg-calc-tip {
+      margin-top: 10px;
+      font-family: "Press Start 2P", monospace;
+      font-size: 7px;
+      line-height: 1.7;
+      color: #3d4a32;
+      padding: 8px;
+      border: 2px dashed rgba(15,56,15,.25);
+      border-radius: 2px;
+    }
+
+    /* ── Worked solutions ── */
+    .worked-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 16px; align-items: start; }
+    @media (max-width: 1040px) { .worked-layout { grid-template-columns: 1fr; } }
+    .q-list { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; max-height: 640px; overflow-y: auto; }
+    .q-list-title { margin: 2px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+    .src-group { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+    .src-head { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: var(--panel2); border: 0;
+      color: var(--ink); font: inherit; font-weight: 700; font-size: 12.5px; padding: 10px 11px; cursor: pointer; }
+    .src-head:hover { background: #1d2c4d; }
+    .src-head .src-name { flex: 1; line-height: 1.25; }
+    .src-head .src-badge { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #06283d; background: var(--a);
+      border-radius: 6px; padding: 1px 7px; flex: none; }
+    .src-head .src-caret { flex: none; transition: transform .18s; color: var(--dim); }
+    .src-head.collapsed .src-caret { transform: rotate(-90deg); }
+    .src-body { padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .src-body.hidden { display: none; }
+    .sub-head { grid-column: 1 / -1; margin: 6px 2px 0; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+    .q-row { position: relative; display: flex; align-items: center; justify-content: center; gap: 4px; background: var(--panel2); border: 1px solid var(--line);
+      color: var(--ink); font: inherit; font-size: 12px; font-weight: 700; font-family: "JetBrains Mono", monospace;
+      padding: 8px 4px; border-radius: 8px; cursor: pointer; }
+    .q-row:hover { border-color: var(--a); }
+    .q-row.active { background: var(--a); color: #06283d; border-color: var(--a); }
+    .q-row .dot.built { font-size: 10px; color: var(--up); }
+    .q-row.active .dot.built { color: #06283d; }
+    .no-sol { padding: 22px 16px; text-align: center; color: var(--dim); font-size: 13.5px; line-height: 1.6; }
+    .deck-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--dim); font-size: 14px; text-align: center; padding: 20px; }
+    .deck-empty.hidden { display: none; }
+    .worked-deck iframe.hidden { display: none; }
+    .panel-wrap { position: relative; }
+    .panel-enlarge-btn { position: absolute; top: 10px; right: 10px; z-index: 4; background: rgba(8,16,32,.82);
+      border: 1px solid var(--line); color: var(--ink); font: inherit; font-size: 12px; font-weight: 700;
+      padding: 5px 10px; border-radius: 8px; cursor: pointer; backdrop-filter: blur(4px); }
+    .panel-enlarge-btn:hover { border-color: var(--a); color: var(--a); }
+    .worked-deck { background: #000; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; aspect-ratio: 16/9; }
+    .worked-deck iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .worked-sub { position: relative; margin-top: 12px; background: linear-gradient(180deg,#16243f,#101b30);
+      border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 10px; }
+    .worked-sub.hidden { display: none; }
+    .worked-sub .sub-label { position: absolute; top: 10px; left: 14px; font-size: 11px; text-transform: uppercase;
+      letter-spacing: .07em; font-weight: 700; color: var(--up); background: rgba(102,187,106,.12);
+      border: 1px solid rgba(102,187,106,.3); padding: 3px 9px; border-radius: 7px; }
+    #sub-svg { width: 100%; height: auto; display: block; }
+    .worked-controls { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .worked-controls.hidden { display: none; }
+    .wbtn { background: var(--panel); border: 1px solid var(--line); color: var(--ink); font: inherit; font-weight: 600;
+      padding: 9px 16px; border-radius: 9px; cursor: pointer; }
+    .wbtn:hover { border-color: var(--a); }
+    .wbtn.primary { background: var(--a); color: #06283d; border-color: var(--a); }
+    .wbtn:disabled { opacity: .4; cursor: not-allowed; }
+    .w-progress { flex: 1; }
+    .w-progress span { font-size: 12px; color: var(--dim); }
+    .w-bar { height: 5px; background: var(--panel2); border-radius: 999px; margin-top: 5px; overflow: hidden; }
+    #w-bar-fill { height: 100%; width: 9%; background: var(--a); transition: width .25s; }
+    .solution-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; max-height: 620px; }
+    .sp-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#16233d,var(--panel));
+      border-radius: 14px 14px 0 0; flex: none; position: sticky; top: 0; z-index: 3; }
+    .sp-head h3 { margin: 0; font-size: 17px; color: var(--a); }
+    .sp-head p { margin: 4px 0 0; font-size: 12px; color: var(--dim); }
+    .sp-q { margin-top: 10px; padding: 9px 12px; background: var(--bg); border: 1px solid var(--line);
+      border-radius: 9px; display: flex; flex-direction: column; gap: 4px; }
+    .sp-q .sp-q-row { font-size: 15px; }
+    .solution-scroll { padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .step-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; cursor: pointer; transition: all .15s; }
+    .step-card:hover { border-color: var(--a); }
+    .step-card.active { border-color: var(--a); box-shadow: inset 3px 0 0 var(--a); background: #1d2c4d; }
+    .step-card .sc-head { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+    .step-card .sc-idx { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); color: var(--ink); font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex: none; }
+    .step-card.active .sc-idx { background: var(--a); color: #06283d; }
+    .step-card .sc-title { font-size: 13px; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: .03em; }
+    .step-card .sc-body { font-size: 14px; color: #cdd6e4; line-height: 1.5; }
+    .method-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(102,187,106,.16); color: var(--up);
+      border: 1px solid rgba(102,187,106,.4); border-radius: 7px; padding: 1px 7px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .method-chip:hover { background: rgba(102,187,106,.28); }
+    .method-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+      background: rgba(3,8,20,.74); backdrop-filter: blur(3px); padding: 20px; }
+    .method-modal.hidden { display: none; }
+    .mm-card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 24px 26px;
+      max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+    .mm-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--dim); font-size: 26px; cursor: pointer; line-height: 1; }
+    .mm-card h3 { margin: 0 0 4px; color: var(--a); font-size: 20px; }
+    .mm-tag { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--up); font-weight: 700; }
+    .mm-row { font-size: 17px; margin: 12px 0; }
+    .mm-note { font-size: 14px; color: var(--dim); line-height: 1.55; }
+    .panel-enlarge { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+      background: rgba(3,8,20,.82); backdrop-filter: blur(4px); padding: 16px; }
+    .panel-enlarge.hidden { display: none; }
+    .pe-card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.65); width: min(96vw, 1280px); max-height: 96vh; display: flex; flex-direction: column; overflow: hidden; }
+    .pe-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px;
+      border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#16233d,var(--panel)); flex: none; }
+    .pe-head span { font-size: 13px; font-weight: 700; color: var(--a); text-transform: uppercase; letter-spacing: .04em; }
+    .pe-close { background: none; border: none; color: var(--dim); font-size: 26px; cursor: pointer; line-height: 1; padding: 0 4px; }
+    .pe-body { padding: 12px; overflow: auto; flex: 1; min-height: 0; }
+    .pe-deck { background: #000; border-radius: 12px; overflow: hidden; width: min(92vw, calc((96vh - 90px) * 16 / 9)); aspect-ratio: 16/9; max-height: calc(96vh - 90px); }
+    .pe-deck iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .pe-sub { width: min(92vw, 920px); background: linear-gradient(180deg,#16243f,#101b30); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .pe-sub svg { width: 100%; height: auto; display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Percentages</h1>
+    <span class="crumb">KOC S3 Math · Summer 2026 · Percentages</span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="slides">Concept &amp; Formula</button>
+    <button class="tab" data-tab="tools">Interactive Tool</button>
+    <button class="tab" data-tab="game">Games</button>
+    <button class="tab" data-tab="worked">Worked Solutions</button>
+  </nav>
+
+  <!-- TAB 1: concept slide decks -->
+  <section id="panel-slides" class="panel">
+    <div class="subnav">
+      <button class="chip active" data-deck="../../slides/percentage/change-factor/index.html">Change factor</button>
+      <button class="chip" data-deck="../../slides/percentage/profit-loss/index.html">Profit &amp; discount</button>
+      <button class="chip" data-deck="../../slides/percentage/interest/index.html">Simple &amp; compound interest</button>
+      <button class="chip" data-deck="../../slides/percentage/tax/index.html">Progressive salaries tax</button>
+    </div>
+    <div class="deck-wrap">
+      <iframe id="deck-frame" src="../../slides/percentage/change-factor/index.html" title="Percentages concept slides"></iframe>
+    </div>
+    <p class="hint">Use → / Space to advance, ← to go back. Each slide builds the idea step by step.</p>
+  </section>
+
+  <!-- TAB 2: interactive tool — simple vs compound interest -->
+  <section id="panel-tools" class="panel hidden">
+    <div class="it-wrap">
+      <div class="subnav">
+        <button class="chip active" data-tool="interest">Simple vs Compound interest</button>
+      </div>
+
+      <div class="it-controls">
+        <div class="it-field p">
+          <label>Principal (starting coins) <span class="v" id="it-pv">$5</span></label>
+          <input id="it-p" class="it-range" type="range" min="1" max="10" step="1" value="5">
+          <span class="it-hint-mini">Drag: 1 – 10 coins</span>
+        </div>
+        <div class="it-field r">
+          <label>Interest rate per year <span class="v" id="it-rv">10%</span></label>
+          <input id="it-r" class="it-range" type="range" min="5" max="30" step="5" value="10">
+          <span class="it-hint-mini">Drag: 5% – 30%</span>
+        </div>
+        <div class="it-field t">
+          <label>Time <span class="v" id="it-tv">4 yr</span></label>
+          <input id="it-t" class="it-range" type="range" min="1" max="5" step="1" value="4">
+          <span class="it-hint-mini">Drag: 1 – 5 years</span>
+        </div>
+      </div>
+
+      <div class="it-legend">
+        <span class="li"><span class="dot" style="background:#FFD54F"></span> Principal (the money you start with)</span>
+        <span class="li"><span class="dot" style="background:#66BB6A"></span> Interest earned</span>
+        <span class="li"><span class="dot" style="background:#66BB6A;box-shadow:0 0 0 2px #fff,0 0 8px #66BB6A"></span> Interest added this year</span>
+      </div>
+
+      <div class="it-lanes">
+        <div class="lane simple">
+          <div class="lane-head">
+            <h3>Simple interest</h3>
+            <span class="sub" style="margin:0">principal is set aside — only it earns each year</span>
+            <span class="tot" id="it-simple-tot">$0</span>
+          </div>
+          <svg id="it-simple" viewBox="0 0 700 300" role="img" aria-label="simple interest timeline"></svg>
+        </div>
+        <div class="lane compound">
+          <div class="lane-head">
+            <h3>Compound interest</h3>
+            <span class="sub" style="margin:0">interest joins the pile, so it earns too — it snowballs</span>
+            <span class="tot" id="it-compound-tot">$0</span>
+          </div>
+          <svg id="it-compound" viewBox="0 0 700 300" role="img" aria-label="compound interest timeline"></svg>
+        </div>
+      </div>
+
+      <div class="it-formulas">
+        <div class="fcard simple">
+          <h4>Simple interest</h4>
+          <div class="eq" id="it-f-simple"></div>
+          <p class="note" id="it-n-simple"></p>
+        </div>
+        <div class="fcard compound">
+          <h4>Compound interest</h4>
+          <div class="eq" id="it-f-compound"></div>
+          <p class="note" id="it-n-compound"></p>
+        </div>
+        <div class="it-diff" id="it-diff"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: Game Boy story games -->
+  <section id="panel-game" class="panel hidden">
+    <div class="pg-wrap">
+      <div class="subnav pg-game-subnav">
+        <button class="chip active" data-game="mart">Super Mart</button>
+        <button class="chip" data-game="bank">City Bank</button>
+      </div>
+
+      <div class="pg-layout">
+        <div class="pg-games-col">
+          <!-- Super Mart -->
+          <div id="game-mart" class="pg-game-mode">
+            <div class="pg-shell" id="pg-shell">
+              <div class="pg-label">Nintendo-style · SUPER MART · DMG</div>
+              <div class="pg-screen" id="pg-screen">
+                <div class="pg-scene" aria-hidden="true">
+                  <span class="pg-pixel-art">MART</span>
+                </div>
+                <div class="pg-dialog">
+                  <p id="pg-text" class="pg-dialog-text"></p>
+                </div>
+                <div id="pg-choices" class="pg-choices hidden" role="listbox" aria-label="Choices"></div>
+              </div>
+              <div class="pg-hud">
+                <span id="pg-score">SCORE 0</span>
+                <span id="pg-chapter">SC 01</span>
+              </div>
+              <div class="pg-dpad">
+                <span>↑↓ highlight</span>
+                <span>Enter confirm</span>
+              </div>
+              <div class="pg-controls">
+                <button type="button" id="pg-restart" class="pg-btn hidden">Play again</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- City Bank -->
+          <div id="game-bank" class="pg-game-mode hidden">
+            <div class="pg-shell" id="bg-shell">
+              <div class="pg-label">Nintendo-style · CITY BANK · DMG</div>
+              <div class="pg-screen" id="bg-screen">
+                <div class="pg-scene" aria-hidden="true">
+                  <span class="pg-pixel-art">BANK</span>
+                </div>
+                <div class="pg-dialog">
+                  <p id="bg-text" class="pg-dialog-text"></p>
+                </div>
+                <div id="bg-choices" class="pg-choices hidden" role="listbox" aria-label="Choices"></div>
+              </div>
+              <div class="pg-hud">
+                <span id="bg-score">SCORE 0</span>
+                <span id="bg-chapter">SC 01</span>
+              </div>
+              <div class="pg-dpad">
+                <span>↑↓ highlight</span>
+                <span>Enter confirm</span>
+              </div>
+              <div class="pg-controls">
+                <button type="button" id="bg-restart" class="pg-btn hidden">Play again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="pg-calc" id="pg-calc" aria-label="Calculator" tabindex="0">
+          <div class="pg-calc-label">POCKET CALC</div>
+          <div class="pg-calc-screen">
+            <div class="pg-calc-expr" id="pg-calc-expr"></div>
+            <div class="pg-calc-result" id="pg-calc-result">0</div>
+          </div>
+          <div class="pg-calc-keys" id="pg-calc-keys">
+            <button type="button" class="pg-calc-key fn" data-k="C">C</button>
+            <button type="button" class="pg-calc-key fn" data-k="BK">⌫</button>
+            <button type="button" class="pg-calc-key fn" data-k="(">(</button>
+            <button type="button" class="pg-calc-key fn" data-k=")">)</button>
+            <button type="button" class="pg-calc-key" data-k="7">7</button>
+            <button type="button" class="pg-calc-key" data-k="8">8</button>
+            <button type="button" class="pg-calc-key" data-k="9">9</button>
+            <button type="button" class="pg-calc-key op" data-k="/">÷</button>
+            <button type="button" class="pg-calc-key" data-k="4">4</button>
+            <button type="button" class="pg-calc-key" data-k="5">5</button>
+            <button type="button" class="pg-calc-key" data-k="6">6</button>
+            <button type="button" class="pg-calc-key op" data-k="*">×</button>
+            <button type="button" class="pg-calc-key" data-k="1">1</button>
+            <button type="button" class="pg-calc-key" data-k="2">2</button>
+            <button type="button" class="pg-calc-key" data-k="3">3</button>
+            <button type="button" class="pg-calc-key op" data-k="-">−</button>
+            <button type="button" class="pg-calc-key" data-k="0">0</button>
+            <button type="button" class="pg-calc-key" data-k=".">.</button>
+            <button type="button" class="pg-calc-key fn" data-k="%">%</button>
+            <button type="button" class="pg-calc-key op" data-k="+">+</button>
+            <button type="button" class="pg-calc-key eq wide" data-k="=">=</button>
+          </div>
+          <p class="pg-calc-tip" id="pg-calc-tip">
+            70% off $100<br>
+            → 100×(1−70÷100)<br>
+            or 100×0.3
+          </p>
+        </aside>
+      </div>
+      <p class="pg-hint" id="pg-hint">
+        Retro RPG adventures about percentages &amp; interest.<br>
+        ↑↓ highlight · Enter confirm · pocket calc for working
+      </p>
+    </div>
+  </section>
+
+  <!-- TAB 4: worked solutions — full L04-06 PowerPoint export -->
+  <section id="panel-worked" class="panel hidden">
+    <div class="ppt-worked-wrap">
+      <iframe id="worked-ppt-frame" src="../../slides/percentage/l04-06-main-deck/index.html" title="Pre S3 Maths L04-06 Percentages (2025)"></iframe>
+    </div>
+    <p class="hint">Export <code>l04-06-main.mp4</code> into <code>slides/percentage/l04-06-main-deck/</code> (combine L04–L06 or export one lesson). Space = play/pause · ← rewinds 5s.</p>
+  </section>
+
+  <div id="method-modal" class="method-modal hidden">
+    <div class="mm-card">
+      <button id="mm-close" class="mm-close" title="close">&times;</button>
+      <div id="mm-body"></div>
+    </div>
+  </div>
+  <div id="panel-enlarge" class="panel-enlarge hidden" role="dialog" aria-modal="true" aria-label="Enlarged animation">
+    <div class="pe-card">
+      <div class="pe-head">
+        <span id="pe-title">Animation</span>
+        <button id="pe-close" class="pe-close" title="Close">&times;</button>
+      </div>
+      <div id="pe-body" class="pe-body"></div>
+    </div>
+  </div>
+</body>
+</html>
