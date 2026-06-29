@@ -66,8 +66,15 @@ body:has(#panel-worked:not(.hidden)) {
   overflow: hidden;
 }
 body:has(#panel-worked:not(.hidden)) header,
+body:has(#panel-worked:not(.hidden)) .tab-row,
 body:has(#panel-worked:not(.hidden)) .tabs {
   flex: none;
+}
+html.in-embed header {
+  display: none;
+}
+html.in-embed .tab-row {
+  padding-top: 6px;
 }
 body:has(#panel-worked:not(.hidden)) #panel-worked {
   flex: 1;
@@ -75,7 +82,7 @@ body:has(#panel-worked:not(.hidden)) #panel-worked {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 6px 20px 10px;
+  padding: 2px 12px 6px;
 }
 /* Full PPT export deck in Worked Solutions */
 #panel-worked .ppt-worked-wrap {

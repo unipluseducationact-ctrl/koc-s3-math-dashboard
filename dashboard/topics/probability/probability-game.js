@@ -223,26 +223,15 @@
 
   function revealFinal() {
     const ev = tg.ev, exp = tg.exp, other = BALL_NAME[tg.otherCol];
-    const rv = (i) => fr(exp[i].n, exp[i].d);
-    const u = (i) => fracTex(exp[i]);
     const prob = eventProb(exp, ev);
-    let work;
-    if (ev.op === "mul") { const p = ev.legs[0]; work = "P = " + u(p[0]) + " \\times " + u(p[1]) + " = " + fracTex(prob); }
-    else if (ev.op === "add") {
-      const parts = ev.legs.map((p) => u(p[0]) + " \\times " + u(p[1]));
-      const subs = ev.legs.map((p) => fracTex(fmul(rv(p[0]), rv(p[1]))));
-      work = "P = " + parts.join(" + ") + " = " + subs.join(" + ") + " = " + fracTex(prob);
-    } else {
-      const p = ev.legs[0];
-      work = "P = 1 - \\big(" + u(p[0]) + " \\times " + u(p[1]) + "\\big) = 1 - " + fracTex(fmul(rv(p[0]), rv(p[1]))) + " = " + fracTex(prob);
-    }
+    const work = "P = " + fracTex(prob);
     // multiple-choice answers
     const altExp = expectedFor(tg.a, tg.b, tg.total, !tg.replace);
     const seen = {}; const opts = [];
     const push = (f) => { if (!f || f.d <= 0 || f.n < 0 || f.n > f.d) return; const k = fracKey(f); if (seen[k]) return; seen[k] = 1; opts.push(fr(f.n, f.d)); };
     push(prob);
     push(eventProb(altExp, ev));                          // wrong replacement assumption
-    if (ev.op === "mul") push(fadd(rv(ev.legs[0][0]), rv(ev.legs[0][1])));  // added instead of multiplied
+    if (ev.op === "mul") push(fadd(fr(exp[ev.legs[0][0]].n, exp[ev.legs[0][0]].d), fr(exp[ev.legs[0][1]].n, exp[ev.legs[0][1]].d)));  // added instead of multiplied
     push(fsub(fr(1, 1), prob));                            // complement slip
     const dens = [tg.total, tg.total - 1, tg.total * (tg.total - 1), 2 * tg.total, 4, 6, 8];
     let guard = 0;
@@ -275,7 +264,7 @@
       els.tgFeedback.textContent = "Correct! \uD83C\uDF89  +1"; els.tgFeedback.className = "pg-feedback ok";
     } else {
       btn.classList.add("bad"); TG.streak = 0;
-      els.tgFeedback.textContent = "Not quite \u2014 the working above gives the answer."; els.tgFeedback.className = "pg-feedback bad";
+      els.tgFeedback.textContent = "Not quite \u2014 check the final probability above."; els.tgFeedback.className = "pg-feedback bad";
     }
     els.tgScore.textContent = TG.score; els.tgStreak.textContent = TG.streak;
   }

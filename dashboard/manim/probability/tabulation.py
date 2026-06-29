@@ -16,7 +16,7 @@ from manim import *
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parent))
 from prob_common import (  # noqa: E402
-    ProbSlide, BG, INK, MUTED, HEAD, TAIL,
+    ProbSlide, BG, INK, MUTED, HEAD, TAIL, FAV, TOTAL, fraction,
 )
 
 TEAL = ManimColor("#26A69A")
@@ -113,5 +113,29 @@ class Tabulation(ProbSlide):
                 comma = Tex(",", color=INK, font_size=38).next_to(items[i], RIGHT, buff=0.08).align_to(items[i], DOWN)
                 commas.add(comma)
                 self.play(FadeIn(comma), run_time=0.15)
+        self.wait(0.3)
+        self.next_slide()
+
+        # ── P(exactly 1 head and 1 tail) ──────────────────────────────────
+        plhs = MathTex(r"P(\text{exactly 1 head and 1 tail})", "=",
+                       font_size=40, color=INK)
+        f1 = fraction(MathTex("2", color=FAV, font_size=46),
+                      MathTex("4", color=TOTAL, font_size=46))
+        eq = MathTex("=", font_size=46, color=INK)
+        f2 = fraction(MathTex("1", color=INK, font_size=46),
+                      MathTex("2", color=INK, font_size=46))
+        calc = VGroup(plhs, f1, eq, f2).arrange(RIGHT, buff=0.28)
+        calc.move_to([-0.6, -3.55, 0])
+
+        self.play(Write(plhs))
+
+        boxes = VGroup(*[
+            SurroundingRectangle(cells[k], color=FAV, buff=0.12, stroke_width=3)
+            for k in ("HT", "TH")
+        ])
+        self.play(Create(boxes))
+        self.play(TransformFromCopy(boxes, f1[0]))
+        self.play(Create(f1[1]), TransformFromCopy(VGroup(*cells.values()), f1[2]))
+        self.play(Write(eq), Write(f2))
         self.wait(0.3)
         self.next_slide()

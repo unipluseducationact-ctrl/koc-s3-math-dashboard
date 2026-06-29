@@ -42,7 +42,7 @@
     king:   { label: "Kings",                    test: (c) => c.rank === 13 },
     queen:  { label: "Queens",                   test: (c) => c.rank === 12 },
     jack:   { label: "Jacks",                    test: (c) => c.rank === 11 },
-    odd:    { label: "Odd ranks (A,3,5,7,9)",    test: (c) => c.rank % 2 === 1 && c.rank <= 9 },
+    odd:    { label: "Odd ranks (3,5,7,9)",    test: (c) => c.rank >= 3 && c.rank % 2 === 1 && c.rank <= 9 },
     even:   { label: "Even ranks (2,4,6,8,10)",  test: (c) => c.rank % 2 === 0 && c.rank <= 10 },
   };
   const DENOM_KEYS = ["all", "red", "black", "spades", "hearts", "diamonds", "clubs",

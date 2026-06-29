@@ -2,7 +2,7 @@
 selling price and profit (the "CMDSP" chain).
 
     Slide 1   the five quantities:  C  M  D  S  P
-    Slide 2   marked price:  Marked = Cost x (1 + markup%)
+    Slide 2   marked price:  Marked = Cost x (1 + profit%)
     Slide 3   discount:      Selling = Marked x (1 - discount%)
     Slide 4   profit:        Profit = Selling - Cost ,  Profit% = Profit / Cost
     Slide 5   worked cake:   M = $260, +30% at marked price, then 15% discount
@@ -54,7 +54,7 @@ class ProfitLoss(PctSlide):
         ]
         cards = [quantity_card(s, n, c) for s, n, c in specs]
         row = VGroup(*cards).arrange(RIGHT, buff=0.22).move_to([0, 0.35, 0])
-        flow = Tex(r"cost $\rightarrow$ mark up $\rightarrow$ discount $\rightarrow$ sell $\rightarrow$ profit",
+        flow = Tex(r"cost $\rightarrow$ marked price $\rightarrow$ discount $\rightarrow$ selling price $\rightarrow$ profit",
                    font_size=32, color=MUTED).next_to(row, DOWN, buff=0.7)
 
         self.play(LaggedStart(*[FadeIn(c, shift=UP * 0.2) for c in cards],
@@ -67,10 +67,10 @@ class ProfitLoss(PctSlide):
         self._formula_slide(
             head="Marked price (price on the tag)",
             line=[r"\text{Marked price}", "=", r"\text{Cost}", r"\times",
-                  r"(1 + \text{markup}\%)"],
+                  r"(1 + \text{profit}\%)"],
             colmap={r"\text{Marked price}": MARK, r"\text{Cost}": COST,
-                    r"(1 + \text{markup}\%)": GROW},
-            note=r"a markup \emph{raises} the price above cost",
+                    r"(1 + \text{profit}\%)": GROW},
+            note=r"percentage profit on cost \emph{raises} the marked price above cost",
             note_col=GROW,
         )
 

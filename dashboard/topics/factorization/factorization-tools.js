@@ -99,6 +99,39 @@
   // True when intervals [a0,a1] and [b0,b1] genuinely overlap (not just touch).
   function span(a0, a1, b0, b1) { return Math.min(a1, b1) - Math.max(a0, b0) > 0.5; }
   const tc = (c, s) => `\\textcolor{${c}}{${s}}`;
+  // Slider a,b → x/y algebra (e.g. a=3 → 3x, b=2 → 2y).
+  const coefX = (n) => {
+    if (n === 0) return "0";
+    if (n === 1) return "x";
+    if (n === -1) return "-x";
+    return n + "x";
+  };
+  const coefY = (n) => {
+    if (n === 0) return "0";
+    if (n === 1) return "y";
+    if (n === -1) return "-y";
+    return n + "y";
+  };
+  const sqX = (n) => {
+    const sq = n * n;
+    return sq === 1 ? "x^2" : sq + "x^2";
+  };
+  const sqY = (n) => {
+    const sq = n * n;
+    return sq === 1 ? "y^2" : sq + "y^2";
+  };
+  const xyCoef = (n) => {
+    if (n === 0) return "0";
+    if (n === 1) return "xy";
+    if (n === -1) return "-xy";
+    return n + "xy";
+  };
+  const midXY = (a, b) => xyCoef(2 * a * b);
+  const binomPlusXY = (a, b) => `(${tc(C.a, coefX(a))}+${tc(C.b, coefY(b))})`;
+  const binomDiffXY = (a, b) => `(${tc(C.a, coefX(a))}-${tc(C.b, coefY(b))})`;
+  const dosDiffXY = (a, b) => `${tc(C.a, sqX(a))} - ${tc(C.b, sqY(b))}`;
+  const dosFactorsXY = (a, b) =>
+    `(${tc(C.a, coefX(a))}+${tc(C.b, coefY(b))})(${tc(C.a, coefX(a))}-${tc(C.b, coefY(b))})`;
   // Diagonal-hatch + dashed-outline overlay used to flag a region as "shared"
   // (e.g. the b² corner that both ab strips of (a-b)² cover twice).
   function hatchOverlay(svg, x, y, w, h, color) {
@@ -153,10 +186,10 @@
       const ox = ml + (aw - S) / 2, top = mt + (ah - S) / 2;
       const sel = api ? api.sel : null;
       const cells = [
-        { x: ox, y: top, w: A, h: A, fill: C.a, op: 0.5, lt: `a^2=${st.a * st.a}`, tc: C.cellA },
-        { x: ox + A, y: top, w: B, h: A, fill: C.ab, op: 0.5, lt: `ab=${st.a * st.b}`, tc: C.cellAB },
-        { x: ox, y: top + A, w: A, h: B, fill: C.ab, op: 0.5, lt: `ab=${st.a * st.b}`, tc: C.cellAB },
-        { x: ox + A, y: top + A, w: B, h: B, fill: C.b, op: 0.6, lt: `b^2=${st.b * st.b}`, tc: C.cellB },
+        { x: ox, y: top, w: A, h: A, fill: C.a, op: 0.5, lt: sqX(st.a), tc: C.cellA },
+        { x: ox + A, y: top, w: B, h: A, fill: C.ab, op: 0.5, lt: xyCoef(st.a * st.b), tc: C.cellAB },
+        { x: ox, y: top + A, w: A, h: B, fill: C.ab, op: 0.5, lt: xyCoef(st.a * st.b), tc: C.cellAB },
+        { x: ox + A, y: top + A, w: B, h: B, fill: C.b, op: 0.6, lt: sqY(st.b), tc: C.cellB },
       ];
       cells.forEach((c, i) => {
         const on = sel === i, dim = sel != null && !on;
@@ -169,12 +202,12 @@
       rectSvg(svg, ox, top, S, S, "none", 0, C.ink, 2.5);
       const sc = sel != null ? cells[sel] : null;
       const tops = [
-        { cx: ox + A / 2, s: ox, e: ox + A, t: "a", col: C.a },
-        { cx: ox + A + B / 2, s: ox + A, e: ox + A + B, t: "b", col: C.b },
+        { cx: ox + A / 2, s: ox, e: ox + A, t: coefX(st.a), col: C.a },
+        { cx: ox + A + B / 2, s: ox + A, e: ox + A + B, t: coefY(st.b), col: C.b },
       ];
       const lefts = [
-        { cy: top + A / 2, s: top, e: top + A, t: "a", col: C.a },
-        { cy: top + A + B / 2, s: top + A, e: top + A + B, t: "b", col: C.b },
+        { cy: top + A / 2, s: top, e: top + A, t: coefX(st.a), col: C.a },
+        { cy: top + A + B / 2, s: top + A, e: top + A + B, t: coefY(st.b), col: C.b },
       ];
       tops.forEach((L) => {
         fade(tex(svg, L.cx, top - 20, L.t, L.col, 18, 60, 30), sc && !span(sc.x, sc.x + sc.w, L.s, L.e));
@@ -187,7 +220,7 @@
       const a = st.a, b = st.b;
       return [
         `(${tc(C.a, "a")}+${tc(C.b, "b")})^2 = ${tc(C.a, "a^2")} + ${tc(C.ab, "2ab")} + ${tc(C.b, "b^2")}`,
-        `(${tc(C.a, a)}+${tc(C.b, b)})^2 = ${tc(C.a, a * a)} + ${tc(C.ab, 2 * a * b)} + ${tc(C.b, b * b)} = ${(a + b) * (a + b)}`,
+        `${binomPlusXY(a, b)}^2 = ${tc(C.a, sqX(a))} + ${tc(C.ab, midXY(a, b))} + ${tc(C.b, sqY(b))}`,
       ];
     },
   };
@@ -212,17 +245,16 @@
       const bg = rectSvg(svg, ox, top, A, A, C.a, 0.16, C.a, 1);
       fade(bg, anySel);
       const ab = st.a * st.b;
-      // The two "ab" pieces are full-length strips (each area = a·b) that
-      // overlap in the b² corner — that is what the (a-b)² proof shows.
+      const inner = st.a - st.b;
       const cells = [
         { x: ox + IN, y: top, w: B, h: A, fill: C.ab, op: 0.42,
-          lx: ox + IN + B / 2, ly: top + IN / 2, lw: B, lh: IN, lt: `ab=${ab}`, tc: C.ink },
+          lx: ox + IN + B / 2, ly: top + IN / 2, lw: B, lh: IN, lt: xyCoef(ab), tc: C.ink },
         { x: ox, y: top + IN, w: A, h: B, fill: C.ab, op: 0.42,
-          lx: ox + IN / 2, ly: top + IN + B / 2, lw: IN, lh: B, lt: `ab=${ab}`, tc: C.ink },
+          lx: ox + IN / 2, ly: top + IN + B / 2, lw: IN, lh: B, lt: xyCoef(ab), tc: C.ink },
         { x: ox + IN, y: top + IN, w: B, h: B, fill: C.b, op: 0.5,
-          lx: ox + IN + B / 2, ly: top + IN + B / 2, lw: B, lh: B, lt: `b^2=${st.b * st.b}`, tc: C.cellB },
+          lx: ox + IN + B / 2, ly: top + IN + B / 2, lw: B, lh: B, lt: sqY(st.b), tc: C.cellB },
         { x: ox, y: top, w: IN, h: IN, fill: C.a, op: 0.55,
-          lx: ox + IN / 2, ly: top + IN / 2, lw: IN, lh: IN, lt: `(a-b)^2=${(st.a - st.b) * (st.a - st.b)}`, tc: C.ink },
+          lx: ox + IN / 2, ly: top + IN / 2, lw: IN, lh: IN, lt: sqX(inner), tc: C.ink },
       ];
       cells.forEach((c, i) => {
         const on = sel === i, dim = anySel && !on;
@@ -242,9 +274,9 @@
         hatchFill(svg, ox + IN, top, B, A, stripe, -45, 0.85);     // right ab strip "\"
         // redraw labels so they stay crisp above the stripes (non-interactive
         // so the cells underneath stay clickable)
-        noHit(fitTex(svg, ox + IN + B / 2, top + IN / 2, `ab=${ab}`, C.ink, B, IN));
-        noHit(fitTex(svg, ox + IN / 2, top + IN + B / 2, `ab=${ab}`, C.ink, IN, B));
-        noHit(fitTex(svg, ox + IN + B / 2, top + IN + B / 2, `b^2=${st.b * st.b}`, C.cellB, B, B));
+        noHit(fitTex(svg, ox + IN + B / 2, top + IN / 2, xyCoef(ab), C.ink, B, IN));
+        noHit(fitTex(svg, ox + IN / 2, top + IN + B / 2, xyCoef(ab), C.ink, IN, B));
+        noHit(fitTex(svg, ox + IN + B / 2, top + IN + B / 2, sqY(st.b), C.cellB, B, B));
       }
       // When an ab strip is picked, reveal that it continues *through* the b²
       // corner — paint the corner in the strip colour so the full a×b extent is
@@ -258,12 +290,12 @@
       rectSvg(svg, ox, top, A, A, "none", 0, C.ink, 2.5);
       const sc = sel != null ? cells[sel] : null;
       const tops = [
-        { cx: ox + IN / 2, s: ox, e: ox + IN, t: "a-b", col: C.a, fz: 15 },
-        { cx: ox + IN + B / 2, s: ox + IN, e: ox + A, t: "b", col: C.b, fz: 18 },
+        { cx: ox + IN / 2, s: ox, e: ox + IN, t: coefX(inner), col: C.a, fz: 15 },
+        { cx: ox + IN + B / 2, s: ox + IN, e: ox + A, t: coefY(st.b), col: C.b, fz: 18 },
       ];
       const rights = [
-        { cy: top + IN / 2, s: top, e: top + IN, t: "a-b", col: C.a, fz: 15 },
-        { cy: top + IN + B / 2, s: top + IN, e: top + A, t: "b", col: C.b, fz: 16 },
+        { cy: top + IN / 2, s: top, e: top + IN, t: coefX(inner), col: C.a, fz: 15 },
+        { cy: top + IN + B / 2, s: top + IN, e: top + A, t: coefY(st.b), col: C.b, fz: 16 },
       ];
       tops.forEach((L) => {
         fade(tex(svg, L.cx, top - 20, L.t, L.col, L.fz, 60, 30), sc && !span(sc.x, sc.x + sc.w, L.s, L.e));
@@ -276,14 +308,14 @@
       // makes clear each ab strip is a full a×b rectangle).
       const fullV = sc && sc.y <= top + 0.5 && sc.y + sc.h >= top + A - 0.5;
       const fullH = sc && sc.x <= ox + 0.5 && sc.x + sc.w >= ox + A - 0.5;
-      fade(tex(svg, ox - 30, top + A / 2, "a", C.a, 18, 44, 30), sc && !fullV);
-      fade(tex(svg, ox + A / 2, top + A + 22, "a", C.a, 18, 60, 30), sc && !fullH);
+      fade(tex(svg, ox - 30, top + A / 2, coefX(st.a), C.a, 18, 44, 30), sc && !fullV);
+      fade(tex(svg, ox + A / 2, top + A + 22, coefX(st.a), C.a, 18, 60, 30), sc && !fullH);
     },
     latex(st) {
-      const a = st.a, b = st.b, m = a - b;
+      const a = st.a, b = st.b;
       return [
         `(${tc(C.a, "a")}-${tc(C.b, "b")})^2 = ${tc(C.a, "a^2")} - ${tc(C.ab, "2ab")} + ${tc(C.b, "b^2")}`,
-        `(${tc(C.a, a)}-${tc(C.b, b)})^2 = ${tc(C.a, a * a)} - ${tc(C.ab, 2 * a * b)} + ${tc(C.b, b * b)} = ${m * m}`,
+        `${binomDiffXY(a, b)}^2 = ${tc(C.a, sqX(a))} - ${tc(C.ab, midXY(a, b))} + ${tc(C.b, sqY(b))}`,
       ];
     },
   };
@@ -301,7 +333,7 @@
     clamp(st) { if (st.b > st.a - 1) st.b = st.a - 1; },
     draw(svg, st) {
       if (!st.mode) {
-        const ml = 34, mr = 36, mt = 40, mb = 52;
+        const ml = 34, mr = 48, mt = 40, mb = 52;
         const aw = 450 - ml - mr, ah = 380 - mt - mb;
         const A = Math.min(aw, ah), unit = A / st.a;
         const B = st.b * unit, IN = A - B;
@@ -310,11 +342,12 @@
         rectSvg(svg, ox, top + IN, IN, B, C.a, 0.5, C.a, 1);
         rectSvg(svg, ox + IN, top + IN, B, B, C.b, 0.25, C.rm, 2, "4 3");
         rectSvg(svg, ox, top, A, A, "none", 0, C.ink, 2.5);
-        fitTex(svg, ox + A / 2, top + IN / 2, `a^2-b^2=${st.a * st.a - st.b * st.b}`, C.ink, A, IN);
-        fitTex(svg, ox + IN + B / 2, top + IN + B / 2, `b^2=${st.b * st.b}`, C.rm, B, B);
-        tex(svg, ox + A / 2, top - 20, "a", C.a, 18, 60, 30);
-        tex(svg, ox - 24, top + A / 2, "a", C.a, 18, 40, 30);
-        plainText(svg, ox + A / 2, top + A + 30, "drag a, b — then press Rearrange", C.dim, 13);
+        fitTex(svg, ox + A / 2, top + IN / 2, sqX(st.a) + "-" + sqY(st.b), C.ink, A, IN);
+        fitTex(svg, ox + IN + B / 2, top + IN + B / 2, sqY(st.b), C.rm, B, B);
+        tex(svg, ox + A / 2, top - 20, coefX(st.a), C.a, 18, 60, 30);
+        tex(svg, ox - 24, top + A / 2, coefX(st.a), C.a, 18, 40, 30);
+        tex(svg, ox + IN + B / 2, top + A + 22, coefY(st.b), C.b, 18, 60, 30);
+        tex(svg, ox + A + 28, top + IN + B / 2, coefY(st.b), C.b, 18, 60, 30);
       } else {
         const ml = 42, mr = 42, mt = 44, mb = 36;
         const aw = 450 - ml - mr, ah = 380 - mt - mb;
@@ -326,69 +359,21 @@
         rectSvg(svg, ox + A, top, B, H, C.a, 0.5, C.a, 1);
         lineSvg(svg, ox + A, top, ox + A, top + H, C.ink, 1, "3 3");
         rectSvg(svg, ox, top, W, H, "none", 0, C.ink, 2.5);
-        fitTex(svg, ox + W / 2, top + H / 2, `a^2-b^2=${st.a * st.a - st.b * st.b}`, C.ink, W, H);
-        tex(svg, ox + W / 2, top - 20, "a+b", C.a, 16, 80, 30);
-        tex(svg, ox - 28, top + H / 2, "a-b", C.a, 15, 60, 30);
+        fitTex(svg, ox + W / 2, top + H / 2, sqX(st.a) + "-" + sqY(st.b), C.ink, W, H);
+        tex(svg, ox + W / 2, top - 20, "(" + coefX(st.a) + "+" + coefY(st.b) + ")", C.a, 16, 110, 30);
+        tex(svg, ox - 28, top + H / 2, "(" + coefX(st.a) + "-" + coefY(st.b) + ")", C.a, 15, 90, 30);
       }
     },
     latex(st) {
       const a = st.a, b = st.b;
       return [
         `${tc(C.a, "a^2")} - ${tc(C.b, "b^2")} = (${tc(C.a, "a")}+${tc(C.b, "b")})(${tc(C.a, "a")}-${tc(C.b, "b")})`,
-        `${tc(C.a, a * a)} - ${tc(C.b, b * b)} = (${a}+${b})(${a}-${b}) = ${a * a - b * b}`,
+        `${dosDiffXY(a, b)} = ${dosFactorsXY(a, b)}`,
       ];
     },
   };
 
-  /* ───────────────────── Tool 4: cross method ───────────────────── */
-  const toolCross = {
-    name: "cross",
-    viewBox: "0 0 560 360",
-    defaults: { p: 2, q: 3 },
-    sliders: [
-      { key: "p", label: "p", min: 1, max: 6, step: 1, color: C.b },
-      { key: "q", label: "q", min: 1, max: 6, step: 1, color: C.b },
-    ],
-    clamp() {},
-    draw(svg, st) {
-      const p = st.p, q = st.q;
-      // ---- left: cross diagram ----
-      const xL = 56, xR = 176, yT = 118, yB = 208;
-      tex(svg, xL, yT, "x", C.a, 22, 50, 34);
-      tex(svg, xL, yB, "x", C.a, 22, 50, 34);
-      tex(svg, xR, yT, `+${p}`, C.b, 20, 60, 34);
-      tex(svg, xR, yB, `+${q}`, C.b, 20, 60, 34);
-      lineSvg(svg, xL + 18, yT + 8, xR - 24, yB - 8, C.ab, 2.5);
-      lineSvg(svg, xL + 18, yB - 8, xR - 24, yT + 8, C.ab, 2.5);
-      tex(svg, 116, 268, `${tc(C.ab, q + "x")}+${tc(C.ab, p + "x")}=${tc(C.ab, (p + q) + "x")}\\;\\checkmark`, C.ink, 15, 200, 34);
-      tex(svg, 116, 66, `\\text{product}=${p * q},\\ \\text{sum}=${p + q}`, C.dim, 13, 220, 30);
-      // ---- right: area rectangle ----
-      const unit = 22, xpix = 86, ox = 300, bottom = 300;
-      const P = p * unit, Q = q * unit, W = xpix + P, H = xpix + Q, top = bottom - H;
-      rectSvg(svg, ox, top, xpix, xpix, C.a, 0.5);
-      rectSvg(svg, ox + xpix, top, P, xpix, C.ab, 0.5);
-      rectSvg(svg, ox, top + xpix, xpix, Q, C.ab, 0.5);
-      rectSvg(svg, ox + xpix, top + xpix, P, Q, C.b, 0.6);
-      rectSvg(svg, ox, top, W, H, "none", 0, C.ink, 2.5);
-      tex(svg, ox + xpix / 2, top + xpix / 2, "x^2", C.cellA, 16, 60, 30);
-      tex(svg, ox + xpix + P / 2, top + xpix / 2, `${p}x`, C.cellAB, 13, 50, 28);
-      tex(svg, ox + xpix / 2, top + xpix + Q / 2, `${q}x`, C.cellAB, 13, 50, 28);
-      tex(svg, ox + xpix + P / 2, top + xpix + Q / 2, String(p * q), C.cellB, 13, 40, 26);
-      tex(svg, ox + xpix / 2, top - 17, "x", C.a, 17, 50, 30);
-      tex(svg, ox + xpix + P / 2, top - 17, `+${p}`, C.b, 15, 50, 30);
-      tex(svg, ox - 20, top + xpix / 2, "x", C.a, 17, 40, 30);
-      tex(svg, ox - 20, top + xpix + Q / 2, `+${q}`, C.b, 15, 50, 30);
-    },
-    latex(st) {
-      const p = st.p, q = st.q;
-      return [
-        `x^2 + ${tc(C.ab, (p + q) + "x")} + ${tc(C.b, p * q)} = (x+${tc(C.b, p)})(x+${tc(C.b, q)})`,
-        `\\text{cross: } ${tc(C.ab, q + "x")} + ${tc(C.ab, p + "x")} = ${tc(C.ab, (p + q) + "x")}`,
-      ];
-    },
-  };
-
-  const TOOLS = { sum: toolSum, diff: toolDiff, dos: toolDoS, cross: toolCross };
+  const TOOLS = { sum: toolSum, diff: toolDiff, dos: toolDoS };
 
   /* ───────────────────────── wiring ───────────────────────── */
   function renderEq(container, lines) {
@@ -472,151 +457,418 @@
       }
     });
 
-    // The cross-method calculator is a non-SVG tool; swap layouts when chosen.
     const toolLayout = document.querySelector(".tool-layout");
-    const calcTool = document.getElementById("calc-tool");
+    const crossLab = document.getElementById("cross-lab");
     function activate(key) {
+      const isCross = key === "cross";
       toolBtns.forEach((b) => b.classList.toggle("active", b.dataset.tool === key));
-      const isCalc = key === "calc";
-      if (toolLayout) toolLayout.classList.toggle("hidden", isCalc);
-      if (calcTool) calcTool.classList.toggle("hidden", !isCalc);
-      if (!isCalc) loadTool(key);
+      if (toolLayout) toolLayout.classList.toggle("hidden", isCross);
+      if (crossLab) crossLab.classList.toggle("hidden", !isCross);
+      if (isCross) {
+        if (window.FZ_CROSS && window.FZ_CROSS.show) window.FZ_CROSS.show();
+      } else {
+        loadTool(key);
+      }
     }
     toolBtns.forEach((b) => b.addEventListener("click", () => activate(b.dataset.tool)));
     activate("sum");
   }
 
-  /* ───────────────── Cross-method calculator ───────────────── */
-  function initCalc() {
-    const aEl = document.getElementById("calc-a");
-    const bEl = document.getElementById("calc-b");
-    const cEl = document.getElementById("calc-c");
-    const out = document.getElementById("calc-result");
-    const go = document.getElementById("calc-go");
-    if (!go || !out || !aEl) return;
+  /* ───────────────── Cross method wizard ───────────────── */
+  const posDivisors = (n) => {
+    n = Math.abs(n); const ds = [];
+    for (let d = 1; d <= n; d++) if (n % d === 0) ds.push(d);
+    return ds;
+  };
+  const gcd2 = (a, b) => {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { const t = b; b = a % b; a = t; }
+    return a;
+  };
+  const gcd3 = (a, b, c) => gcd2(gcd2(a, b), c);
+  const polyTerm = (n, v, lead) => {
+    if (n === 0) return "";
+    const sign = n < 0 ? (lead ? "-" : " - ") : (lead ? "" : " + ");
+    const m = Math.abs(n);
+    return sign + (m === 1 ? "" : m) + v;
+  };
+  const polyTex = (A, B, C) => polyTerm(A, "x^2", true) + polyTerm(B, "xy", false) + polyTerm(C, "y^2", false);
+  const factorTex = (p, q) => {
+    const xs = p === 1 ? "x" : p === -1 ? "-x" : p + "x";
+    const ym = Math.abs(q) === 1 ? "y" : Math.abs(q) + "y";
+    return "(" + xs + (q < 0 ? " - " : " + ") + ym + ")";
+  };
+  const midTex = (m) => (m === 0 ? "0" : (m === 1 ? "" : m === -1 ? "-" : m) + "xy");
+  const xyTermTex = (n) => {
+    if (n === 0) return "0";
+    if (n === 1) return "xy";
+    if (n === -1) return "-xy";
+    return n + "xy";
+  };
 
-    const posDivisors = (n) => {
-      n = Math.abs(n); const ds = [];
-      for (let d = 1; d <= n; d++) if (n % d === 0) ds.push(d);
-      return ds;
-    };
-    // Render a coefficient*variable term (with sign); skip if zero.
-    const term = (n, v, lead) => {
-      if (n === 0) return "";
-      const sign = n < 0 ? (lead ? "-" : " - ") : (lead ? "" : " + ");
-      const m = Math.abs(n);
-      return sign + (m === 1 ? "" : m) + v;
-    };
-    const polyTex = (A, B, C) => term(A, "x^2", true) + term(B, "xy", false) + term(C, "y^2", false);
-    // One linear factor (px + qy); coefficients are always non-zero here.
-    const factorTex = (p, q) => {
-      const xs = p === 1 ? "x" : p === -1 ? "-x" : p + "x";
-      const ym = Math.abs(q) === 1 ? "y" : Math.abs(q) + "y";
-      return "(" + xs + (q < 0 ? " - " : " + ") + ym + ")";
-    };
-    const midTex = (m) => (m === 0 ? "0" : (m === 1 ? "" : m === -1 ? "-" : m) + "xy");
-    const xTermTex = (p) => (p === 1 ? "x" : p === -1 ? "-x" : p + "x");
-    const yTermTex = (q) => (q < 0 ? "-" : "+") + (Math.abs(q) === 1 ? "y" : Math.abs(q) + "y");
+  function kxEl(latex, cls) {
+    const d = document.createElement("div");
+    if (cls) d.className = cls;
+    try { katex.render(latex, d, { throwOnError: false, displayMode: false }); }
+    catch (e) { d.textContent = latex; }
+    return d;
+  }
 
-    // Cross diagram for (a1 x + c1 y)(a2 x + c2 y): the two diagonal products
-    // a1·c2 and a2·c1 add to the xy coefficient.
-    function crossDiagram(a1, c1, a2, c2, mid, ok) {
-      const col = ok ? C.ab : C.dim;
-      const svg = E("svg", { viewBox: "0 0 230 150" });
-      svg.setAttribute("class", "calc-cross-svg");
-      lineSvg(svg, 78, 46, 152, 92, col, 2.5);
-      lineSvg(svg, 78, 92, 152, 46, col, 2.5);
-      tex(svg, 48, 40, xTermTex(a1), C.a, 21, 84, 32);
-      tex(svg, 182, 40, yTermTex(c1), C.b, 21, 84, 32);
-      tex(svg, 48, 98, xTermTex(a2), C.a, 21, 84, 32);
-      tex(svg, 182, 98, yTermTex(c2), C.b, 21, 84, 32);
-      const p1 = a1 * c2, p2 = a2 * c1;
-      const first = (p1 === 1 ? "" : p1 === -1 ? "-" : p1) + "xy";
-      const next = (p2 < 0 ? " - " : " + ") + (Math.abs(p2) === 1 ? "" : Math.abs(p2)) + "xy";
-      tex(svg, 115, 134, first + next + " = " + midTex(mid), col, 15, 224, 30);
-      return svg;
+  function initCrossLab() {
+    const lab = document.getElementById("cross-lab");
+    if (!lab) return;
+
+    const aEl = document.getElementById("cross-a");
+    const bEl = document.getElementById("cross-b");
+    const cEl = document.getElementById("cross-c");
+    const preview = document.getElementById("cross-preview");
+    const step1Err = document.getElementById("cross-step1-err");
+    const panels = [1, 2, 3, 4].map((n) => document.getElementById("cross-step-" + n));
+    const dots = document.querySelectorAll(".cross-step-dot");
+    const xPairsEl = document.getElementById("cross-x-pairs");
+    const yPairsEl = document.getElementById("cross-y-pairs");
+    const checkEl = document.getElementById("cross-check");
+    const answerEl = document.getElementById("cross-answer");
+    const productsEl = document.getElementById("cross-products");
+    const prodBlEl = document.getElementById("cross-prod-bl");
+    const prodTrEl = document.getElementById("cross-prod-tr");
+    const prodSumEl = document.getElementById("cross-prod-sum");
+    const slots = {};
+    document.querySelectorAll(".drop-slot").forEach((el) => { slots[el.dataset.slot] = el; });
+
+    const wiz = {
+      step: 1,
+      A: 2, B: 7, C: 3,
+      outerSign: 1,
+      A1: 2, B1: 7, C1: 3,
+      gcf: 1,
+      A2: 2, B2: 7, C2: 3,
+      values: { tl: null, tr: null, bl: null, br: null },
+    };
+
+    function readInputs() {
+      wiz.A = parseInt(aEl.value, 10);
+      wiz.B = parseInt(bEl.value, 10);
+      wiz.C = parseInt(cEl.value, 10);
     }
 
-    const kx = (parent, latex, cls) => {
-      const d = document.createElement("div");
-      if (cls) d.className = cls;
-      try { katex.render(latex, d, { throwOnError: false, displayMode: false }); }
-      catch (e) { d.textContent = latex; }
-      parent.appendChild(d);
-      return d;
-    };
-    const invalid = (msg) => {
-      clear(out);
-      const box = document.createElement("div");
-      box.className = "calc-invalid";
-      const b = document.createElement("b"); b.textContent = "Invalid";
-      const s = document.createElement("span"); s.textContent = msg;
-      box.appendChild(b); box.appendChild(s);
-      out.appendChild(box);
-    };
-
-    function calc() {
-      const A = parseInt(aEl.value, 10), B = parseInt(bEl.value, 10), C = parseInt(cEl.value, 10);
-      if (!Number.isInteger(A) || !Number.isInteger(B) || !Number.isInteger(C)) {
-        return invalid("Please enter whole numbers for all three coefficients.");
+    function updatePreview() {
+      readInputs();
+      if (!Number.isInteger(wiz.A) || !Number.isInteger(wiz.B) || !Number.isInteger(wiz.C)) {
+        preview.textContent = "";
+        return;
       }
-      if (A === 0 || C === 0) {
-        return invalid("The x\u00b2 and y\u00b2 coefficients must be non-zero for the cross method.");
-      }
+      clear(preview);
+      preview.appendChild(kxEl(polyTex(wiz.A, wiz.B, wiz.C)));
+    }
 
-      // (a1 x + c1 y)(a2 x + c2 y): a1·a2 = A, c1·c2 = C, middle = a1·c2 + a2·c1.
-      const aPairs = posDivisors(A).map((d) => [d, A / d]);
-      const cPairs = [];
-      posDivisors(C).forEach((d) => { cPairs.push([d, C / d]); cPairs.push([-d, C / -d]); });
-
-      const seen = new Set(), combos = [];
-      aPairs.forEach(([a1, a2]) => cPairs.forEach(([c1, c2]) => {
-        const key = [[a1, c1].join(","), [a2, c2].join(",")].sort().join("|");
-        if (seen.has(key)) return;
-        seen.add(key);
-        let f1 = [a1, c1], f2 = [a2, c2];
-        // Show the factor with the larger leading coefficient first (nicer form).
-        if (f2[0] > f1[0] || (f2[0] === f1[0] && f2[1] > f1[1])) { const t = f1; f1 = f2; f2 = t; }
-        const mid = f1[0] * f2[1] + f2[0] * f1[1];
-        combos.push({ f1, f2, mid, ok: mid === B });
-      }));
-
-      if (!combos.some((c) => c.ok)) {
-        return invalid("This trinomial cannot be factorised by the cross method over the integers.");
-      }
-
-      combos.sort((x, y) => (y.ok - x.ok) || (Math.abs(x.mid - B) - Math.abs(y.mid - B)));
-
-      clear(out);
-      const correct = combos.find((c) => c.ok);
-      kx(out, polyTex(A, B, C) + " = " + factorTex(correct.f1[0], correct.f1[1]) +
-        factorTex(correct.f2[0], correct.f2[1]), "calc-headline");
-      const note = document.createElement("p");
-      note.className = "calc-note";
-      note.textContent = "All cross-method combinations (correct one highlighted)";
-      out.appendChild(note);
-
-      const grid = document.createElement("div");
-      grid.className = "calc-grid";
-      combos.forEach((c) => {
-        const cell = document.createElement("div");
-        cell.className = "calc-cell" + (c.ok ? " ok" : "");
-        cell.appendChild(crossDiagram(c.f1[0], c.f1[1], c.f2[0], c.f2[1], c.mid, c.ok));
-        kx(cell, factorTex(c.f1[0], c.f1[1]) + factorTex(c.f2[0], c.f2[1]), "calc-cell-form");
-        const mark = document.createElement("div");
-        mark.className = "calc-mark";
-        mark.textContent = c.ok ? "\u2713" : "\u2717";
-        cell.appendChild(mark);
-        grid.appendChild(cell);
+    function showStep(n) {
+      wiz.step = n;
+      panels.forEach((p, i) => p.classList.toggle("hidden", i + 1 !== n));
+      dots.forEach((d) => {
+        const s = +d.dataset.step;
+        d.classList.toggle("active", s === n);
+        d.classList.toggle("done", s < n);
       });
-      out.appendChild(grid);
     }
 
-    go.addEventListener("click", calc);
-    [aEl, bEl, cEl].forEach((el) => el.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") calc();
-    }));
-    calc();
+    function prepNeg() {
+      if (wiz.A < 0) {
+        wiz.outerSign = -1;
+        wiz.A1 = -wiz.A;
+        wiz.B1 = -wiz.B;
+        wiz.C1 = -wiz.C;
+      } else {
+        wiz.outerSign = 1;
+        wiz.A1 = wiz.A;
+        wiz.B1 = wiz.B;
+        wiz.C1 = wiz.C;
+      }
+    }
+
+    function prepGcf() {
+      wiz.gcf = gcd3(wiz.A1, wiz.B1, wiz.C1);
+      if (wiz.gcf < 1) wiz.gcf = 1;
+      wiz.A2 = wiz.A1 / wiz.gcf;
+      wiz.B2 = wiz.B1 / wiz.gcf;
+      wiz.C2 = wiz.C1 / wiz.gcf;
+    }
+
+    function renderStep2() {
+      const note = document.getElementById("cross-step2-note");
+      const math = document.getElementById("cross-step2-math");
+      clear(math);
+      if (wiz.A < 0) {
+        note.textContent = "The x² coefficient is negative — factor out −1 so the inner x² coefficient becomes positive.";
+        math.appendChild(kxEl(
+          polyTex(wiz.A, wiz.B, wiz.C) + " = -1 \\cdot (" +
+          polyTex(wiz.A1, wiz.B1, wiz.C1) + ")"
+        ));
+      } else {
+        note.textContent = "The x² coefficient is already positive — no negative sign to extract.";
+        math.appendChild(kxEl(polyTex(wiz.A, wiz.B, wiz.C)));
+      }
+    }
+
+    function renderStep3() {
+      const note = document.getElementById("cross-step3-note");
+      const math = document.getElementById("cross-step3-math");
+      clear(math);
+      const prefix = wiz.outerSign === -1 ? "-1" : "1";
+      if (wiz.gcf > 1) {
+        note.textContent = "All three inner coefficients share a common factor — extract it before using the cross method.";
+        math.appendChild(kxEl(
+          polyTex(wiz.A, wiz.B, wiz.C) + " = " + prefix + " \\cdot " + wiz.gcf +
+          " \\cdot (" + polyTex(wiz.A2, wiz.B2, wiz.C2) + ")"
+        ));
+      } else {
+        note.textContent = "No common factor among the inner coefficients.";
+        if (wiz.outerSign === -1) {
+          math.appendChild(kxEl(
+            polyTex(wiz.A, wiz.B, wiz.C) + " = -1 \\cdot (" +
+            polyTex(wiz.A2, wiz.B2, wiz.C2) + ")"
+          ));
+        } else {
+          math.appendChild(kxEl(polyTex(wiz.A2, wiz.B2, wiz.C2)));
+        }
+      }
+    }
+
+    function makeChip(val, kind) {
+      const chip = document.createElement("span");
+      chip.className = "drag-chip " + (kind === "x" ? "x-chip" : "y-chip");
+      chip.textContent = val;
+      chip.draggable = true;
+      chip.dataset.value = String(val);
+      chip.dataset.kind = kind;
+      chip.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", JSON.stringify({ value: val, kind: kind }));
+        e.dataTransfer.effectAllowed = "copy";
+      });
+      return chip;
+    }
+
+    function buildPairGroups(container, pairs, kind) {
+      clear(container);
+      pairs.forEach(([p, q]) => {
+        const g = document.createElement("div");
+        g.className = "pair-group";
+        g.appendChild(makeChip(p, kind));
+        const sep = document.createElement("span");
+        sep.className = "pair-group-sep";
+        sep.textContent = "\u00d7";
+        g.appendChild(sep);
+        g.appendChild(makeChip(q, kind));
+        container.appendChild(g);
+      });
+    }
+
+    function clearSlots() {
+      wiz.values = { tl: null, tr: null, bl: null, br: null };
+      Object.keys(slots).forEach((k) => renderSlot(k));
+      updateCheck();
+    }
+
+    function renderSlot(key) {
+      const el = slots[key];
+      const val = wiz.values[key];
+      const kind = el.dataset.kind;
+      clear(el);
+      el.classList.toggle("filled", val != null);
+      el.classList.remove("correct", "wrong", "drag-over");
+      if (val == null) {
+        const ph = document.createElement("span");
+        ph.className = "slot-placeholder";
+        ph.textContent = "?";
+        el.appendChild(ph);
+        return;
+      }
+      const span = document.createElement("span");
+      span.className = "slot-val " + (kind === "x" ? "x-val" : "y-val");
+      span.textContent = val;
+      el.appendChild(span);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "slot-clear";
+      btn.title = "Clear";
+      btn.textContent = "\u00d7";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        wiz.values[key] = null;
+        renderSlot(key);
+        updateCheck();
+      });
+      el.appendChild(btn);
+    }
+
+    function setupDrop(slotKey) {
+      const el = slots[slotKey];
+      el.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        el.classList.add("drag-over");
+      });
+      el.addEventListener("dragleave", () => el.classList.remove("drag-over"));
+      el.addEventListener("drop", (e) => {
+        e.preventDefault();
+        el.classList.remove("drag-over");
+        let data;
+        try { data = JSON.parse(e.dataTransfer.getData("text/plain")); }
+        catch (err) { return; }
+        if (data.kind !== el.dataset.kind) return;
+        wiz.values[slotKey] = data.value;
+        renderSlot(slotKey);
+        updateCheck();
+      });
+    }
+
+    Object.keys(slots).forEach(setupDrop);
+
+    function hasFactorisation() {
+      const aPairs = posDivisors(wiz.A2).map((d) => [d, wiz.A2 / d]);
+      const cPairs = [];
+      posDivisors(wiz.C2).forEach((d) => {
+        cPairs.push([d, wiz.C2 / d]);
+        cPairs.push([-d, wiz.C2 / -d]);
+      });
+      for (let i = 0; i < aPairs.length; i++) {
+        const [a1, a2] = aPairs[i];
+        for (let j = 0; j < cPairs.length; j++) {
+          const [c1, c2] = cPairs[j];
+          if (a1 * c2 + a2 * c1 === wiz.B2) return true;
+        }
+      }
+      return false;
+    }
+
+    function updateCheck() {
+      clear(checkEl);
+      clear(answerEl);
+      clear(prodBlEl);
+      clear(prodTrEl);
+      clear(prodSumEl);
+      const { tl: a1, tr: c1, bl: a2, br: c2 } = wiz.values;
+      const filled = [a1, c1, a2, c2].every((v) => v != null);
+      if (!filled) {
+        productsEl.classList.add("empty");
+        prodSumEl.classList.add("hidden");
+        const hint = document.createElement("span");
+        hint.className = "cross-hint";
+        hint.textContent = "Fill all four slots to test a combination.";
+        checkEl.appendChild(hint);
+        Object.keys(slots).forEach((k) => slots[k].classList.remove("correct", "wrong"));
+        return;
+      }
+      productsEl.classList.remove("empty");
+      prodSumEl.classList.remove("hidden");
+      const pBr = a1 * c2;  // top-left × bottom-right → below 1y (br)
+      const pBl = a2 * c1;  // bottom-left × top-right → below 2x (bl)
+      const mid = pBr + pBl;
+      const ok = mid === wiz.B2;
+      Object.keys(slots).forEach((k) => {
+        slots[k].classList.toggle("correct", ok);
+        slots[k].classList.toggle("wrong", !ok);
+      });
+
+      prodBlEl.appendChild(kxEl(xyTermTex(pBl)));
+      prodTrEl.appendChild(kxEl(xyTermTex(pBr)));
+
+      prodSumEl.appendChild(kxEl("= " + midTex(mid)));
+      const mark = document.createElement("span");
+      mark.className = "cross-mark " + (ok ? "ok" : "bad");
+      mark.textContent = ok ? "\u2713" : "\u2717";
+      prodSumEl.appendChild(mark);
+
+      if (ok) {
+        let f1 = [a1, c1], f2 = [a2, c2];
+        if (f2[0] > f1[0] || (f2[0] === f1[0] && f2[1] > f1[1])) { const t = f1; f1 = f2; f2 = t; }
+        let prefix = "";
+        if (wiz.outerSign === -1 && wiz.gcf > 1) prefix = "-" + wiz.gcf;
+        else if (wiz.outerSign === -1) prefix = "-1";
+        else if (wiz.gcf > 1) prefix = String(wiz.gcf);
+        const inner = factorTex(f1[0], f1[1]) + factorTex(f2[0], f2[1]);
+        const full = prefix
+          ? polyTex(wiz.A, wiz.B, wiz.C) + " = " + prefix + "\\cdot" + inner
+          : polyTex(wiz.A, wiz.B, wiz.C) + " = " + inner;
+        answerEl.appendChild(kxEl(full));
+      }
+    }
+
+    function renderStep4() {
+      document.getElementById("cross-a2-label").textContent = wiz.A2;
+      document.getElementById("cross-c2-label").textContent = wiz.C2;
+      const targetB = document.getElementById("cross-target-b");
+      clear(targetB);
+      targetB.appendChild(kxEl(midTex(wiz.B2)));
+
+      const xPairs = posDivisors(wiz.A2).map((d) => [d, wiz.A2 / d]);
+      const yPairs = [];
+      posDivisors(wiz.C2).forEach((d) => {
+        yPairs.push([d, wiz.C2 / d]);
+        yPairs.push([-d, wiz.C2 / -d]);
+      });
+      buildPairGroups(xPairsEl, xPairs, "x");
+      buildPairGroups(yPairsEl, yPairs, "y");
+      clearSlots();
+      if (!hasFactorisation()) {
+        const hint = document.createElement("p");
+        hint.className = "cross-hint";
+        hint.textContent = "This inner trinomial has no integer cross-method factorisation — every combination will show \u2717.";
+        answerEl.appendChild(hint);
+      }
+    }
+
+    document.getElementById("cross-next-1").addEventListener("click", () => {
+      readInputs();
+      step1Err.classList.add("hidden");
+      if (!Number.isInteger(wiz.A) || !Number.isInteger(wiz.B) || !Number.isInteger(wiz.C)) {
+        step1Err.textContent = "Please enter whole numbers for all three coefficients.";
+        step1Err.classList.remove("hidden");
+        return;
+      }
+      if (wiz.A === 0 || wiz.C === 0) {
+        step1Err.textContent = "The x\u00b2 and y\u00b2 coefficients must be non-zero for the cross method.";
+        step1Err.classList.remove("hidden");
+        return;
+      }
+      prepNeg();
+      renderStep2();
+      showStep(2);
+    });
+
+    document.getElementById("cross-back-2").addEventListener("click", () => showStep(1));
+    document.getElementById("cross-next-2").addEventListener("click", () => {
+      prepGcf();
+      renderStep3();
+      showStep(3);
+    });
+
+    document.getElementById("cross-back-3").addEventListener("click", () => showStep(2));
+    document.getElementById("cross-next-3").addEventListener("click", () => {
+      renderStep4();
+      showStep(4);
+    });
+
+    document.getElementById("cross-back-4").addEventListener("click", () => showStep(3));
+    document.getElementById("cross-clear-slots").addEventListener("click", clearSlots);
+
+    [aEl, bEl, cEl].forEach((el) => {
+      el.addEventListener("input", updatePreview);
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && wiz.step === 1) document.getElementById("cross-next-1").click();
+      });
+    });
+
+    window.FZ_CROSS = {
+      show() {
+        renderTexAttrs(lab);
+        updatePreview();
+        showStep(wiz.step);
+      },
+    };
+
+    updatePreview();
+    renderTexAttrs(lab);
   }
 
   function initTabs() {
@@ -625,7 +877,8 @@
       slides: document.getElementById("panel-slides"),
       tools: document.getElementById("panel-tools"),
       game: document.getElementById("panel-game"),
-      worked: document.getElementById("panel-worked"),
+      summary: document.getElementById("panel-summary"),
+      quiz: document.getElementById("panel-quiz"),
     };
     tabs.forEach((t) => t.addEventListener("click", () => {
       tabs.forEach((x) => x.classList.toggle("active", x === t));
@@ -643,7 +896,7 @@
     }));
   }
 
-  function start() { renderTexAttrs(); initTabs(); initDecks(); initTools(); initCalc(); }
+  function start() { renderTexAttrs(); initTabs(); initDecks(); initTools(); initCrossLab(); }
   if (window.katex) { window.addEventListener("DOMContentLoaded", start); }
   else { window.addEventListener("DOMContentLoaded", () => {
     // KaTeX is deferred; ensure it is present before first render.

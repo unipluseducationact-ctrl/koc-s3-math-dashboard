@@ -343,6 +343,9 @@ class DifferenceOfSquares(_FactorScene):
 
         br_a_top = dim_brace(bl + np.array([0, a, 0]), bl + np.array([a, a, 0]), UP, "a", COL_A)
         br_a_left = dim_brace(bl + np.array([0, a, 0]), bl, LEFT, "a", COL_A)
+        br_b_bot = dim_brace(bl + np.array([inner, 0, 0]), bl + np.array([a, 0, 0]), DOWN, "b", COL_B)
+        br_b_right = dim_brace(bl + np.array([a, b, 0]), bl + np.array([a, 0, 0]), RIGHT, "b", COL_B)
+        br_b = VGroup(br_b_bot, br_b_right)
 
         # b^2 corner to remove (bottom-right)
         corner = filled_rect(bl + np.array([inner, 0, 0]), b, b, COL_B, opacity=0.85)
@@ -379,11 +382,11 @@ class DifferenceOfSquares(_FactorScene):
         self.next_slide()
 
         # ── STEP: remove b^2 corner -> L-shape ──
-        self.play(FadeIn(corner), Write(lab_corner))
+        self.play(FadeIn(corner), Write(lab_corner), GrowFromCenter(br_b))
         self.play(corner.animate.set_fill(COL_B, opacity=0.85).set_stroke(COL_B))
         self.remove(big)
         self.add(top_piece, bot_piece)
-        self.play(FadeOut(corner), FadeOut(lab_corner), Write(lab_l))
+        self.play(FadeOut(corner), FadeOut(lab_corner), FadeOut(br_b), Write(lab_l))
         self.next_slide()
 
         # ── STEP: cut the L into two rectangles ──

@@ -482,18 +482,17 @@
     const ctx = canvas.getContext("2d");
     const presetSel = document.getElementById("gr-preset");
     const relBox = document.getElementById("gr-relations");
-    const modeBtns = document.querySelectorAll("[data-mode]");
 
     const state = { mode: "1d", preset: P1[0], rel: P1[0].rel };
 
     function populatePresets() {
       presetSel.innerHTML = "";
-      PRESETS[state.mode].forEach((p) => presetSel.add(new Option(p.label, p.id)));
+      P1.forEach((p) => presetSel.add(new Option(p.label, p.id)));
       presetSel.value = state.preset.id;
     }
     function populateRelations() {
       relBox.innerHTML = "";
-      RELS[state.mode].forEach((r) => {
+      RELS["1d"].forEach((r) => {
         const btn = document.createElement("button");
         btn.textContent = REL_LABEL[r];
         btn.classList.toggle("active", r === state.rel);
@@ -502,7 +501,7 @@
       });
     }
     function syncRelations() {
-      [...relBox.children].forEach((btn, i) => btn.classList.toggle("active", RELS[state.mode][i] === state.rel));
+      [...relBox.children].forEach((btn, i) => btn.classList.toggle("active", RELS["1d"][i] === state.rel));
     }
 
     function render() {
@@ -513,22 +512,12 @@
       DPR = window.devicePixelRatio || 1;
       canvas.width = Math.round(rect.width * DPR);
       canvas.height = Math.round(rect.height * DPR);
-      let an = null;
-      if (state.mode === "1d") an = render1D(ctx, canvas, state.preset, state.rel);
-      else if (state.mode === "2d") render2D(ctx, canvas, state.preset, state.rel);
-      else render3D(ctx, canvas, state.preset, state.rel);
-      setReadout(state.mode, state.preset, state.rel, an);
+      const an = render1D(ctx, canvas, state.preset, state.rel);
+      setReadout("1d", state.preset, state.rel, an);
     }
 
-    modeBtns.forEach((b) => b.addEventListener("click", () => {
-      modeBtns.forEach((x) => x.classList.toggle("active", x === b));
-      state.mode = b.dataset.mode;
-      state.preset = PRESETS[state.mode][0];
-      state.rel = state.preset.rel;
-      populatePresets(); populateRelations(); render();
-    }));
     presetSel.addEventListener("change", () => {
-      state.preset = PRESETS[state.mode].find((p) => p.id === presetSel.value);
+      state.preset = P1.find((p) => p.id === presetSel.value);
       state.rel = state.preset.rel;
       populateRelations(); render();
     });

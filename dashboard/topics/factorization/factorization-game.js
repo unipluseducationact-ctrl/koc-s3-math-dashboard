@@ -1,7 +1,7 @@
 /* Factor Blaster — match factored <-> expanded forms by shooting the correct answer.
  * DOM-based shooter so every prompt/answer renders as real LaTeX (KaTeX).
  * Controls: <- -> move cannon, Space / ArrowUp shoot, or click an answer.
- * Modes: Expand (factored->expansion), Factorize (expansion->factored), Identify (x,y identities both ways).
+ * Modes: Expand (factored->expansion), Factorize (identities), Cross method (quadratics).
  * Round-based: choose mode + number of questions + speed; 3-2-1 countdown; end-of-round summary with ticks/crosses.
  */
 (function () {
@@ -34,19 +34,35 @@
     { p: "(7x+1)(7x-1)", c: "49x^2-1", d: ["49x^2+1", "49x^2-14x+1", "49x^2+14x-1"],          fd: ["(7x-1)^2", "(7x+1)^2", "(1+7x)(1-7x)"] },
   ];
 
-  // ── Identity mode: the three identities, both directions (x, y) ──
-  const IDENT_EXP = [
-    { p: "(x+y)^2", c: "x^2+2xy+y^2" },
-    { p: "(x-y)^2", c: "x^2-2xy+y^2" },
-    { p: "(x+y)(x-y)", c: "x^2-y^2" },
+  // ── Cross method bank: p = factored, c = trinomial, fd = wrong factorisations ──
+  const CROSS_BANK = [
+    { p: "(x-7)(x+1)", c: "x^2-6x-7", fd: ["(x-7)(x-1)", "(x+1)(x+7)", "(x-6)(x+1)"] },
+    { p: "(x+1)(x+3)", c: "x^2+4x+3", fd: ["(x+1)(x-3)", "(x+3)(x-1)", "(x+2)(x+2)"] },
+    { p: "(x-1)(x-13)", c: "x^2-14x+13", fd: ["(x+1)(x-13)", "(x-1)(x+13)", "(x-7)(x-7)"] },
+    { p: "(x+1)(x+7)", c: "x^2+8x+7", fd: ["(x+1)(x-7)", "(x+7)(x-1)", "(x+2)(x+5)"] },
+    { p: "(y+6)(y-2)", c: "y^2+4y-12", fd: ["(y+6)(y+2)", "(y-6)(y-2)", "(y+3)(y-4)"] },
+    { p: "(n+5)(n+7)", c: "n^2+12n+35", fd: ["(n+5)(n-7)", "(n+7)(n-5)", "(n+6)(n+6)"] },
+    { p: "(x-7y)(x+5y)", c: "x^2-2xy-35y^2", fd: ["(x-7y)(x-5y)", "(x+7y)(x+5y)", "(x-5y)(x-7y)"] },
+    { p: "(x-3y)(x-5y)", c: "x^2-8xy+15y^2", fd: ["(x-3y)(x+5y)", "(x+3y)(x-5y)", "(x-4y)(x-4y)"] },
+    { p: "(p+3q)(p+5q)", c: "p^2+8pq+15q^2", fd: ["(p+3q)(p-5q)", "(p-3q)(p+5q)", "(p+5q)(p+5q)"] },
+    { p: "(x+2y)(x+15y)", c: "x^2+17xy+30y^2", fd: ["(x+2y)(x-15y)", "(x+3y)(x+10y)", "(x+5y)(x+6y)"] },
+    { p: "(a-4b)(a-14b)", c: "a^2-18ab+56b^2", fd: ["(a+4b)(a-14b)", "(a-4b)(a+14b)", "(a-7b)(a-8b)"] },
+    { p: "(s+7)(s-13)", c: "s^2-6s-91", fd: ["(s+7)(s+13)", "(s-7)(s-13)", "(s+1)(s-91)"] },
+    { p: "(n+8)(n+9)", c: "n^2+17n+72", fd: ["(n+8)(n-9)", "(n+9)(n-8)", "(n+6)(n+12)"] },
+    { p: "(x+4y)(x-8y)", c: "x^2-4xy-32y^2", fd: ["(x+4y)(x+8y)", "(x-4y)(x-8y)", "(x+2y)(x-16y)"] },
+    { p: "(x-3y)(x+5y)", c: "x^2+2xy-15y^2", fd: ["(x-3y)(x-5y)", "(x+3y)(x+5y)", "(x-y)(x+15y)"] },
+    // leading coefficient ≠ 1 (from worked solutions + classics)
+    { p: "(2x+1)(x+3)", c: "2x^2+7x+3", fd: ["(2x+3)(x+1)", "(x+1)(x+3)", "(2x-1)(x-3)"] },
+    { p: "(x+2)(2x-5)", c: "2x^2-x-10", fd: ["(x-2)(2x+5)", "(x+5)(2x+2)", "(2x+1)(x-10)"] },
+    { p: "(2x-3)(7x-2)", c: "14x^2-25x+6", fd: ["(2x+3)(7x+2)", "(2x-1)(7x-6)", "(x-3)(14x-2)"] },
+    { p: "(x-4)(6x+1)", c: "6x^2-23x-4", fd: ["(x+4)(6x-1)", "(x-1)(6x+4)", "(2x-4)(3x+1)"] },
+    { p: "(a-2c)(3a-c)", c: "3a^2-7ac+2c^2", fd: ["(a+2c)(3a+c)", "(a-c)(3a-2c)", "(3a-2c)(a-c)"] },
+    { p: "(x-3y)(5x-2y)", c: "5x^2-17xy+6y^2", fd: ["(x+3y)(5x+2y)", "(x-2y)(5x-3y)", "(x-6y)(5x-y)"] },
+    { p: "(a-6)(5a-1)", c: "5a^2-31a+6", fd: ["(a+6)(5a+1)", "(a-1)(5a-6)", "(a-2)(5a-3)"] },
+    { p: "(3x+4y)(5x-7y)", c: "15x^2-xy-28y^2", fd: ["(3x-4y)(5x+7y)", "(3x+7y)(5x-4y)", "(x+4y)(15x-7y)"] },
+    { p: "(b-6)(5b-1)", c: "5b^2-31b+6", fd: ["(b+6)(5b+1)", "(b-1)(5b-6)", "(b-2)(5b-3)"] },
+    { p: "(2\\theta+7\\phi)(3\\theta-2\\phi)", c: "6\\theta^2+17\\theta\\phi-14\\phi^2", fd: ["(2\\theta-7\\phi)(3\\theta+2\\phi)", "(\\theta+7\\phi)(6\\theta-2\\phi)", "(3\\theta+7\\phi)(2\\theta-2\\phi)"] },
   ];
-  const IDENT_FAC = [
-    { p: "x^2+2xy+y^2", c: "(x+y)^2" },
-    { p: "x^2-2xy+y^2", c: "(x-y)^2" },
-    { p: "x^2-y^2", c: "(x+y)(x-y)" },
-  ];
-  const IDENT_EXPANSIONS = IDENT_EXP.map((q) => q.c);
-  const IDENT_FACTORED = IDENT_FAC.map((q) => q.c);
 
   // ── runtime state ──
   let stage, promptEl, enemiesEl, cannonEl, overlayEl, setupEl, summaryEl, countdownEl;
@@ -100,10 +116,7 @@
   function specFactorize(b) { return { promptTex: b.c, correctTex: b.p, pool: [b.p].concat(b.fd) }; }
 
   function basisFor(m) {
-    if (m === "identify") {
-      return IDENT_EXP.map((q) => ({ promptTex: q.p, correctTex: q.c, pool: IDENT_EXPANSIONS }))
-        .concat(IDENT_FAC.map((q) => ({ promptTex: q.p, correctTex: q.c, pool: IDENT_FACTORED })));
-    }
+    if (m === "cross") return CROSS_BANK.map(specFactorize);
     if (m === "factorize") return BANK.map(specFactorize);
     return BANK.map(specExpand);
   }
@@ -287,7 +300,7 @@
       const notes = {
         expand: "Expand: match the factored form to its expansion (4 answers).",
         factorize: "Factorize: match the expanded form back to its factorization (4 answers).",
-        identify: "Identify: the three x, y identities, both directions — expand and factorize (3 answers).",
+        cross: "Cross method: factorise the quadratic by shooting the correct pair of factors (4 answers). Includes leading coefficient \u2260 1.",
       };
       document.querySelectorAll(".modebtn").forEach((b) => b.addEventListener("click", () => {
         document.querySelectorAll(".modebtn").forEach((x) => x.classList.toggle("active", x === b));

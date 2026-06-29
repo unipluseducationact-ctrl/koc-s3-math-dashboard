@@ -201,15 +201,28 @@
       transition: border-color 0.15s, color 0.15s;
     }
     .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .viewer-title-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      overflow: hidden;
+    }
     .viewer-title {
       font-weight: 700;
       font-size: 15px;
-      flex: 1;
-      min-width: 0;
+      flex: none;
+    }
+    .viewer-meta {
+      font-size: 13px;
+      color: var(--dim);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
+    .viewer-meta:empty { display: none; }
     .open-link {
       font-size: 13px;
       font-weight: 600;
@@ -249,7 +262,10 @@
   <div id="viewer-view" aria-hidden="true">
     <div class="viewer-bar">
       <button type="button" class="back-btn" id="back-btn" aria-label="Back to gallery">&#8592; All topics</button>
-      <span class="viewer-title" id="viewer-title"></span>
+      <div class="viewer-title-wrap">
+        <span class="viewer-title" id="viewer-title"></span>
+        <span class="viewer-meta" id="viewer-meta"></span>
+      </div>
       <a class="open-link" id="open-link" href="#" target="_blank" rel="noopener">Open in new tab</a>
     </div>
     <iframe id="topic-frame" title="Topic dashboard" src="about:blank"></iframe>
@@ -272,11 +288,12 @@
         {
           id: "factorization",
           title: "Factorization",
-          desc: "Identities, cross method, grouping — geometry proofs, slider lab, and quiz worked solutions.",
+          subtitle: "KOC S3 Math · Summer 2026 · L01–02 More about Factorization",
+          desc: "Identities, cross method, grouping — geometry proofs, slider lab, and Factor Blaster game.",
           path: "topics/factorization/index.html",
           cover: "cover-fz",
           icon: "\u{1F9EE}",
-          tags: ["Identities", "Cross method", "Quiz", "Worked"],
+          tags: ["L01\u201302", "Identities", "Cross method", "Game"],
         },
         {
           id: "inequality",
@@ -312,6 +329,7 @@
       var viewerView = document.getElementById("viewer-view");
       var frame = document.getElementById("topic-frame");
       var viewerTitle = document.getElementById("viewer-title");
+      var viewerMeta = document.getElementById("viewer-meta");
       var openLink = document.getElementById("open-link");
       var backBtn = document.getElementById("back-btn");
 
@@ -343,6 +361,7 @@
         var t = findTopic(id);
         if (!t) return;
         viewerTitle.textContent = t.title;
+        if (viewerMeta) viewerMeta.textContent = t.subtitle || "";
         openLink.href = t.path;
         frame.src = t.path;
         galleryView.classList.add("hidden");
