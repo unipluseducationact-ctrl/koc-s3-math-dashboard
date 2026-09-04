@@ -355,23 +355,35 @@
     <nav class="jm-tabs" aria-label="Lesson sections">
     <button class="jm-tab active" type="button" data-tab="concept">Concept &amp; Formula</button>
     <button class="jm-tab" type="button" data-tab="tools">Interactive Tool</button>
-    <button class="jm-tab" type="button" data-tab="games">Games</button>
-    <button class="jm-tab" type="button" data-tab="comics">Comics</button>
+    <button class="jm-tab" type="button" data-tab="game">Game</button>
+    <button class="jm-tab" type="button" data-tab="comic">Comic</button>
     <button class="jm-tab" type="button" data-tab="summary">Summary</button>
     <button class="jm-tab" type="button" data-tab="quiz">Quiz</button>
   </nav>
 
     <section id="panel-concept" class="jm-panel">
-      <section class="block">
-        <h2>Concept &amp; Formula</h2>
-        <p class="hint">Coming soon.</p>
+      <section class="block jm-deck-panel">
+        <div class="subnav">
+          <button class="chip active" data-deck="../../slides/law_of_indices/laws-proof/index.html">Product &amp; Quotient Laws</button>
+          <button class="chip" data-deck="../../slides/law_of_indices/zero-negative-proof/index.html">Zero &amp; Negative Exponents</button>
+          <button class="chip" data-deck="../../slides/law_of_indices/fractional-indices-proof/index.html">Fractional Indices</button>
+        </div>
+        <div class="deck-slideshow">
+          <button type="button" class="deck-nav-btn deck-prev" id="deck-prev" aria-label="Previous slide">&larr;</button>
+          <div class="deck-wrap">
+            <iframe id="deck-frame" src="../../slides/law_of_indices/laws-proof/index.html" title="Law of Indices concept &amp; proof slides"></iframe>
+          </div>
+          <button type="button" class="deck-nav-btn deck-next" id="deck-next" aria-label="Next slide">&rarr;</button>
+        </div>
+        <p class="hint hint-deck-desktop">Use &rarr; / Enter / click to advance, &larr; to go back. Each slide builds the proof step by step.</p>
+        <p class="hint hint-deck-tablet">Swipe left for next slide, right for previous &mdash; or use the arrows. Each slide builds the proof step by step.</p>
+        <p class="hint hint-deck-phone">Tap the &larr; and &rarr; buttons below the slide. Each slide builds the proof step by step.</p>
       </section>
     </section>
     <section id="panel-tools" class="jm-panel hidden">
       <div class="subnav" aria-label="Tools">
         <button class="chip active" type="button" data-lab="powers">Powers</button>
         <button class="chip" type="button" data-lab="scientific">Scientific notation</button>
-        <button class="chip" type="button" data-lab="sci-walk">Sci walkthrough</button>
         <button class="chip" type="button" data-lab="binary">Binary</button>
       </div>
 
@@ -758,11 +770,6 @@
         </section>
       </div>
 
-      <div class="lab" id="lab-sci-walk">
-        <p class="lead">Guided scientific-notation walkthrough — step through conversion and arithmetic modules. The Scientific notation lab above stays available for practice drills.</p>
-        <div id="sci-walk-root"></div>
-      </div>
-
       <div class="lab" id="lab-binary">
         <p class="lead">Base 2 uses powers of \(2\) as place values — the same indices you met in the Powers lab. Flip bits, match targets, and try worksheet-style challenges.</p>
 
@@ -895,13 +902,43 @@
       </div>
     </section>
 
-    <section id="panel-games" class="jm-panel hidden">
+    <section id="panel-game" class="jm-panel hidden">
       <section class="block">
-        <h2>Games</h2>
-        <p class="hint">Coming soon.</p>
+        <h2>Game</h2>
+        <div class="indices-game-wrap" style="max-width: 920px; margin: 0 auto; text-align: center;">
+          <div class="hud" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; font-weight: bold;">
+            <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;">Score: <span id="hud-score">0</span></div>
+            <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;">Lives: <span id="hud-lives">3</span></div>
+            <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;">Streak: <span id="hud-combo">0</span></div>
+            <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;">Best: <span id="hud-best">0</span></div>
+            <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;"><span id="hud-progress">Q 0/0</span></div>
+          </div>
+          <div style="margin-bottom: 10px; font-size: 1.1em; font-weight: 600; color: #4FC3F7;" id="game-question">Select mode and press Start</div>
+          <div class="canvas-container" style="position: relative; display: inline-block; max-width: 100%;">
+            <canvas id="game-canvas" width="900" height="520" style="width: 100%; max-width: 900px; height: auto; background: #0b1c2e; border: 1px solid var(--line); border-radius: 12px; display: block;"></canvas>
+            <div id="game-overlay" class="game-overlay is-visible" style="position: absolute; inset: 0; background: rgba(15,23,42,0.85); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border-radius: 12px;">
+              <h3 id="overlay-title" style="font-size: 24px; color: #4FC3F7; margin-bottom: 8px;">Indices Space Shooter</h3>
+              <p id="overlay-msg" style="color: #cbd5e1; margin-bottom: 12px;">Shoot the falling enemy box with the correct simplified answer!</p>
+              <div id="overlay-weakest" hidden style="color: #fbbf24; margin-bottom: 12px;"></div>
+              <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <button type="button" class="game-preset-pill is-active chip" data-preset="all">All Topics</button>
+                <button type="button" class="game-preset-pill chip" data-preset="rules">Rules</button>
+                <button type="button" class="game-preset-pill chip" data-preset="scientific-notation">Scientific Notation</button>
+                <button type="button" class="game-preset-pill chip" data-preset="binary">Binary</button>
+              </div>
+              <button id="btn-start" type="button" class="play-btn" style="background: #4FC3F7; color: #0f172a; border: none; font-weight: bold; font-size: 16px; padding: 10px 24px; border-radius: 999px; cursor: pointer;">Start Game</button>
+              <button id="btn-review-comics" type="button" class="play-btn ghost" hidden style="margin-top: 8px;">Review Comics</button>
+            </div>
+          </div>
+          <div class="touch-controls" style="display: flex; gap: 12px; justify-content: center; margin-top: 10px;">
+            <button id="btn-left" type="button" class="chip" style="padding: 10px 20px;">&larr; Left</button>
+            <button id="btn-fire" type="button" class="chip" style="padding: 10px 24px; background: var(--accent); color: #0f172a; font-weight: bold;">Shoot (Space)</button>
+            <button id="btn-right" type="button" class="chip" style="padding: 10px 20px;">Right &rarr;</button>
+          </div>
+        </div>
       </section>
     </section>
-    <section id="panel-comics" class="jm-panel hidden">
+    <section id="panel-comic" class="jm-panel hidden">
       <div class="subnav" id="comics-series-nav" aria-label="Comic series"></div>
       <div class="subnav" id="comics-subnav" aria-label="Comic pages"></div>
       <div id="comics-stage"></div>
@@ -927,6 +964,8 @@
   <script defer src="law-of-indices-scientific.js?v=20260810-sci3"></script>
   <script src="comics-manifest.js?v=20260829c"></script>
   <script src="../../shared/jm-comics-engine.js?v=20260830-fu"></script>
+  <script src="game-questions.js?v=20260904"></script>
+  <script src="indices-game.js?v=20260904"></script>
   <script src="sci-notation-content.js?v=20260828-sel1"></script>
   <script src="sci-notation-tool.js?v=20260828-sel1"></script>
   <script>
@@ -977,6 +1016,13 @@
       }
       if (prev) prev.addEventListener("click", () => show(stepperState[name] - 1));
       if (next) next.addEventListener("click", () => show(stepperState[name] + 1));
+      frame.addEventListener("click", (e) => {
+        if (e.target.closest(".prev") || e.target.closest(".next")) return;
+        if (e.target.closest("button, input, select, textarea, a, .chip-ex, .power-block, .tiny-x")) return;
+        if (stepperState[name] < panels.length - 1) {
+          show(stepperState[name] + 1);
+        }
+      });
       if (dotsWrap) {
         [...dotsWrap.querySelectorAll("span")].forEach((d, idx) => d.addEventListener("click", () => show(idx)));
       }
@@ -1276,18 +1322,27 @@
     window.lockFormula = lockFormula;
 
     function showTab(name) {
+      const norm = (name === "games" || name === "game") ? "game" : ((name === "comics" || name === "comic") ? "comic" : name);
       document.querySelectorAll(".jm-tab").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === name);
+        const btnTab = btn.dataset.tab;
+        const btnNorm = (btnTab === "games" || btnTab === "game") ? "game" : ((btnTab === "comics" || btnTab === "comic") ? "comic" : btnTab);
+        btn.classList.toggle("active", btnNorm === norm);
       });
       document.querySelectorAll(".jm-panel").forEach((panel) => {
-        panel.classList.toggle("hidden", panel.id !== "panel-" + name);
-        panel.classList.toggle("active", panel.id === "panel-" + name);
+        const pid = panel.id.replace(/^panel-/, "");
+        const pidNorm = (pid === "games" || pid === "game") ? "game" : ((pid === "comics" || pid === "comic") ? "comic" : pid);
+        panel.classList.toggle("hidden", pidNorm !== norm);
+        panel.classList.toggle("active", pidNorm === norm);
       });
-      if (name === "tools") {
+      if (norm === "game" && window.IndicesGame && !window.__indicesGameInit) {
+        window.IndicesGame.init();
+        window.__indicesGameInit = true;
+      }
+      if (norm === "tools") {
         const activeLab = document.querySelector(".lab.active");
         if (activeLab) renderKatex(activeLab);
       } else {
-        const panel = document.getElementById("panel-" + name);
+        const panel = document.getElementById("panel-" + norm) || document.getElementById("panel-games") || document.getElementById("panel-comics");
         if (panel) renderKatex(panel);
       }
     }
@@ -1302,13 +1357,6 @@
       history.replaceState(null, "", "#" + name);
       const labEl = document.getElementById("lab-" + name);
       if (labEl) renderKatex(labEl);
-      if (name === "sci-walk" && window.SciNotationTool && !window.__sciWalkReady) {
-        const root = document.getElementById("sci-walk-root");
-        if (root) {
-          window.SciNotationTool.init(root);
-          window.__sciWalkReady = true;
-        }
-      }
     }
     document.querySelectorAll(".jm-tab").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -1334,11 +1382,10 @@
       if (window.initBinaryLab) window.initBinaryLab();
       if (window.initScientificLab) window.initScientificLab();
       const hash = (location.hash || "").replace("#", "");
-      const topTabs = ["concept", "games", "comics", "summary", "quiz"];
+      const topTabs = ["concept", "game", "games", "comic", "comics", "summary", "quiz"];
       if (topTabs.indexOf(hash) >= 0) showTab(hash);
       else if (hash === "binary") showLab("binary");
       else if (hash === "scientific") showLab("scientific");
-      else if (hash === "sci-walk") showLab("sci-walk");
       else if (hash === "powers" || hash === "tools") showLab("powers");
       else showTab("concept");
     });

@@ -14,15 +14,23 @@
 
   window.initJmTabs = function () {
     function showTab(name) {
+      var norm = (name === "games" || name === "game") ? "game" : ((name === "comics" || name === "comic") ? "comic" : name);
       document.querySelectorAll(".jm-tab").forEach(function (btn) {
-        btn.classList.toggle("active", btn.dataset.tab === name);
+        var btnTab = btn.dataset.tab;
+        var btnNorm = (btnTab === "games" || btnTab === "game") ? "game" : ((btnTab === "comics" || btnTab === "comic") ? "comic" : btnTab);
+        btn.classList.toggle("active", btnNorm === norm);
       });
       document.querySelectorAll(".jm-panel").forEach(function (panel) {
-        panel.classList.toggle("hidden", panel.id !== "panel-" + name);
+        var pid = panel.id.replace(/^panel-/, "");
+        var pidNorm = (pid === "games" || pid === "game") ? "game" : ((pid === "comics" || pid === "comic") ? "comic" : pid);
+        var isActive = pidNorm === norm || (norm === "concept" && (pid === "concept" || pid === "slides"));
+        panel.classList.toggle("hidden", !isActive);
+        panel.classList.toggle("active", isActive);
       });
-      history.replaceState(null, "", "#" + name);
-      if (name === "tools") renderKatex(document.getElementById("panel-tools"));
-      if (name === "comics") renderKatex(document.getElementById("panel-comics"));
+      history.replaceState(null, "", "#" + norm);
+      if (norm === "tools") renderKatex(document.getElementById("panel-tools"));
+      if (norm === "comic") renderKatex(document.getElementById("panel-comic") || document.getElementById("panel-comics"));
+      if (norm === "concept" || norm === "slides") renderKatex(document.getElementById("panel-concept") || document.getElementById("panel-slides"));
     }
 
     document.querySelectorAll(".jm-tab").forEach(function (btn) {
@@ -32,8 +40,11 @@
     });
 
     var hash = (location.hash || "").replace("#", "");
-    if (hash === "comics") showTab("comics");
-    else renderKatex(document.body);
+    if (hash && (hash === "comic" || hash === "comics" || hash === "game" || hash === "games" || hash === "tools" || hash === "summary" || hash === "quiz")) {
+      showTab(hash);
+    } else {
+      showTab("concept");
+    }
   };
 })();
 

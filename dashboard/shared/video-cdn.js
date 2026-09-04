@@ -14,7 +14,7 @@
   "use strict";
 
   var GH =
-    "https://unipluseducationact-ctrl.github.io/koc-s3-math-dashboard/dashboard";
+    "https://unikoc5.github.io/s3-maths/dashboard";
 
   function rewriteToGitHub() {
     // Only rewrite when not already on GitHub Pages (local / CF / custom domain).

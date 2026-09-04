@@ -157,6 +157,26 @@
     if (prevBtn) prevBtn.addEventListener("click", (e) => { e.preventDefault(); focusFrame(); step("prev"); });
     if (nextBtn) nextBtn.addEventListener("click", (e) => { e.preventDefault(); focusFrame(); step("next"); });
 
+    wrap.addEventListener("click", (e) => {
+      if (e.target.closest("#deck-prev") || e.target.closest(".deck-prev")) return;
+      if (e.target.closest("a, button, input, select, textarea")) return;
+      deckStep(frame, "next");
+    });
+
+    try {
+      frame.addEventListener("load", () => {
+        try {
+          const win = frame.contentWindow;
+          if (win && win.document) {
+            win.document.addEventListener("click", (ev) => {
+              if (ev.target.closest("a, button, input, select, textarea")) return;
+              deckStep(frame, "next");
+            });
+          }
+        } catch (err) {}
+      });
+    } catch (err) {}
+
     initDeckParentKeys(frame);
   }
 

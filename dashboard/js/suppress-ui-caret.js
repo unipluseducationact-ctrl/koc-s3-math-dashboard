@@ -68,6 +68,7 @@
     var el = e.target;
     if (!el || el.closest("input, textarea, select, [contenteditable='true']")) return;
     if (el.closest("button, a, [role='button'], [role='tab'], [tabindex]:not([tabindex='-1'])")) return;
-    if (el.closest(SELECTABLE) || el.closest(DRAG_CHROME)) e.preventDefault();
+    if (el.closest(SELECTABLE)) return;
+    if (el.closest(DRAG_CHROME)) e.preventDefault();
   });
 })();
