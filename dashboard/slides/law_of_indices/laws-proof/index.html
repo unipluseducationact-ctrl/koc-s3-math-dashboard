@@ -40,7 +40,7 @@
           <p>Why does \(a^m \div a^n = a^{m-n}\) (where \(a \neq 0\))?</p>
           <p>Expressing as a fraction:</p>
           <div class="fragment highlight-eq">
-            \(\frac{a^5}{a^2} = \frac{\cancel{a} \times \cancel{a} \times a \times a \times a}{\cancel{a} \times \cancel{a}} = a \times a \times a = a^{5-2} = a^3\)
+            \(\frac{a^5}{a^2} = \frac{\rlap{/}a \times \rlap{/}a \times a \times a \times a}{\rlap{/}a \times \rlap{/}a} = a \times a \times a = a^{5-2} = a^3\)
           </div>
         </div>
         <p class="fragment" style="color: #4FC3F7; font-weight: bold;">In general: \(a^m \div a^n = a^{m-n}\)</p>
@@ -69,14 +69,24 @@
       keyboard: true,
       touch: true,
       transition: 'slide'
-    }).then(function() {
-      renderMathInElement(document.body, {
-        delimiters: [
-          { left: "\\(", right: "\\)", display: false },
-          { left: "\\[", right: "\\]", display: true }
-        ]
-      });
     });
+    function initKatex() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ]
+        });
+      }
+    }
+    if (Reveal.isReady && Reveal.isReady()) {
+      initKatex();
+    } else if (Reveal.on) {
+      Reveal.on('ready', initKatex);
+    } else {
+      setTimeout(initKatex, 100);
+    }
 
     document.addEventListener("click", function(e) {
       if (e.target.closest("a, button, input, select, textarea")) return;

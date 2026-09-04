@@ -1390,6 +1390,19 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       if (window.initJmTabs) window.initJmTabs();
+      const frame = document.getElementById('deck-frame');
+      const btns = document.querySelectorAll('#panel-concept [data-deck]');
+      if (frame && btns.length) {
+        if (window.KOCDeckTouch) window.KOCDeckTouch.initDeckTouchNav(frame);
+        btns.forEach(function (b) {
+          b.addEventListener('click', function () {
+            btns.forEach(function (x) { x.classList.toggle('active', x === b); });
+            if (b.dataset.deck && frame.src !== b.dataset.deck) {
+              frame.src = b.dataset.deck;
+            }
+          });
+        });
+      }
     });
   </script>
   <script src="../../shared/suppress-ui-caret.js?v=20260904a"></script>

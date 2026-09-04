@@ -56,14 +56,24 @@
       keyboard: true,
       touch: true,
       transition: 'slide'
-    }).then(function() {
-      renderMathInElement(document.body, {
-        delimiters: [
-          { left: "\\(", right: "\\)", display: false },
-          { left: "\\[", right: "\\]", display: true }
-        ]
-      });
     });
+    function initKatex() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ]
+        });
+      }
+    }
+    if (Reveal.isReady && Reveal.isReady()) {
+      initKatex();
+    } else if (Reveal.on) {
+      Reveal.on('ready', initKatex);
+    } else {
+      setTimeout(initKatex, 100);
+    }
 
     document.addEventListener("click", function(e) {
       if (e.target.closest("a, button, input, select, textarea")) return;
