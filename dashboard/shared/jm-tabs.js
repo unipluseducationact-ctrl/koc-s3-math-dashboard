@@ -2,7 +2,14 @@
   "use strict";
 
   function renderKatex(root) {
-    if (window.renderMathInElement && root) {
+    if (!root) root = document.body;
+    root.querySelectorAll("[data-tex]").forEach(function (el) {
+      if (!el.children.length && (!el.textContent || !el.textContent.trim())) {
+        var tex = el.getAttribute("data-tex");
+        if (tex) el.innerHTML = "\\(" + tex + "\\)";
+      }
+    });
+    if (window.renderMathInElement) {
       window.renderMathInElement(root, {
         delimiters: [
           { left: "\\(", right: "\\)", display: false },
@@ -13,24 +20,31 @@
   }
 
   window.initJmTabs = function () {
+    function normalizeTab(tabName) {
+      if (!tabName) return "concept";
+      if (tabName === "slides" || tabName === "concept") return "concept";
+      if (tabName === "games" || tabName === "game") return "game";
+      if (tabName === "comics" || tabName === "comic") return "comic";
+      return tabName;
+    }
+
     function showTab(name) {
-      var norm = (name === "games" || name === "game") ? "game" : ((name === "comics" || name === "comic") ? "comic" : name);
+      var norm = normalizeTab(name);
       document.querySelectorAll(".jm-tab").forEach(function (btn) {
-        var btnTab = btn.dataset.tab;
-        var btnNorm = (btnTab === "games" || btnTab === "game") ? "game" : ((btnTab === "comics" || btnTab === "comic") ? "comic" : btnTab);
+        var btnNorm = normalizeTab(btn.dataset.tab);
         btn.classList.toggle("active", btnNorm === norm);
       });
       document.querySelectorAll(".jm-panel").forEach(function (panel) {
         var pid = panel.id.replace(/^panel-/, "");
-        var pidNorm = (pid === "games" || pid === "game") ? "game" : ((pid === "comics" || pid === "comic") ? "comic" : pid);
-        var isActive = pidNorm === norm || (norm === "concept" && (pid === "concept" || pid === "slides"));
+        var pidNorm = normalizeTab(pid);
+        var isActive = pidNorm === norm;
         panel.classList.toggle("hidden", !isActive);
         panel.classList.toggle("active", isActive);
       });
       history.replaceState(null, "", "#" + norm);
       if (norm === "tools") renderKatex(document.getElementById("panel-tools"));
       if (norm === "comic") renderKatex(document.getElementById("panel-comic") || document.getElementById("panel-comics"));
-      if (norm === "concept" || norm === "slides") renderKatex(document.getElementById("panel-concept") || document.getElementById("panel-slides"));
+      if (norm === "concept") renderKatex(document.getElementById("panel-concept") || document.getElementById("panel-slides"));
     }
 
     document.querySelectorAll(".jm-tab").forEach(function (btn) {
@@ -40,8 +54,9 @@
     });
 
     var hash = (location.hash || "").replace("#", "");
-    if (hash && (hash === "comic" || hash === "comics" || hash === "game" || hash === "games" || hash === "tools" || hash === "summary" || hash === "quiz")) {
-      showTab(hash);
+    var normHash = normalizeTab(hash);
+    if (hash && (normHash === "comic" || normHash === "game" || normHash === "tools" || normHash === "summary" || normHash === "quiz")) {
+      showTab(normHash);
     } else {
       showTab("concept");
     }

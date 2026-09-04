@@ -14,7 +14,7 @@
   "use strict";
 
   var GH =
-    "https://unikoc5.github.io/s3-maths/dashboard";
+    "https://unikoc5.github.io/s3-maths";
 
   function rewriteToGitHub() {
     // Only rewrite when not already on GitHub Pages (local / CF / custom domain).
