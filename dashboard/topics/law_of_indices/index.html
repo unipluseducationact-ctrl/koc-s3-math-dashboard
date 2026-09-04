@@ -343,6 +343,7 @@
   </style>
   <link rel="stylesheet" href="../../lessons/_shared/lesson.css?v=20260830b">
   <link rel="stylesheet" href="../../shared/comics-bridge.css?v=20260829c">
+  <link rel="stylesheet" href="../../shared/topic-shell.css?v=20260904-indices">
   <link rel="stylesheet" href="../../shared/jm-comics.css?v=20260830-fu"><link rel="stylesheet" href="../../shared/jm-lesson.css?v=20260904-jm29b"><link rel="stylesheet" href="../../shared/paper-labs.css?v=20260904-jm29">  <link rel="stylesheet" href="../../shared/jm28-panel.css?v=20260904-jm28c">
   <link rel="stylesheet" href="../../shared/page-motion.css?v=20260904-jm28c">
 </head>
@@ -371,9 +372,9 @@
         <div class="deck-slideshow"><div class="deck-wrap">
             <iframe id="deck-frame" src="../../slides/law_of_indices/laws-proof/index.html" title="Law of Indices concept &amp; proof slides"></iframe>
           </div></div>
-        <p class="hint hint-deck-desktop">Use &rarr; / Enter / click to advance, &larr; to go back. Each slide builds the proof step by step.</p>
-        <p class="hint hint-deck-tablet">Swipe left for next slide, right for previous &mdash; or use the arrows. Each slide builds the proof step by step.</p>
-        <p class="hint hint-deck-phone">Tap the &larr; and &rarr; buttons below the slide. Each slide builds the proof step by step.</p>
+        <p class="hint hint-deck-desktop" style="display:block;">Use &rarr; / Enter / click to advance, &larr; to go back. Each slide builds the proof step by step.</p>
+        <p class="hint hint-deck-tablet" style="display:none;">Swipe left for next slide, right for previous &mdash; or use the arrows. Each slide builds the proof step by step.</p>
+        <p class="hint hint-deck-phone" style="display:none;">Tap the &larr; and &rarr; buttons below the slide. Each slide builds the proof step by step.</p>
       </section>
     </section>
     <section id="panel-tools" class="jm-panel hidden">
@@ -1397,8 +1398,12 @@
         btns.forEach(function (b) {
           b.addEventListener('click', function () {
             btns.forEach(function (x) { x.classList.toggle('active', x === b); });
-            if (b.dataset.deck && frame.src !== b.dataset.deck) {
+            if (b.dataset.deck && frame.getAttribute('src') !== b.dataset.deck) {
               frame.src = b.dataset.deck;
+              frame.addEventListener('load', function onDeckLoad() {
+                frame.removeEventListener('load', onDeckLoad);
+                if (window.KOCDeckTouch) window.KOCDeckTouch.initDeckTouchNav(frame);
+              });
             }
           });
         });
