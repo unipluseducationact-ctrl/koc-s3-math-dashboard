@@ -42,7 +42,13 @@
         panel.classList.toggle("active", isActive);
       });
       history.replaceState(null, "", "#" + norm);
-      if (norm === "tools") renderKatex(document.getElementById("panel-tools"));
+      if (norm === "tools") {
+        renderKatex(document.getElementById("panel-tools"));
+        if (window.FZ_ACTIVATE_TOOL) {
+          var activeChip = document.querySelector("#panel-tools [data-tool].active");
+          window.FZ_ACTIVATE_TOOL(activeChip ? activeChip.dataset.tool : "sum");
+        }
+      }
       if (norm === "comic") renderKatex(document.getElementById("panel-comic") || document.getElementById("panel-comics"));
       if (norm === "concept") renderKatex(document.getElementById("panel-concept") || document.getElementById("panel-slides"));
     }
