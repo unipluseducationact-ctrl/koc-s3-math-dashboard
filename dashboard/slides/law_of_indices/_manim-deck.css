@@ -1,185 +1,299 @@
-/* Shared Manim-style deck chrome for JM24 Concept & Formula */
+/* JM24 Concept decks — match JM25-27 / 30 / 32 Manim frame look */
 *, *::before, *::after { box-sizing: border-box; }
+
 html, body {
-  width: 100%; height: 100%; margin: 0; padding: 0;
-  overflow: hidden; background: #0f172a;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #0f172a;
+  caret-color: transparent !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  cursor: default;
 }
+
+.reveal,
+.reveal * {
+  caret-color: transparent !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
 .reveal {
-  width: 100%; height: 100%;
-  background: #0f172a; color: #f8fafc;
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-.reveal .slides { text-align: center; }
-.reveal .slides section {
-  padding: 24px 36px;
-}
-
-.manim-title {
+  width: 100%;
+  height: 100%;
+  background: #0f172a;
+  color: #f8fafc;
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 2.05em !important;
+}
+
+.reveal .slides {
+  text-align: center;
+}
+
+.reveal .slides section {
+  padding: 28px 48px;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Title — Manim serif, no pill / no card */
+.m-title {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 1.85em !important;
   font-weight: normal;
-  color: #fff;
-  margin: 0 0 6px !important;
-  letter-spacing: 0.02em;
+  color: #ffffff;
+  margin: 0 0 8px !important;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
 }
-.manim-line {
-  width: 260px; height: 3px;
+
+.m-line {
+  width: 220px;
+  height: 2.5px;
   background: linear-gradient(90deg, transparent, #e2b714, transparent);
-  margin: 0 auto 22px;
+  margin: 0 auto 28px;
+  flex: none;
 }
-.pill {
-  display: inline-block;
-  background: rgba(79, 195, 247, 0.14);
-  border: 1px solid #4FC3F7;
-  color: #4FC3F7;
-  padding: 4px 14px;
-  border-radius: 999px;
-  font-size: 0.78em;
+
+.m-sub {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 1.05em;
+  color: #cbd5e1;
+  margin: 0 0 18px;
+  line-height: 1.45;
+  max-width: 920px;
+}
+
+.m-eq {
+  font-size: 1.55em;
+  color: #ffffff;
+  margin: 10px 0;
+  line-height: 1.55;
+}
+
+.m-eq .katex { font-size: 1.05em; }
+
+.m-hi {
+  color: #7dd3fc;
+}
+
+.m-gold {
+  color: #facc15;
+}
+
+.m-result {
+  font-size: 1.45em;
+  color: #7dd3fc;
+  margin-top: 18px;
+  line-height: 1.5;
+}
+
+/* Yellow brush highlight under result (no custom KaTeX macros) */
+.m-mark {
+  display: inline;
+  background: linear-gradient(180deg, transparent 58%, rgba(250, 204, 21, 0.45) 58%);
+  padding: 0 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Factor chips used in proofs — sit on flat navy, no outer card */
+.factor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0;
+}
+
+.factor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 10px;
+  border-radius: 10px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
+  font-size: 1.25em;
+  color: #fff;
+  background: #3b82f6;
 }
-.card {
-  background: rgba(30, 41, 59, 0.88);
-  border: 1px solid rgba(79, 195, 247, 0.22);
-  border-radius: 16px;
-  padding: 20px 28px;
-  max-width: 980px;
-  margin: 0 auto;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-}
-.prompt { color: #94a3b8; font-size: 1.05em; margin: 8px 0 10px; }
-.math { font-size: 1.55em; color: #fff; margin: 12px 0; line-height: 1.55; }
-.math-hi { color: #4FC3F7; text-shadow: 0 0 14px rgba(79,195,247,0.35); }
-.math-gold { color: #facc15; }
-.hl {
-  display: inline-block;
-  background: linear-gradient(180deg, transparent 55%, rgba(250, 204, 21, 0.55) 55%);
-  padding: 0 4px;
-  border-radius: 4px;
-}
-.theorem {
-  border: 2px solid #38bdf8;
-  background: rgba(56, 189, 248, 0.1);
-  border-radius: 12px;
-  padding: 12px 20px;
-  margin-top: 16px;
+
+.factor.p { background: #8b5cf6; }
+.factor.r { background: #e11d48; }
+.factor.a { background: #d97706; color: #fff; }
+
+.op {
+  color: #94a3b8;
   font-size: 1.35em;
-  color: #38bdf8;
   font-weight: 700;
-  box-shadow: 0 0 18px rgba(56,189,248,0.18);
+  margin: 0 2px;
 }
-.law-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: 50%;
-  color: #fff; font-weight: 800; font-size: 1rem;
-  margin-right: 10px; vertical-align: middle;
-}
-.law-badge.o { background: #f97316; }
-.law-badge.b { background: #3b82f6; }
-.law-badge.p { background: #a855f7; }
-.law-badge.pk { background: #ec4899; }
-.law-badge.y { background: #eab308; color: #1e293b; }
 
-.factor-chip {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 42px; height: 42px; margin: 0 3px;
-  border-radius: 10px; font-weight: 700; font-size: 1.15em;
-  background: linear-gradient(145deg, #60a5fa, #2563eb);
-  color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.35);
-  transition: transform .35s ease, opacity .35s ease;
-}
-.factor-chip.purple { background: linear-gradient(145deg, #c4b5fd, #7c3aed); }
-.factor-chip.rose { background: linear-gradient(145deg, #fda4af, #e11d48); }
-.factor-chip.amber { background: linear-gradient(145deg, #fde68a, #d97706); color: #1e293b; }
-.times { color: #94a3b8; font-size: 1.4em; font-weight: 700; margin: 0 4px; }
-
+/* Digit / place-value visuals */
 .digit-row {
-  display: inline-flex; align-items: flex-end; gap: 2px;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 2rem; font-weight: 700; letter-spacing: 0.04em;
-  position: relative; padding-bottom: 28px;
-}
-.digit {
-  min-width: 1.15em; text-align: center; padding: 4px 2px;
-  border-radius: 8px; background: rgba(148,163,184,0.12);
-  position: relative;
-}
-.digit.on { background: rgba(79,195,247,0.2); color: #4FC3F7; }
-.decimal-point {
-  color: #f87171; font-size: 1.35em; position: relative; top: -2px;
-  transition: transform 0.55s cubic-bezier(.2,.8,.2,1);
-}
-.jump-arc {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 26px;
-  pointer-events: none;
-}
-.jump-label {
-  color: #f87171; font-size: 0.95em; margin-top: 8px; font-weight: 600;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin: 12px 0 6px;
 }
 
-.pv-table {
+.digit {
+  min-width: 1.2em;
+  text-align: center;
+  padding: 2px 4px;
+  color: #fff;
+}
+
+.digit.dim { color: #94a3b8; }
+.digit.focus { color: #7dd3fc; }
+
+.dp {
+  color: #f87171;
+  font-size: 1.2em;
+  padding: 0 2px;
+  position: relative;
+  top: -2px;
+}
+
+.jump-note {
+  color: #f87171;
+  font-size: 1em;
+  margin: 6px 0 10px;
+  font-family: "Times New Roman", Times, Georgia, serif;
+}
+
+.arc-svg {
+  width: min(520px, 90%);
+  height: 36px;
+  margin: 0 auto 8px;
+  display: block;
+}
+.arc-svg path {
+  fill: none;
+  stroke: #f87171;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.arc-svg text {
+  fill: #f87171;
+  font-size: 15px;
+  font-family: "Times New Roman", Times, Georgia, serif;
+}
+
+.pv-grid {
   display: inline-grid;
   gap: 0;
-  border: 1px solid rgba(148,163,184,0.35);
-  border-radius: 10px;
-  overflow: hidden;
-  margin: 10px auto;
-  background: rgba(15,23,42,0.5);
-}
-.pv-table .cell {
-  padding: 8px 10px;
-  border-right: 1px solid rgba(148,163,184,0.25);
-  border-bottom: 1px solid rgba(148,163,184,0.25);
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 1.05em;
-  min-width: 52px;
-}
-.pv-table .cell:last-child { border-right: none; }
-.pv-table .hdr { color: #94a3b8; font-size: 0.85em; }
-.pv-table .digit-cell { color: #fff; font-weight: 700; font-size: 1.25em; }
-.pv-table .pow { color: #4FC3F7; }
-.pv-table.denary { border-color: rgba(59,130,246,0.45); }
-.pv-table.binary { border-color: rgba(236,72,153,0.45); }
-.note-tape {
-  display: inline-block;
-  background: rgba(250,204,21,0.18);
-  border: 1px solid rgba(250,204,21,0.45);
+  margin: 12px auto;
+  border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 8px;
-  padding: 10px 16px;
-  color: #fde68a;
-  font-size: 0.95em;
-  margin-top: 14px;
-  max-width: 860px;
-  text-align: left;
+  overflow: hidden;
 }
+.pv-grid .c {
+  padding: 10px 12px;
+  border-right: 1px solid rgba(148, 163, 184, 0.22);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  font-family: "Times New Roman", Times, Georgia, serif;
+  min-width: 52px;
+  text-align: center;
+}
+.pv-grid .d { color: #fff; font-size: 1.35em; font-weight: 700; }
+.pv-grid .p { color: #7dd3fc; font-size: 0.95em; }
+.pv-grid.denary { border-color: rgba(96, 165, 250, 0.5); }
+.pv-grid.binary { border-color: rgba(244, 114, 182, 0.5); }
+.pv-grid.binary .p { color: #f9a8d4; }
+
+.expand-line {
+  font-size: 1.05em;
+  color: #e2e8f0;
+  line-height: 1.65;
+  max-width: 980px;
+  margin: 10px auto 0;
+}
+
+.zero-hl {
+  color: #f9a8d4;
+  text-decoration: underline;
+  text-decoration-color: #ec4899;
+  text-underline-offset: 3px;
+}
+
+.note {
+  margin-top: 16px;
+  font-size: 0.98em;
+  color: #fde68a;
+  max-width: 880px;
+  line-height: 1.45;
+}
+
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 28px;
   max-width: 1000px;
+  width: 100%;
   margin: 0 auto;
   text-align: left;
 }
-.panel-box {
-  border-radius: 14px;
-  padding: 14px 16px;
-  border: 1px solid rgba(148,163,184,0.3);
-  background: rgba(30,41,59,0.7);
+
+.col-h {
+  font-size: 1.15em;
+  margin: 0 0 10px;
+  font-weight: normal;
 }
-.panel-box.blue { border-color: rgba(59,130,246,0.5); }
-.panel-box.pink { border-color: rgba(236,72,153,0.5); }
-.panel-box h3 {
-  margin: 0 0 8px;
-  font-size: 1.05em;
-  font-weight: 700;
+.col-h.blue { color: #60a5fa; }
+.col-h.pink { color: #f472b6; }
+
+.laws-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 36px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+  font-size: 1.35em;
+  color: #fff;
 }
-.panel-box.blue h3 { color: #60a5fa; }
-.panel-box.pink h3 { color: #f472b6; }
+
+.laws-grid .full { grid-column: 1 / -1; }
+
+.conv-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+  font-size: 1.2em;
+}
+.arrow { color: #facc15; font-size: 1.25em; }
+
+/* Fragment fade like Manim Write / FadeIn */
+.reveal .fragment {
+  opacity: 0;
+  transition: opacity 0.45s ease, transform 0.45s ease !important;
+  transform: translateY(8px);
+}
+.reveal .fragment.visible {
+  opacity: 1;
+  transform: none;
+}
 
 @media (max-width: 900px) {
-  .two-col { grid-template-columns: 1fr; }
-  .math { font-size: 1.25em; }
-  .digit-row { font-size: 1.45rem; }
+  .m-title { font-size: 1.45em !important; }
+  .m-eq, .m-result { font-size: 1.2em; }
+  .laws-grid, .two-col { grid-template-columns: 1fr; }
+  .digit-row { font-size: 1.5rem; }
 }

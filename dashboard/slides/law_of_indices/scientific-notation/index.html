@@ -7,216 +7,137 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="../_manim-deck.css">
-  <style>
-    .sci-stage { margin: 18px auto; min-height: 110px; }
-    .arc-svg { width: 100%; max-width: 520px; height: 40px; margin: 0 auto; display: block; }
-    .arc-svg path { fill: none; stroke: #f87171; stroke-width: 2.5; stroke-linecap: round; }
-    .arc-svg text { fill: #f87171; font-size: 14px; font-weight: 700; }
-    .result-line { font-size: 1.45em; margin-top: 14px; color: #fff; }
-    .sticky {
-      display: inline-block; text-align: left;
-      background: rgba(244, 114, 182, 0.15);
-      border: 1px solid rgba(244, 114, 182, 0.45);
-      border-radius: 10px; padding: 14px 18px; max-width: 420px;
-      color: #f9a8d4; font-size: 1em; margin-top: 12px;
-    }
-    .sticky strong { color: #fda4af; }
-    .rule-box {
-      border-radius: 12px; padding: 12px 16px; margin: 8px auto; max-width: 860px;
-      text-align: left; font-size: 1.05em;
-    }
-    .rule-box.orange { background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.4); color: #fdba74; }
-    .rule-box.sky { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.4); color: #7dd3fc; }
-    .rule-box.violet { background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.4); color: #d8b4fe; }
-    .rule-box.rose { background: rgba(244,114,182,0.12); border: 1px solid rgba(244,114,182,0.4); color: #f9a8d4; }
-  </style>
+  <link rel="stylesheet" href="../_manim-deck.css?v=20260911c">
 </head>
 <body>
   <div class="reveal">
     <div class="slides">
 
-      <!-- Intro -->
       <section>
-        <span class="pill">JM24 · Concept 2</span>
-        <h2 class="manim-title">Scientific Notation</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="rule-box orange">
-            <strong>Definition:</strong> write a number as \(a \times 10^{n}\) where \(1 \le a &lt; 10\).
-          </div>
-          <div class="fragment rule-box sky" data-fragment-index="1">
-            <strong>Rule:</strong> move the decimal point to just after the first non-zero digit.
-          </div>
-          <p class="fragment prompt" data-fragment-index="2">Left moves → positive power. Right moves → negative power.</p>
+        <h2 class="m-title">Scientific Notation</h2>
+        <div class="m-line"></div>
+        <p class="m-sub fragment">Write a number as \(a \times 10^{n}\) where \(1 \le a &lt; 10\).</p>
+        <p class="m-sub fragment">Move the decimal point to just after the first non-zero digit.</p>
+        <p class="m-sub fragment" style="color:#7dd3fc;">Left moves → positive power. Right moves → negative power.</p>
+      </section>
+
+      <section>
+        <h2 class="m-title">Large numbers — move left</h2>
+        <div class="m-line"></div>
+        <p class="m-sub">Decimal left by \(n\) places \(\Rightarrow \times 10^{n}\)</p>
+        <div class="digit-row">
+          <span class="digit focus">5</span>
+          <span class="digit dim">0</span>
+          <span class="digit dim">0</span>
+          <span class="digit dim">0</span>
+          <span class="dp">.</span>
+        </div>
+        <svg class="arc-svg fragment" viewBox="0 0 420 40" aria-hidden="true">
+          <path d="M380 28 C 300 2, 180 2, 50 28"/>
+          <text x="175" y="14">← 3 jumps</text>
+        </svg>
+        <div class="m-result fragment">
+          \[ 5000 = 5 \times 10^{3} \]
         </div>
       </section>
 
-      <!-- Left move intro -->
       <section>
-        <span class="pill">Move Left → \(10^{+n}\)</span>
-        <h2 class="manim-title">Large numbers</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="rule-box violet">Decimal point moves <b>left</b> by \(n\) places \(\Rightarrow \times 10^{n}\)</div>
-          <div class="sci-stage" id="stage-5000">
-            <div class="digit-row" id="row-5000">
-              <span class="digit">5</span>
-              <span class="digit">0</span>
-              <span class="digit">0</span>
-              <span class="digit">0</span>
-              <span class="decimal-point" id="dp-5000">.</span>
-            </div>
-            <svg class="arc-svg fragment" data-fragment-index="1" viewBox="0 0 420 40" aria-hidden="true">
-              <path d="M380 28 C 300 2, 180 2, 50 28"/>
-              <text x="200" y="14">← 3 jumps</text>
-            </svg>
-          </div>
-          <div class="fragment result-line" data-fragment-index="2">
-            \[ 5000 = \hl{5 \times 10^{3}} \]
-          </div>
+        <h2 class="m-title">Example: \(234560\)</h2>
+        <div class="m-line"></div>
+        <div class="digit-row">
+          <span class="digit focus">2</span>
+          <span class="digit">3</span>
+          <span class="digit">4</span>
+          <span class="digit">5</span>
+          <span class="digit">6</span>
+          <span class="digit dim">0</span>
+          <span class="dp">.</span>
+        </div>
+        <svg class="arc-svg fragment" viewBox="0 0 480 40" aria-hidden="true">
+          <path d="M430 28 C 320 0, 160 0, 40 28"/>
+          <text x="195" y="14">← 5 jumps</text>
+        </svg>
+        <div class="m-result fragment">
+          \[ 234560 = 2.3456 \times 10^{5} \]
+        </div>
+        <div class="m-eq fragment" style="margin-top:14px;">
+          \[ -234560 = -2.3456 \times 10^{5} \]
         </div>
       </section>
 
-      <!-- Left move bigger -->
       <section>
-        <span class="pill">Move Left → \(10^{+n}\)</span>
-        <h2 class="manim-title">Example: \(234560\)</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="sci-stage">
-            <div class="digit-row">
-              <span class="digit on">2</span>
-              <span class="digit">3</span>
-              <span class="digit">4</span>
-              <span class="digit">5</span>
-              <span class="digit">6</span>
-              <span class="digit">0</span>
-              <span class="decimal-point">.</span>
-            </div>
-            <svg class="arc-svg fragment" data-fragment-index="1" viewBox="0 0 480 40" aria-hidden="true">
-              <path d="M430 28 C 320 0, 160 0, 40 28"/>
-              <text x="210" y="14">← 5 jumps</text>
-            </svg>
-          </div>
-          <div class="fragment result-line" data-fragment-index="2">
-            \[ 234560 = \hl{2.3456 \times 10^{5}} \]
-          </div>
-          <p class="fragment prompt" data-fragment-index="3">Same for negatives: keep the sign, convert the magnitude.</p>
-          <div class="fragment result-line" data-fragment-index="3">
-            \[ -234560 = -2.3456 \times 10^{5} \]
-          </div>
+        <h2 class="m-title">Already has a power of 10</h2>
+        <div class="m-line"></div>
+        <div class="m-eq">\[ 428.9 \times 10^{5} \]</div>
+        <p class="m-sub fragment">Move decimal left 2 places so \(1 \le a &lt; 10\):</p>
+        <div class="m-eq fragment">\[ = 4.289 \times 10^{2} \times 10^{5} \]</div>
+        <p class="m-sub fragment">Add indices:</p>
+        <div class="m-result fragment">\[ = 4.289 \times 10^{7} \]</div>
+      </section>
+
+      <section>
+        <h2 class="m-title">Small numbers — move right</h2>
+        <div class="m-line"></div>
+        <p class="m-sub">Decimal right by \(n\) places \(\Rightarrow \times 10^{-n}\)</p>
+        <div class="digit-row">
+          <span class="digit dim">0</span>
+          <span class="dp">.</span>
+          <span class="digit dim">0</span>
+          <span class="digit focus">9</span>
+          <span class="digit">1</span>
+          <span class="digit">2</span>
+          <span class="digit">3</span>
+        </div>
+        <svg class="arc-svg fragment" viewBox="0 0 420 40" aria-hidden="true">
+          <path d="M70 28 C 140 2, 220 2, 250 28"/>
+          <text x="130" y="14">2 jumps →</text>
+        </svg>
+        <div class="m-result fragment">
+          \[ 0.09123 = 9.123 \times 10^{-2} \]
         </div>
       </section>
 
-      <!-- Combine powers left -->
       <section>
-        <span class="pill">Combine powers</span>
-        <h2 class="manim-title">Already has a \(10\) power</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="math">\[ 428.9 \times 10^{5} \]</div>
-          <div class="fragment" data-fragment-index="1">
-            <p class="prompt">Move decimal left 2 places to get \(1 \le a &lt; 10\):</p>
-            <div class="math">\[ = 4.289 \times 10^{2} \times 10^{5} \]</div>
-          </div>
-          <div class="fragment" data-fragment-index="2">
-            <p class="prompt">Add indices (Law 1 for base 10):</p>
-            <div class="math math-gold">\[ = \hl{4.289 \times 10^{7}} \]</div>
-          </div>
+        <h2 class="m-title">Example: \(0.00008\)</h2>
+        <div class="m-line"></div>
+        <div class="digit-row">
+          <span class="digit dim">0</span>
+          <span class="dp">.</span>
+          <span class="digit dim">0</span>
+          <span class="digit dim">0</span>
+          <span class="digit dim">0</span>
+          <span class="digit dim">0</span>
+          <span class="digit focus">8</span>
+        </div>
+        <svg class="arc-svg fragment" viewBox="0 0 480 40" aria-hidden="true">
+          <path d="M70 28 C 180 0, 320 0, 400 28"/>
+          <text x="190" y="14">5 jumps →</text>
+        </svg>
+        <div class="m-result fragment">
+          \[ 0.00008 = 8 \times 10^{-5} \]
+        </div>
+        <div class="m-eq fragment">
+          \[ -0.00008 = -8 \times 10^{-5} \]
         </div>
       </section>
 
-      <!-- Right move -->
       <section>
-        <span class="pill">Move Right → \(10^{-n}\)</span>
-        <h2 class="manim-title">Small numbers</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="rule-box rose">Decimal point moves <b>right</b> by \(n\) places \(\Rightarrow \times 10^{-n}\)</div>
-          <div class="sci-stage">
-            <div class="digit-row">
-              <span class="digit">0</span>
-              <span class="decimal-point">.</span>
-              <span class="digit">0</span>
-              <span class="digit on">9</span>
-              <span class="digit">1</span>
-              <span class="digit">2</span>
-              <span class="digit">3</span>
-            </div>
-            <svg class="arc-svg fragment" data-fragment-index="1" viewBox="0 0 420 40" aria-hidden="true">
-              <path d="M70 28 C 140 2, 220 2, 250 28"/>
-              <text x="140" y="14">2 jumps →</text>
-            </svg>
-          </div>
-          <div class="fragment result-line" data-fragment-index="2">
-            \[ 0.09123 = \hl{9.123 \times 10^{-2}} \]
-          </div>
-        </div>
+        <h2 class="m-title">Combine negative powers</h2>
+        <div class="m-line"></div>
+        <div class="m-eq">\[ 0.097 \times 10^{-2} \]</div>
+        <div class="m-eq fragment">\[ = 9.7 \times 10^{-2} \times 10^{-2} \]</div>
+        <p class="m-sub fragment">Add indices: \((-2)+(-2)=-4\)</p>
+        <div class="m-result fragment">\[ = 9.7 \times 10^{-4} \]</div>
       </section>
 
-      <!-- Right move tiny -->
       <section>
-        <span class="pill">Move Right → \(10^{-n}\)</span>
-        <h2 class="manim-title">Example: \(0.00008\)</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="sci-stage">
-            <div class="digit-row">
-              <span class="digit">0</span>
-              <span class="decimal-point">.</span>
-              <span class="digit">0</span>
-              <span class="digit">0</span>
-              <span class="digit">0</span>
-              <span class="digit">0</span>
-              <span class="digit on">8</span>
-            </div>
-            <svg class="arc-svg fragment" data-fragment-index="1" viewBox="0 0 480 40" aria-hidden="true">
-              <path d="M70 28 C 180 0, 320 0, 400 28"/>
-              <text x="200" y="14">5 jumps →</text>
-            </svg>
-          </div>
-          <div class="fragment result-line" data-fragment-index="2">
-            \[ 0.00008 = \hl{8 \times 10^{-5}} \]
-          </div>
-          <div class="fragment result-line" data-fragment-index="3">
-            \[ -0.00008 = -8 \times 10^{-5} \]
-          </div>
-        </div>
-      </section>
-
-      <!-- Combine negative -->
-      <section>
-        <span class="pill">Combine powers</span>
-        <h2 class="manim-title">Already has a negative \(10\) power</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="math">\[ 0.097 \times 10^{-2} \]</div>
-          <div class="fragment" data-fragment-index="1">
-            <div class="math">\[ = 9.7 \times 10^{-2} \times 10^{-2} \]</div>
-          </div>
-          <div class="fragment" data-fragment-index="2">
-            <p class="prompt">Add indices: \((-2)+(-2)=-4\)</p>
-            <div class="math math-gold">\[ = \hl{9.7 \times 10^{-4}} \]</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Negative sticky -->
-      <section>
-        <span class="pill">Negative numbers</span>
-        <h2 class="manim-title">Keep the sign out of the way</h2>
-        <div class="manim-line"></div>
-        <div class="card">
-          <div class="sticky">
-            <strong>Negative → scientific notation</strong><br><br>
-            1. Ignore the minus sign first.<br>
-            2. Convert the magnitude as usual.<br>
-            3. Put the minus sign back at the end.
-          </div>
-          <div class="fragment math" data-fragment-index="1" style="margin-top:18px;">
-            \[ -428.9 \times 10^{5} \;\;\longrightarrow\;\; -4.289 \times 10^{7} \]
-          </div>
+        <h2 class="m-title">Negative numbers</h2>
+        <div class="m-line"></div>
+        <p class="m-sub fragment">1. Ignore the minus sign first.</p>
+        <p class="m-sub fragment">2. Convert the magnitude as usual.</p>
+        <p class="m-sub fragment">3. Put the minus sign back at the end.</p>
+        <div class="m-result fragment">
+          \[ -428.9 \times 10^{5} \longrightarrow -4.289 \times 10^{7} \]
         </div>
       </section>
 
@@ -226,29 +147,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script>
-    Reveal.initialize({
-      width: 1280, height: 720, margin: 0.04,
-      minScale: 0.2, maxScale: 2.0,
-      controls: false, progress: true, slideNumber: false,
-      history: false, keyboard: true, touch: true,
-      center: true, embedded: false,
-      transition: 'fade', backgroundTransition: 'fade'
-    });
-    function renderMath() {
-      if (window.renderMathInElement) {
-        renderMathInElement(document.body, {
-          delimiters: [
-            { left: "\\(", right: "\\)", display: false },
-            { left: "\\[", right: "\\]", display: true }
-          ]
-        });
-      }
-    }
-    if (Reveal.isReady && Reveal.isReady()) renderMath();
-    else if (Reveal.on) Reveal.on('ready', renderMath);
-    else setTimeout(renderMath, 60);
-  </script>
-  <script src="../../../shared/manim-deck-nav.js?v=20260911"></script>
+  <script src="../_manim-boot.js?v=20260911c"></script>
+  <script src="../../../shared/manim-deck-nav.js?v=20260911c"></script>
 </body>
 </html>
