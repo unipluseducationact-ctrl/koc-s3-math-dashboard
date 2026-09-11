@@ -1,4 +1,4 @@
-/** Shared Reveal + KaTeX boot for JM24 Manim-style decks (JM25-27 preset size) */
+/** Shared Reveal + KaTeX boot for JM24 Manim-style decks */
 (function () {
   "use strict";
 
@@ -13,21 +13,20 @@
     });
   }
 
-  /* Auto-index .token / .digit / .pv-token fragments inside a row for sequential fade */
-  function staggerTokens() {
-    document.querySelectorAll("[data-stagger]").forEach(function (row) {
-      var base = parseInt(row.getAttribute("data-stagger"), 10);
-      if (isNaN(base)) base = 0;
-      var i = 0;
-      row.querySelectorAll(".token, .digit, .dp, .pv-token").forEach(function (el) {
-        el.classList.add("fragment");
-        el.setAttribute("data-fragment-index", String(base + i));
-        i += 1;
-      });
+  /** Sync graphical cancel state from current fragment index */
+  function syncCancelState() {
+    var f = -1;
+    try {
+      if (window.Reveal && Reveal.getIndices) f = Reveal.getIndices().f;
+    } catch (e) { /* ignore */ }
+
+    document.querySelectorAll(".frac-stack[data-cancel-at]").forEach(function (frac) {
+      var at = parseInt(frac.getAttribute("data-cancel-at"), 10);
+      if (isNaN(at)) return;
+      var on = f >= at;
+      frac.classList.toggle("cancelled", on);
     });
   }
-
-  staggerTokens();
 
   Reveal.initialize({
     width: 1280,
@@ -51,11 +50,18 @@
   function afterReady() {
     renderMath();
     try { Reveal.layout(); } catch (e) { /* ignore */ }
+    syncCancelState();
   }
 
   if (Reveal.isReady && Reveal.isReady()) afterReady();
   else if (Reveal.on) Reveal.on("ready", afterReady);
   else setTimeout(afterReady, 60);
+
+  if (Reveal.on) {
+    Reveal.on("fragmentshown", syncCancelState);
+    Reveal.on("fragmenthidden", syncCancelState);
+    Reveal.on("slidechanged", syncCancelState);
+  }
 
   document.addEventListener("selectstart", function (e) { e.preventDefault(); });
   document.addEventListener("mousedown", function (e) {

@@ -38,18 +38,15 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
 }
 
-/* Preset type scale — closer to Manim Community default */
 .m-title {
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 42px !important;
+  font-size: 40px !important;
   font-weight: normal;
   color: #ffffff;
   margin: 0 0 6px !important;
   line-height: 1.2;
-  letter-spacing: 0.01em;
   max-width: 1100px;
 }
 
@@ -57,13 +54,13 @@ html, body {
   width: 200px;
   height: 2px;
   background: linear-gradient(90deg, transparent, #e2b714, transparent);
-  margin: 0 auto 22px;
+  margin: 0 auto 20px;
   flex: none;
 }
 
 .m-sub {
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 28px;
+  font-size: 26px;
   color: #e2e8f0;
   margin: 8px 0;
   line-height: 1.35;
@@ -71,7 +68,7 @@ html, body {
 }
 
 .m-eq {
-  font-size: 32px;
+  font-size: 30px;
   color: #ffffff;
   margin: 8px 0;
   line-height: 1.4;
@@ -85,65 +82,82 @@ html, body {
   font-size: 1em !important;
 }
 
+/* Yellow highlight for indices / powers */
+.pow,
+.m-pow { color: #facc15 !important; }
 .m-hi { color: #7dd3fc; }
 .m-gold { color: #facc15; }
 
 .m-result {
-  font-size: 34px;
+  font-size: 32px;
   color: #7dd3fc;
   margin-top: 14px;
   line-height: 1.35;
   max-width: 1000px;
 }
 
-.m-mark {
-  display: inline;
-  background: linear-gradient(180deg, transparent 58%, rgba(250, 204, 21, 0.45) 58%);
-  padding: 0 0.1em;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-
-/* Token row — each glyph / digit fades in like Manim Write */
-.token-row {
+.token-row,
+.digit-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 4px 6px;
   margin: 10px 0;
-  min-height: 1.4em;
+  min-height: 1.35em;
 }
 
-.token {
+.token,
+.glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 32px;
+  font-size: 30px;
   color: #ffffff;
   line-height: 1.2;
   padding: 0 1px;
 }
 
-.token.op { color: #cbd5e1; }
+.token.op,
+.glyph.op { color: #cbd5e1; }
 .token.hi { color: #7dd3fc; }
-.token.gold { color: #facc15; }
+.token.gold,
+.glyph.gold { color: #facc15; }
 .token.rose { color: #f87171; }
-.token.cancel {
-  position: relative;
+
+/* Red cancel strike drawn on matching factors (fraction stage) */
+.token.cancelable .strike {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: 48%;
+  height: 2.5px;
+  background: #f87171;
+  transform: rotate(-28deg) scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.frac-stack.cancelled .token.cancelable {
   color: #94a3b8;
 }
-.token.cancel::after {
-  content: "";
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  top: 48%;
-  height: 2px;
-  background: #f87171;
-  transform: rotate(-28deg);
+.frac-stack.cancelled .token.cancelable .strike {
+  opacity: 1;
+  transform: rotate(-28deg) scaleX(1);
+  transition: transform 0.35s ease, opacity 0.25s ease;
 }
+/* Remaining factors glow after cancel */
+.frac-stack.cancelled .num .token:not(.cancelable):not(.op) {
+  color: #facc15;
+  transition: color 0.35s ease 0.2s;
+}
+.frac-stack.cancelled .token.cancelable:nth-child(1) .strike { transition-delay: 0.05s; }
+.frac-stack.cancelled .token.cancelable:nth-child(3) .strike { transition-delay: 0.12s; }
+.frac-stack.cancelled .den .token.cancelable:nth-child(1) .strike { transition-delay: 0.05s; }
+.frac-stack.cancelled .den .token.cancelable:nth-child(3) .strike { transition-delay: 0.12s; }
 
 .frac-stack {
   display: inline-flex;
@@ -154,46 +168,40 @@ html, body {
 }
 .frac-bar {
   width: 100%;
-  min-width: 220px;
+  min-width: 240px;
   height: 2px;
   background: #ffffff;
   margin: 2px 0;
 }
-
-.digit-row {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
-  margin: 10px 0 4px;
+.frac-stack .num,
+.frac-stack .den {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 6px;
 }
 
 .digit {
   min-width: 0.95em;
   text-align: center;
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 36px;
-  font-weight: normal;
+  font-size: 34px;
   color: #ffffff;
   padding: 0 2px;
   line-height: 1.15;
+  position: relative;
 }
 .digit.dim { color: #94a3b8; }
 .digit.focus { color: #7dd3fc; }
 
 .dp {
   color: #f87171;
-  font-size: 34px;
+  font-size: 32px;
   padding: 0 2px;
   font-family: "Times New Roman", Times, Georgia, serif;
   position: relative;
   top: -1px;
-}
-
-.jump-note {
-  color: #f87171;
-  font-size: 26px;
-  margin: 4px 0 8px;
-  font-family: "Times New Roman", Times, Georgia, serif;
 }
 
 .arc-svg {
@@ -232,6 +240,7 @@ html, body {
 }
 .pv-grid .d { color: #fff; font-size: 28px; }
 .pv-grid .p { color: #7dd3fc; font-size: 22px; }
+.pv-grid .p .pow { color: #facc15; }
 .pv-grid.denary { border-color: rgba(96, 165, 250, 0.5); }
 .pv-grid.binary { border-color: rgba(244, 114, 182, 0.5); }
 .pv-grid.binary .p { color: #f9a8d4; }
@@ -244,13 +253,6 @@ html, body {
   margin: 10px auto 0;
 }
 .expand-line .katex { font-size: 1em !important; }
-
-.zero-hl {
-  color: #f9a8d4;
-  text-decoration: underline;
-  text-decoration-color: #ec4899;
-  text-underline-offset: 3px;
-}
 
 .note {
   margin-top: 12px;
@@ -286,7 +288,7 @@ html, body {
   width: 100%;
   margin: 0 auto;
   text-align: left;
-  font-size: 30px;
+  font-size: 28px;
   color: #fff;
 }
 .laws-grid .full { grid-column: 1 / -1; }
@@ -299,11 +301,11 @@ html, body {
   justify-content: center;
   gap: 10px;
   margin: 8px 0;
-  font-size: 28px;
+  font-size: 26px;
 }
 .arrow { color: #facc15; font-size: 1.1em; }
 
-/* Manim-like Write / FadeIn per fragment (incl. each digit) */
+/* One Reveal step = whole row; glyphs still fade in independently */
 .reveal .fragment {
   opacity: 0;
   visibility: hidden;
@@ -313,8 +315,97 @@ html, body {
 .reveal .fragment.current-fragment {
   opacity: 1;
   visibility: visible;
-  animation: manimFadeIn 0.42s ease both;
 }
+
+.reveal .fragment:not(.step-row):not(.step-block) {
+  animation: manimFadeIn 0.4s ease both;
+}
+
+.reveal .fragment.step-row .glyph,
+.reveal .fragment.step-row .token,
+.reveal .fragment.step-row .digit,
+.reveal .fragment.step-row .dp,
+.reveal .fragment.step-row .pv-token,
+.reveal .fragment.step-block .glyph,
+.reveal .fragment.step-block .token,
+.reveal .fragment.step-block .digit,
+.reveal .fragment.step-block .dp,
+.reveal .fragment.step-block .pv-token,
+.reveal .fragment.step-block .frac-bar {
+  opacity: 0;
+}
+
+.reveal .fragment.step-row.visible .glyph,
+.reveal .fragment.step-row.visible .token,
+.reveal .fragment.step-row.visible .digit,
+.reveal .fragment.step-row.visible .dp,
+.reveal .fragment.step-row.visible .pv-token,
+.reveal .fragment.step-block.visible .glyph,
+.reveal .fragment.step-block.visible .token,
+.reveal .fragment.step-block.visible .digit,
+.reveal .fragment.step-block.visible .dp,
+.reveal .fragment.step-block.visible .pv-token,
+.reveal .fragment.step-block.visible .frac-bar {
+  animation: manimFadeIn 0.36s ease both;
+}
+
+.reveal .fragment.step-row.visible .glyph:nth-child(1),
+.reveal .fragment.step-row.visible .token:nth-child(1),
+.reveal .fragment.step-row.visible .digit:nth-child(1),
+.reveal .fragment.step-block.visible .num .token:nth-child(1),
+.reveal .fragment.step-block.visible .pv-token:nth-child(1) { animation-delay: 0.00s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(2),
+.reveal .fragment.step-row.visible .token:nth-child(2),
+.reveal .fragment.step-row.visible .digit:nth-child(2),
+.reveal .fragment.step-row.visible .dp:nth-child(2),
+.reveal .fragment.step-block.visible .num .token:nth-child(2),
+.reveal .fragment.step-block.visible .pv-token:nth-child(2) { animation-delay: 0.06s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(3),
+.reveal .fragment.step-row.visible .token:nth-child(3),
+.reveal .fragment.step-row.visible .digit:nth-child(3),
+.reveal .fragment.step-block.visible .num .token:nth-child(3),
+.reveal .fragment.step-block.visible .pv-token:nth-child(3) { animation-delay: 0.12s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(4),
+.reveal .fragment.step-row.visible .token:nth-child(4),
+.reveal .fragment.step-row.visible .digit:nth-child(4),
+.reveal .fragment.step-block.visible .num .token:nth-child(4),
+.reveal .fragment.step-block.visible .pv-token:nth-child(4) { animation-delay: 0.18s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(5),
+.reveal .fragment.step-row.visible .token:nth-child(5),
+.reveal .fragment.step-row.visible .digit:nth-child(5),
+.reveal .fragment.step-block.visible .num .token:nth-child(5),
+.reveal .fragment.step-block.visible .pv-token:nth-child(5) { animation-delay: 0.24s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(6),
+.reveal .fragment.step-row.visible .token:nth-child(6),
+.reveal .fragment.step-row.visible .digit:nth-child(6),
+.reveal .fragment.step-block.visible .num .token:nth-child(6),
+.reveal .fragment.step-block.visible .frac-bar,
+.reveal .fragment.step-block.visible .pv-token:nth-child(6) { animation-delay: 0.30s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(7),
+.reveal .fragment.step-row.visible .token:nth-child(7),
+.reveal .fragment.step-row.visible .digit:nth-child(7),
+.reveal .fragment.step-block.visible .num .token:nth-child(7),
+.reveal .fragment.step-block.visible .pv-token:nth-child(7) { animation-delay: 0.36s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(8),
+.reveal .fragment.step-row.visible .token:nth-child(8),
+.reveal .fragment.step-row.visible .digit:nth-child(8),
+.reveal .fragment.step-block.visible .den .token:nth-child(1),
+.reveal .fragment.step-block.visible .pv-token:nth-child(8) { animation-delay: 0.42s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(9),
+.reveal .fragment.step-row.visible .token:nth-child(9),
+.reveal .fragment.step-block.visible .den .token:nth-child(2),
+.reveal .fragment.step-block.visible .pv-token:nth-child(9) { animation-delay: 0.48s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(10),
+.reveal .fragment.step-row.visible .token:nth-child(10),
+.reveal .fragment.step-block.visible .den .token:nth-child(3),
+.reveal .fragment.step-block.visible .pv-token:nth-child(10) { animation-delay: 0.54s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(11),
+.reveal .fragment.step-row.visible .token:nth-child(11),
+.reveal .fragment.step-block.visible .den .token:nth-child(4) { animation-delay: 0.60s; }
+.reveal .fragment.step-row.visible .glyph:nth-child(12),
+.reveal .fragment.step-row.visible .token:nth-child(12),
+.reveal .fragment.step-block.visible .den .token:nth-child(5) { animation-delay: 0.66s; }
+.reveal .fragment.step-row.visible .token:nth-child(n+13) { animation-delay: 0.72s; }
 
 @keyframes manimFadeIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -322,9 +413,9 @@ html, body {
 }
 
 @media (max-width: 900px) {
-  .m-title { font-size: 32px !important; }
-  .m-sub, .note { font-size: 22px; }
-  .m-eq, .m-result, .token, .digit { font-size: 26px; }
+  .m-title { font-size: 30px !important; }
+  .m-sub, .note { font-size: 20px; }
+  .m-eq, .m-result, .token, .digit { font-size: 24px; }
   .laws-grid, .two-col { grid-template-columns: 1fr; }
-  .laws-grid { font-size: 24px; }
+  .laws-grid { font-size: 22px; }
 }

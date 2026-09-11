@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="../_manim-deck.css?v=20260911d">
+  <link rel="stylesheet" href="../_manim-deck.css?v=20260911e">
 </head>
 <body>
   <div class="reveal">
@@ -16,20 +16,20 @@
       <section>
         <h2 class="m-title">Place Value &amp; Expanded Form</h2>
         <div class="m-line"></div>
-        <p class="m-sub fragment" data-fragment-index="0">Every digit is a coefficient times a power of the base.</p>
-        <div class="token-row" data-stagger="1">
+        <p class="m-sub fragment">Every digit is a coefficient times a power of the base.</p>
+        <div class="token-row fragment step-row">
           <span class="token hi">digit</span>
           <span class="token op">×</span>
           <span class="token hi">base</span>
           <span class="token rose" style="font-size:22px; align-self:flex-start;">place</span>
         </div>
-        <p class="m-sub fragment" data-fragment-index="6">Denary: base \(10\). &nbsp; Binary: base \(2\).</p>
+        <p class="m-sub fragment">Denary: base \(10\). &nbsp; Binary: base \(2\).</p>
       </section>
 
       <section>
         <h2 class="m-title">Denary: \(8307.11_{10}\)</h2>
         <div class="m-line"></div>
-        <div class="pv-grid denary" style="grid-template-columns: repeat(7, auto);" data-stagger="0">
+        <div class="pv-grid denary fragment step-block" style="grid-template-columns: repeat(7, auto);">
           <div class="c d pv-token">8</div>
           <div class="c d pv-token">3</div>
           <div class="c d pv-token">0</div>
@@ -46,23 +46,25 @@
         <div class="pv-grid denary" style="grid-template-columns: repeat(7, auto);">
           <div class="c d">8</div><div class="c d">3</div><div class="c d">0</div><div class="c d">7</div>
           <div class="c d">.</div><div class="c d">1</div><div class="c d">1</div>
-          <div class="c p fragment" data-fragment-index="0">\(10^{3}\)</div>
-          <div class="c p fragment" data-fragment-index="1">\(10^{2}\)</div>
-          <div class="c p fragment" data-fragment-index="2">\(10^{1}\)</div>
-          <div class="c p fragment" data-fragment-index="3">\(10^{0}\)</div>
-          <div class="c p fragment" data-fragment-index="4">—</div>
-          <div class="c p fragment" data-fragment-index="5">\(10^{-1}\)</div>
-          <div class="c p fragment" data-fragment-index="6">\(10^{-2}\)</div>
         </div>
-        <div class="expand-line fragment" data-fragment-index="7">
-          \[ = 8\times10^{3}+3\times10^{2}+0\times10^{1}+7\times10^{0}+1\times10^{-1}+1\times10^{-2} \]
+        <div class="pv-grid denary fragment step-block" style="grid-template-columns: repeat(7, auto); margin-top:0; border-top:none;">
+          <div class="c p pv-token">\(10^{\textcolor{#facc15}{3}}\)</div>
+          <div class="c p pv-token">\(10^{\textcolor{#facc15}{2}}\)</div>
+          <div class="c p pv-token">\(10^{\textcolor{#facc15}{1}}\)</div>
+          <div class="c p pv-token">\(10^{\textcolor{#facc15}{0}}\)</div>
+          <div class="c p pv-token">—</div>
+          <div class="c p pv-token">\(10^{\textcolor{#facc15}{-1}}\)</div>
+          <div class="c p pv-token">\(10^{\textcolor{#facc15}{-2}}\)</div>
+        </div>
+        <div class="expand-line fragment">
+          \[ = 8\times10^{\textcolor{#facc15}{3}}+3\times10^{\textcolor{#facc15}{2}}+0\times10^{\textcolor{#facc15}{1}}+7\times10^{\textcolor{#facc15}{0}}+1\times10^{\textcolor{#facc15}{-1}}+1\times10^{\textcolor{#facc15}{-2}} \]
         </div>
       </section>
 
       <section>
         <h2 class="m-title">Binary: \(10111.101_{2}\)</h2>
         <div class="m-line"></div>
-        <div class="pv-grid binary" style="grid-template-columns: repeat(9, auto);" data-stagger="0">
+        <div class="pv-grid binary fragment step-block" style="grid-template-columns: repeat(9, auto);">
           <div class="c d pv-token">1</div>
           <div class="c d pv-token">0</div>
           <div class="c d pv-token">1</div>
@@ -82,39 +84,41 @@
           <div class="c d">1</div><div class="c d">0</div><div class="c d">1</div><div class="c d">1</div><div class="c d">1</div>
           <div class="c d">.</div>
           <div class="c d">1</div><div class="c d">0</div><div class="c d">1</div>
-          <div class="c p fragment" data-fragment-index="0">\(2^{4}\)</div>
-          <div class="c p fragment" data-fragment-index="1">\(2^{3}\)</div>
-          <div class="c p fragment" data-fragment-index="2">\(2^{2}\)</div>
-          <div class="c p fragment" data-fragment-index="3">\(2^{1}\)</div>
-          <div class="c p fragment" data-fragment-index="4">\(2^{0}\)</div>
-          <div class="c p fragment" data-fragment-index="5">—</div>
-          <div class="c p fragment" data-fragment-index="6">\(2^{-1}\)</div>
-          <div class="c p fragment" data-fragment-index="7">\(2^{-2}\)</div>
-          <div class="c p fragment" data-fragment-index="8">\(2^{-3}\)</div>
         </div>
-        <div class="expand-line fragment" data-fragment-index="9">
-          \[ = 1\times2^{4}+0\times2^{3}+1\times2^{2}+1\times2^{1}+1\times2^{0}+1\times2^{-1}+0\times2^{-2}+1\times2^{-3} \]
+        <div class="pv-grid binary fragment step-block" style="grid-template-columns: repeat(9, auto); margin-top:0; border-top:none;">
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{4}}\)</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{3}}\)</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{2}}\)</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{1}}\)</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{0}}\)</div>
+          <div class="c p pv-token">—</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{-1}}\)</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{-2}}\)</div>
+          <div class="c p pv-token">\(2^{\textcolor{#facc15}{-3}}\)</div>
         </div>
-        <p class="note fragment" data-fragment-index="10">Keep zero terms: \(0\times2^{3}\) and \(0\times2^{-2}\).</p>
+        <div class="expand-line fragment">
+          \[ = 1\times2^{\textcolor{#facc15}{4}}+0\times2^{\textcolor{#facc15}{3}}+1\times2^{\textcolor{#facc15}{2}}+1\times2^{\textcolor{#facc15}{1}}+1\times2^{\textcolor{#facc15}{0}}+1\times2^{\textcolor{#facc15}{-1}}+0\times2^{\textcolor{#facc15}{-2}}+1\times2^{\textcolor{#facc15}{-3}} \]
+        </div>
+        <p class="note fragment">Keep zero terms: \(0\times2^{\textcolor{#facc15}{3}}\) and \(0\times2^{\textcolor{#facc15}{-2}}\).</p>
       </section>
 
       <section>
         <h2 class="m-title">Binary → Denary</h2>
         <div class="m-line"></div>
         <div class="m-eq">\[ 10111_{2} \]</div>
-        <div class="token-row" data-stagger="0">
+        <div class="token-row fragment step-row">
           <span class="token op">=</span>
-          <span class="token">\(1\times2^{4}\)</span>
+          <span class="token">\(1\times2^{\textcolor{#facc15}{4}}\)</span>
           <span class="token op">+</span>
-          <span class="token">\(0\times2^{3}\)</span>
+          <span class="token">\(0\times2^{\textcolor{#facc15}{3}}\)</span>
           <span class="token op">+</span>
-          <span class="token">\(1\times2^{2}\)</span>
+          <span class="token">\(1\times2^{\textcolor{#facc15}{2}}\)</span>
           <span class="token op">+</span>
-          <span class="token">\(1\times2^{1}\)</span>
+          <span class="token">\(1\times2^{\textcolor{#facc15}{1}}\)</span>
           <span class="token op">+</span>
-          <span class="token">\(1\times2^{0}\)</span>
+          <span class="token">\(1\times2^{\textcolor{#facc15}{0}}\)</span>
         </div>
-        <div class="token-row" data-stagger="12">
+        <div class="token-row fragment step-row">
           <span class="token op">=</span>
           <span class="token">16</span>
           <span class="token op">+</span>
@@ -126,37 +130,37 @@
           <span class="token op">+</span>
           <span class="token">1</span>
         </div>
-        <div class="m-result fragment" data-fragment-index="22">\[ = 23_{10} \]</div>
+        <div class="m-result fragment">\[ = 23_{10} \]</div>
       </section>
 
       <section>
         <h2 class="m-title">Denary → Binary</h2>
         <div class="m-line"></div>
         <p class="m-sub">Peel off powers of 2 from \(23_{10}\):</p>
-        <div class="conv-row fragment" data-fragment-index="0">
-          <span>\(23 = 16 + 7\)</span><span class="arrow">→</span><span>\(1\times2^{4}\)</span>
+        <div class="conv-row fragment">
+          <span>\(23 = 16 + 7\)</span><span class="arrow">→</span><span>\(1\times2^{\textcolor{#facc15}{4}}\)</span>
         </div>
-        <div class="conv-row fragment" data-fragment-index="1">
-          <span>\(7 = 4 + 3\)</span><span class="arrow">→</span><span>\(1\times2^{2}\)</span>
+        <div class="conv-row fragment">
+          <span>\(7 = 4 + 3\)</span><span class="arrow">→</span><span>\(1\times2^{\textcolor{#facc15}{2}}\)</span>
         </div>
-        <div class="conv-row fragment" data-fragment-index="2">
-          <span>\(3 = 2 + 1\)</span><span class="arrow">→</span><span>\(1\times2^{1}+1\times2^{0}\)</span>
+        <div class="conv-row fragment">
+          <span>\(3 = 2 + 1\)</span><span class="arrow">→</span><span>\(1\times2^{\textcolor{#facc15}{1}}+1\times2^{\textcolor{#facc15}{0}}\)</span>
         </div>
-        <div class="m-result fragment" data-fragment-index="3">\[ 23_{10} = 10111_{2} \]</div>
+        <div class="m-result fragment">\[ 23_{10} = 10111_{2} \]</div>
       </section>
 
       <section>
         <h2 class="m-title">Same idea, different base</h2>
         <div class="m-line"></div>
         <div class="two-col">
-          <div class="fragment" data-fragment-index="0">
+          <div class="fragment">
             <h3 class="col-h blue">Denary</h3>
-            <p class="m-sub">Places: \(10^{n}\)</p>
+            <p class="m-sub">Places: \(10^{\textcolor{#facc15}{n}}\)</p>
             <p class="m-sub">Digits: \(0\)–\(9\)</p>
           </div>
-          <div class="fragment" data-fragment-index="1">
+          <div class="fragment">
             <h3 class="col-h pink">Binary</h3>
-            <p class="m-sub">Places: \(2^{n}\)</p>
+            <p class="m-sub">Places: \(2^{\textcolor{#facc15}{n}}\)</p>
             <p class="m-sub">Digits: \(0\) or \(1\)</p>
           </div>
         </div>
@@ -168,7 +172,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script src="../_manim-boot.js?v=20260911d"></script>
-  <script src="../../../shared/manim-deck-nav.js?v=20260911d"></script>
+  <script src="../_manim-boot.js?v=20260911e"></script>
+  <script src="../../../shared/manim-deck-nav.js?v=20260911e"></script>
 </body>
 </html>

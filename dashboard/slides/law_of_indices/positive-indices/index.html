@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="../_manim-deck.css?v=20260911d">
+  <link rel="stylesheet" href="../_manim-deck.css?v=20260911e">
 </head>
 <body>
   <div class="reveal">
@@ -16,9 +16,9 @@
       <section>
         <h2 class="m-title">Laws of Positive Indices</h2>
         <div class="m-line"></div>
-        <p class="m-sub fragment" data-fragment-index="0">Powers mean repeated multiplication:</p>
-        <div class="token-row" data-stagger="1">
-          <span class="token hi">\(a^{n}\)</span>
+        <p class="m-sub fragment">Powers mean repeated multiplication:</p>
+        <div class="token-row fragment step-row">
+          <span class="token hi">\(a^{\textcolor{#facc15}{n}}\)</span>
           <span class="token op">=</span>
           <span class="token">\(a\)</span>
           <span class="token op">×</span>
@@ -28,15 +28,15 @@
           <span class="token op">×</span>
           <span class="token">\(a\)</span>
         </div>
-        <p class="m-sub fragment" data-fragment-index="10">(\(n\) factors of \(a\))</p>
+        <p class="m-sub fragment">(\(\textcolor{#facc15}{n}\) factors of \(a\))</p>
       </section>
 
       <!-- Law 1 -->
       <section>
         <h2 class="m-title">Why \(a^{m} \times a^{n} = a^{m+n}\)</h2>
         <div class="m-line"></div>
-        <p class="m-sub">Example: \(a^{3} \times a^{2}\)</p>
-        <div class="token-row" data-stagger="0">
+        <p class="m-sub">Example: \(a^{\textcolor{#facc15}{3}} \times a^{\textcolor{#facc15}{2}}\)</p>
+        <div class="token-row fragment step-row">
           <span class="token">\(a\)</span>
           <span class="token op">×</span>
           <span class="token">\(a\)</span>
@@ -47,38 +47,22 @@
           <span class="token op">×</span>
           <span class="token hi">\(a\)</span>
         </div>
-        <p class="m-sub fragment" data-fragment-index="10">Count factors: \(3 + 2 = 5\)</p>
+        <p class="m-sub fragment">Count factors: \(\textcolor{#facc15}{3} + \textcolor{#facc15}{2} = \textcolor{#facc15}{5}\)</p>
+        <div class="m-eq fragment">\[ = a^{\textcolor{#facc15}{5}} = a^{\textcolor{#facc15}{3+2}} \]</div>
+        <div class="m-result fragment">\[ a^{m} \times a^{n} = a^{m+n} \]</div>
       </section>
 
-      <section>
-        <h2 class="m-title">Why \(a^{m} \times a^{n} = a^{m+n}\)</h2>
-        <div class="m-line"></div>
-        <div class="token-row" data-stagger="0">
-          <span class="token op">=</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-        </div>
-        <div class="m-eq fragment" data-fragment-index="12">\[ = a^{5} = a^{3+2} \]</div>
-        <div class="m-result fragment" data-fragment-index="13">\[ a^{m} \times a^{n} = a^{m+n} \]</div>
-      </section>
-
-      <!-- Law 2 -->
+      <!-- Law 2: expand as fraction, then cancel ON the fraction -->
       <section>
         <h2 class="m-title">Why \(a^{m} \div a^{n} = a^{m-n}\)</h2>
         <div class="m-line"></div>
-        <p class="m-sub">Example: \(a^{5} \div a^{2}\)</p>
-        <div class="frac-stack">
-          <div class="token-row" data-stagger="0">
-            <span class="token">\(a\)</span>
+        <p class="m-sub">Example: \(a^{\textcolor{#facc15}{5}} \div a^{\textcolor{#facc15}{2}}\)</p>
+
+        <div class="frac-stack fragment step-block" data-cancel-at="1">
+          <div class="num">
+            <span class="token cancelable">\(a\)<i class="strike" aria-hidden="true"></i></span>
             <span class="token op">×</span>
-            <span class="token">\(a\)</span>
+            <span class="token cancelable">\(a\)<i class="strike" aria-hidden="true"></i></span>
             <span class="token op">×</span>
             <span class="token">\(a\)</span>
             <span class="token op">×</span>
@@ -86,54 +70,39 @@
             <span class="token op">×</span>
             <span class="token">\(a\)</span>
           </div>
-          <div class="frac-bar fragment" data-fragment-index="12"></div>
-          <div class="token-row" data-stagger="13">
-            <span class="token">\(a\)</span>
+          <div class="frac-bar"></div>
+          <div class="den">
+            <span class="token cancelable">\(a\)<i class="strike" aria-hidden="true"></i></span>
             <span class="token op">×</span>
-            <span class="token">\(a\)</span>
+            <span class="token cancelable">\(a\)<i class="strike" aria-hidden="true"></i></span>
           </div>
         </div>
-      </section>
 
-      <section>
-        <h2 class="m-title">Why \(a^{m} \div a^{n} = a^{m-n}\)</h2>
-        <div class="m-line"></div>
-        <p class="m-sub">Cancel matching factors:</p>
-        <div class="token-row" data-stagger="0">
-          <span class="token cancel">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token cancel">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">×</span>
-          <span class="token">\(a\)</span>
-          <span class="token op">=</span>
-          <span class="token gold">\(a^{5-2}\)</span>
-        </div>
-        <div class="m-result fragment" data-fragment-index="12">\[ a^{m} \div a^{n} = a^{m-n} \quad (a \neq 0) \]</div>
+        <!-- Same click: label + red strikes on the fraction (not a flat cancelled row) -->
+        <p class="m-sub fragment">Cancel matching factors on top and bottom:</p>
+        <div class="m-eq fragment">\[ = a^{\textcolor{#facc15}{5-2}} = a^{\textcolor{#facc15}{3}} \]</div>
+        <div class="m-result fragment">\[ a^{m} \div a^{n} = a^{m-n} \quad (a \neq 0) \]</div>
       </section>
 
       <section>
         <h2 class="m-title">When the bottom power is larger</h2>
         <div class="m-line"></div>
-        <div class="m-eq">\[ y^{5} \div y^{15} \]</div>
-        <p class="m-sub fragment" data-fragment-index="0" style="color:#7dd3fc;">Larger minus smaller: \(15 - 5 = 10\)</p>
-        <div class="m-eq fragment" data-fragment-index="1">\[ = \dfrac{y^{5}}{y^{15}} = \dfrac{1}{y^{10}} \]</div>
+        <div class="m-eq">\[ y^{\textcolor{#facc15}{5}} \div y^{\textcolor{#facc15}{15}} \]</div>
+        <p class="m-sub fragment" style="color:#7dd3fc;">Larger minus smaller: \(\textcolor{#facc15}{15} - \textcolor{#facc15}{5} = \textcolor{#facc15}{10}\)</p>
+        <div class="m-eq fragment">\[ = \dfrac{y^{5}}{y^{15}} = \dfrac{1}{y^{\textcolor{#facc15}{10}}} \]</div>
       </section>
 
       <!-- Law 3 -->
       <section>
         <h2 class="m-title">Why \((a^{m})^{n} = a^{mn}\)</h2>
         <div class="m-line"></div>
-        <p class="m-sub">Example: \((a^{3})^{2}\)</p>
-        <div class="token-row" data-stagger="0">
+        <p class="m-sub">Example: \((a^{\textcolor{#facc15}{3}})^{\textcolor{#facc15}{2}}\)</p>
+        <div class="token-row fragment step-row">
           <span class="token">\(a^{3}\)</span>
           <span class="token op">×</span>
           <span class="token">\(a^{3}\)</span>
         </div>
-        <div class="token-row" data-stagger="4">
+        <div class="token-row fragment step-row">
           <span class="token op">=</span>
           <span class="token">\(a\)</span>
           <span class="token op">×</span>
@@ -147,41 +116,41 @@
           <span class="token op">×</span>
           <span class="token">\(a\)</span>
         </div>
-        <div class="m-result fragment" data-fragment-index="18">\[ (a^{m})^{n} = a^{mn} \]</div>
+        <div class="m-result fragment">\[ (a^{m})^{n} = a^{mn} \]</div>
       </section>
 
       <!-- Law 4 -->
       <section>
         <h2 class="m-title">Why \((ab)^{n} = a^{n} b^{n}\)</h2>
         <div class="m-line"></div>
-        <p class="m-sub">Example: \((ab)^{3}\)</p>
-        <div class="token-row" data-stagger="0">
+        <p class="m-sub">Example: \((ab)^{\textcolor{#facc15}{3}}\)</p>
+        <div class="token-row fragment step-row">
           <span class="token">\(a\)</span><span class="token hi">\(b\)</span>
           <span class="token op">·</span>
           <span class="token">\(a\)</span><span class="token hi">\(b\)</span>
           <span class="token op">·</span>
           <span class="token">\(a\)</span><span class="token hi">\(b\)</span>
         </div>
-        <p class="m-sub fragment" data-fragment-index="10">Regroup \(a\)'s and \(b\)'s:</p>
-        <div class="m-eq fragment" data-fragment-index="11">\[ = a^{3} \times b^{3} \]</div>
-        <div class="m-result fragment" data-fragment-index="12">\[ (ab)^{n} = a^{n} b^{n} \]</div>
+        <p class="m-sub fragment">Regroup \(a\)'s and \(b\)'s:</p>
+        <div class="m-eq fragment">\[ = a^{\textcolor{#facc15}{3}} \times b^{\textcolor{#facc15}{3}} \]</div>
+        <div class="m-result fragment">\[ (ab)^{n} = a^{n} b^{n} \]</div>
       </section>
 
       <!-- Law 5 -->
       <section>
         <h2 class="m-title">Why \(\left(\dfrac{a}{b}\right)^{n} = \dfrac{a^{n}}{b^{n}}\)</h2>
         <div class="m-line"></div>
-        <p class="m-sub">Example: \(\left(\dfrac{a}{b}\right)^{3}\)</p>
-        <div class="frac-stack">
-          <div class="token-row" data-stagger="0">
+        <p class="m-sub">Example: \(\left(\dfrac{a}{b}\right)^{\textcolor{#facc15}{3}}\)</p>
+        <div class="frac-stack fragment step-block">
+          <div class="num">
             <span class="token">\(a\)</span>
             <span class="token op">×</span>
             <span class="token">\(a\)</span>
             <span class="token op">×</span>
             <span class="token">\(a\)</span>
           </div>
-          <div class="frac-bar fragment" data-fragment-index="8"></div>
-          <div class="token-row" data-stagger="9">
+          <div class="frac-bar"></div>
+          <div class="den">
             <span class="token hi">\(b\)</span>
             <span class="token op">×</span>
             <span class="token hi">\(b\)</span>
@@ -189,19 +158,18 @@
             <span class="token hi">\(b\)</span>
           </div>
         </div>
-        <div class="m-result fragment" data-fragment-index="16">\[ \left(\dfrac{a}{b}\right)^{n} = \dfrac{a^{n}}{b^{n}} \]</div>
+        <div class="m-result fragment">\[ \left(\dfrac{a}{b}\right)^{n} = \dfrac{a^{n}}{b^{n}} \]</div>
       </section>
 
-      <!-- Summary -->
       <section>
         <h2 class="m-title">All Five Laws</h2>
         <div class="m-line"></div>
         <div class="laws-grid">
-          <div class="fragment" data-fragment-index="0">\[ a^{m} \times a^{n} = a^{m+n} \]</div>
-          <div class="fragment" data-fragment-index="1">\[ (ab)^{n} = a^{n} b^{n} \]</div>
-          <div class="fragment" data-fragment-index="2">\[ a^{m} \div a^{n} = a^{m-n} \]</div>
-          <div class="fragment" data-fragment-index="3">\[ \left(\dfrac{a}{b}\right)^{n} = \dfrac{a^{n}}{b^{n}} \]</div>
-          <div class="fragment full" data-fragment-index="4">\[ (a^{m})^{n} = a^{mn} \]</div>
+          <div class="fragment">\[ a^{m} \times a^{n} = a^{m+n} \]</div>
+          <div class="fragment">\[ (ab)^{n} = a^{n} b^{n} \]</div>
+          <div class="fragment">\[ a^{m} \div a^{n} = a^{m-n} \]</div>
+          <div class="fragment">\[ \left(\dfrac{a}{b}\right)^{n} = \dfrac{a^{n}}{b^{n}} \]</div>
+          <div class="fragment full">\[ (a^{m})^{n} = a^{mn} \]</div>
         </div>
       </section>
 
@@ -211,7 +179,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script src="../_manim-boot.js?v=20260911d"></script>
-  <script src="../../../shared/manim-deck-nav.js?v=20260911d"></script>
+  <script src="../_manim-boot.js?v=20260911e"></script>
+  <script src="../../../shared/manim-deck-nav.js?v=20260911e"></script>
 </body>
 </html>
