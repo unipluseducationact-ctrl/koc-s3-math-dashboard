@@ -1,8 +1,10 @@
-/** Shared Reveal + KaTeX boot for JM24 Manim-style decks (fly / expand / cancel) */
+/** Shared Reveal + KaTeX boot for JM24 Manim-style decks (fly / auto-expand / cancel) */
 (function () {
   "use strict";
 
   var FLY_MS = 560;
+  var STAGE_MS = 720;
+  var autoTimers = [];
 
   function renderMath() {
     if (!window.renderMathInElement) return;
@@ -47,6 +49,20 @@
     }
   }
 
+  function clearAutoTimers() {
+    autoTimers.forEach(function (id) { window.clearTimeout(id); });
+    autoTimers = [];
+    document.querySelectorAll(".work-slot.playing").forEach(function (el) {
+      el.classList.remove("playing");
+    });
+  }
+
+  function later(fn, ms) {
+    var id = window.setTimeout(fn, ms);
+    autoTimers.push(id);
+    return id;
+  }
+
   /** JM32-style TransformFromCopy: ghost flies from source → target */
   function flyFromTo(fromEl, toEl, delay) {
     if (!fromEl || !toEl) {
@@ -60,7 +76,7 @@
     toEl.classList.add("fly-wait");
     toEl.classList.remove("fly-land");
 
-    window.setTimeout(function () {
+    later(function () {
       var from = fromEl.getBoundingClientRect();
       var to = toEl.getBoundingClientRect();
       if (!from.width || !to.width) {
@@ -86,7 +102,7 @@
         });
       });
 
-      window.setTimeout(function () {
+      later(function () {
         toEl.classList.remove("fly-wait");
         toEl.classList.add("fly-land");
         if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
@@ -94,24 +110,93 @@
     }, delay || 0);
   }
 
-  function runFlyIns(fragmentEl) {
-    if (!fragmentEl) return;
-    clearSourceMarks();
-
-    var nodes = fragmentEl.querySelectorAll("[data-fly-from]");
-    if (!nodes.length && fragmentEl.getAttribute("data-fly-from")) {
-      nodes = [fragmentEl];
+  function runFlyIns(root) {
+    if (!root) return;
+    var nodes = root.querySelectorAll("[data-fly-from]");
+    if (!nodes.length && root.getAttribute && root.getAttribute("data-fly-from")) {
+      nodes = [root];
     }
 
     Array.prototype.forEach.call(nodes, function (toEl, i) {
       var sel = toEl.getAttribute("data-fly-from");
       if (!sel) return;
       markSource(sel, false);
-      var fromEl = document.querySelector(sel);
-      flyFromTo(fromEl, toEl, i * 70);
-      window.setTimeout(function () {
+      flyFromTo(document.querySelector(sel), toEl, i * 70);
+      later(function () {
         markSource(sel, true);
       }, FLY_MS + i * 70 + 40);
+    });
+  }
+
+  function activateStage(slot, index) {
+    var panes = slot.querySelectorAll(".stage-pane");
+    panes.forEach(function (pane, i) {
+      pane.classList.toggle("is-active", i === index);
+    });
+    var active = panes[index];
+    if (!active) return;
+    // Only fly tokens that belong to this newly shown pane
+    var flyNodes = active.querySelectorAll("[data-fly-from]");
+    if (flyNodes.length) {
+      clearSourceMarks();
+      Array.prototype.forEach.call(flyNodes, function (toEl, i) {
+        var sel = toEl.getAttribute("data-fly-from");
+        if (!sel) return;
+        markSource(sel, false);
+        flyFromTo(document.querySelector(sel), toEl, i * 70);
+        later(function () {
+          markSource(sel, true);
+        }, FLY_MS + i * 70 + 40);
+      });
+    }
+  }
+
+  /** One Reveal step → auto play stage-pane 0 → 1 → 2… in a fixed frame */
+  function runAutoSlot(slot) {
+    if (!slot || !slot.classList.contains("work-slot")) return;
+    clearAutoTimers();
+    clearSourceMarks();
+
+    var panes = slot.querySelectorAll(".stage-pane");
+    if (!panes.length) {
+      runFlyIns(slot);
+      return;
+    }
+
+    slot.classList.add("playing");
+    activateStage(slot, 0);
+
+    var i = 1;
+    function scheduleNext(delay) {
+      later(function () {
+        if (i >= panes.length) {
+          slot.classList.remove("playing");
+          return;
+        }
+        activateStage(slot, i);
+        i += 1;
+        if (i < panes.length) {
+          var active = panes[i - 1];
+          var hasFly = active && active.querySelector("[data-fly-from]");
+          scheduleNext(hasFly ? FLY_MS + STAGE_MS * 0.65 : STAGE_MS);
+        } else {
+          later(function () { slot.classList.remove("playing"); }, STAGE_MS * 0.4);
+        }
+      }, delay);
+    }
+
+    scheduleNext(FLY_MS + STAGE_MS * 0.55);
+  }
+
+  function resetAutoSlots(scope) {
+    clearAutoTimers();
+    (scope || document).querySelectorAll(".work-slot").forEach(function (slot) {
+      slot.classList.remove("playing");
+      var panes = slot.querySelectorAll(".stage-pane");
+      panes.forEach(function (pane, i) {
+        pane.classList.toggle("is-active", i === 0 && slot.classList.contains("visible"));
+        if (!slot.classList.contains("visible")) pane.classList.remove("is-active");
+      });
     });
   }
 
@@ -136,13 +221,20 @@
     syncCancelState();
     syncWorkChains();
     try {
-      runFlyIns(ev && ev.fragment);
+      var frag = ev && ev.fragment;
+      if (frag && frag.classList.contains("work-slot")) {
+        runAutoSlot(frag);
+      } else {
+        clearSourceMarks();
+        runFlyIns(frag);
+      }
     } catch (err) { /* ignore */ }
   }
 
   function onFragmentHidden() {
     syncCancelState();
     syncWorkChains();
+    clearAutoTimers();
   }
 
   Reveal.initialize({
@@ -181,6 +273,7 @@
       syncCancelState();
       syncWorkChains();
       clearSourceMarks();
+      resetAutoSlots(document);
       document.querySelectorAll(".fly-ghost").forEach(function (g) {
         if (g.parentNode) g.parentNode.removeChild(g);
       });

@@ -565,6 +565,52 @@ html, body {
   display: none !important;
 }
 
+/* Fixed-position auto expand slot (one click → staged animation) */
+.work-slot.fragment {
+  width: 100%;
+  max-width: 980px;
+  margin: 8px auto;
+}
+.work-fixed-frame {
+  position: relative;
+  width: 100%;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.work-fixed-frame .stage-pane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 6px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-42%) scale(0.94);
+  pointer-events: none;
+  transition:
+    opacity 0.38s ease,
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s linear 0.38s;
+}
+.work-fixed-frame .stage-pane.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+  transition:
+    opacity 0.38s ease,
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s;
+}
+.work-slot.playing .stage-pane.is-active .token {
+  animation: landPop 0.32s ease both;
+}
+
 .reveal .fragment.step-row.visible .glyph:nth-child(1),
 .reveal .fragment.step-row.visible .token:nth-child(1),
 .reveal .fragment.step-row.visible .digit:nth-child(1),
