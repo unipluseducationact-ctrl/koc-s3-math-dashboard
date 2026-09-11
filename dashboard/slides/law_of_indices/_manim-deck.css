@@ -95,7 +95,7 @@ html, body {
   pointer-events: none;
 }
 
-/* Content stage: fixed band under title (never overlaps header) */
+/* Content stage: fixed band under title — TOP-ALIGNED so rows never reflow upward */
 .m-stage {
   position: absolute !important;
   top: 124px !important;
@@ -106,11 +106,12 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: flex-start !important;
+  gap: 0;
   overflow: hidden;
   box-sizing: border-box;
   height: auto !important;
+  padding-top: 4px;
 }
 
 /* Keep KaTeX a11y layer from painting over the slide */
@@ -497,28 +498,38 @@ html, body {
   to { opacity: 1; transform: none; }
 }
 
-/* Reserved bands keep vertical seats fixed while fragments enter */
+/* Reserved bands — seats are fixed from the first frame; content only fades in */
 .story-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start !important;
+  gap: 6px;
   width: 100%;
   max-width: 1000px;
+  flex: 0 0 auto;
+  margin: 0 auto;
 }
 .story-band {
   position: relative;
   width: 100%;
-  min-height: 2.35em;
+  min-height: 2.4em;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.story-band-work { min-height: 2.9em; }
-.story-band-count { min-height: 2.2em; }
-.story-band-eq { min-height: 2.5em; }
-.story-band-result { min-height: 2.7em; }
+.story-band-example { min-height: 2.5em; }
+.story-band-work { min-height: 3em; }
+.story-band-frac { min-height: 5.8em; }
+.story-band-count { min-height: 2.3em; }
+.story-band-eq { min-height: 2.6em; }
+.story-band-result { min-height: 2.8em; }
+.story-band-note { min-height: 2.3em; }
+
+.story-band > .example-row {
+  margin: 0;
+}
 
 /* Peel-right ghost for power → factor expand */
 .peel-ghost {
