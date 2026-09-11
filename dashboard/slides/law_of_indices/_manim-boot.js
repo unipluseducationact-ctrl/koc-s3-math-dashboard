@@ -128,14 +128,20 @@
     });
   }
 
-  function activateStage(slot, index) {
+  function activateStage(slot, index, opts) {
+    opts = opts || {};
     var panes = slot.querySelectorAll(".stage-pane");
-    panes.forEach(function (pane, i) {
-      pane.classList.toggle("is-active", i === index);
-    });
     var active = panes[index];
     if (!active) return;
-    // Only fly tokens that belong to this newly shown pane
+
+    panes.forEach(function (pane, i) {
+      if (i !== index) {
+        pane.classList.remove("is-active", "peel-arrive");
+      }
+    });
+    active.classList.add("is-active");
+    if (opts.peel) active.classList.add("peel-arrive");
+
     var flyNodes = active.querySelectorAll("[data-fly-from]");
     if (flyNodes.length) {
       clearSourceMarks();
@@ -149,6 +155,56 @@
         }, FLY_MS + i * 70 + 40);
       });
     }
+  }
+
+  /** Power peels right and becomes the next factor (a³ → a×a² → a×a×a) */
+  function peelToStage(slot, fromIndex, toIndex, done) {
+    var panes = slot.querySelectorAll(".stage-pane");
+    var fromPane = panes[fromIndex];
+    var toPane = panes[toIndex];
+    if (!fromPane || !toPane) {
+      activateStage(slot, toIndex);
+      if (done) done();
+      return;
+    }
+
+    var pow = fromPane.querySelector("sup.pow, .token > .pow");
+    if (!pow) {
+      activateStage(slot, toIndex, { peel: true });
+      later(function () {
+        toPane.classList.remove("peel-arrive");
+        if (done) done();
+      }, 480);
+      return;
+    }
+
+    var rect = pow.getBoundingClientRect();
+    var ghost = document.createElement("span");
+    ghost.className = "peel-ghost";
+    ghost.textContent = pow.textContent;
+    ghost.style.left = rect.left + "px";
+    ghost.style.top = rect.top + "px";
+    ghost.style.fontSize = window.getComputedStyle(pow).fontSize;
+    document.body.appendChild(ghost);
+    pow.style.opacity = "0";
+
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        ghost.style.transform = "translateX(56px) translateY(6px) scale(1.25)";
+        ghost.style.opacity = "0";
+      });
+    });
+
+    later(function () {
+      fromPane.classList.remove("is-active");
+      pow.style.opacity = "";
+      activateStage(slot, toIndex, { peel: true });
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      later(function () {
+        toPane.classList.remove("peel-arrive");
+        if (done) done();
+      }, 480);
+    }, 520);
   }
 
   /** One Reveal step → auto play stage-pane 0 → 1 → 2… in a fixed frame */
@@ -167,25 +223,38 @@
     activateStage(slot, 0);
 
     var i = 1;
-    function scheduleNext(delay) {
-      later(function () {
-        if (i >= panes.length) {
-          slot.classList.remove("playing");
-          return;
-        }
-        activateStage(slot, i);
+    function step() {
+      if (i >= panes.length) {
+        slot.classList.remove("playing");
+        return;
+      }
+      var prev = panes[i - 1];
+      var next = panes[i];
+      var nextHasFly = !!(next && next.querySelector("[data-fly-from]"));
+      var prevHasPow = !!(prev && prev.querySelector(".pow"));
+
+      function after() {
         i += 1;
         if (i < panes.length) {
-          var active = panes[i - 1];
-          var hasFly = active && active.querySelector("[data-fly-from]");
-          scheduleNext(hasFly ? FLY_MS + STAGE_MS * 0.65 : STAGE_MS);
+          var cur = panes[i - 1];
+          var wait = cur && cur.querySelector("[data-fly-from]")
+            ? FLY_MS + STAGE_MS * 0.55
+            : STAGE_MS * 0.85;
+          later(step, wait);
         } else {
-          later(function () { slot.classList.remove("playing"); }, STAGE_MS * 0.4);
+          later(function () { slot.classList.remove("playing"); }, 280);
         }
-      }, delay);
+      }
+
+      if (prevHasPow && !nextHasFly) {
+        peelToStage(slot, i - 1, i, after);
+      } else {
+        activateStage(slot, i);
+        after();
+      }
     }
 
-    scheduleNext(FLY_MS + STAGE_MS * 0.55);
+    later(step, FLY_MS + STAGE_MS * 0.55);
   }
 
   function resetAutoSlots(scope) {

@@ -152,7 +152,16 @@ html, body {
 
 .pow, .m-pow { color: var(--pow) !important; }
 .m-hi { color: var(--note); }
-.m-gold { color: var(--pow); }
+.m-gold,
+.calc-num {
+  color: var(--pow) !important;
+  font-size: 1em !important;
+  font-style: normal;
+  vertical-align: baseline !important;
+  position: static !important;
+  top: auto !important;
+  line-height: inherit !important;
+}
 
 .sym-a, .token.sym-a, .digit.sym-a { color: var(--sym-a) !important; }
 .sym-b, .token.sym-b, .digit.sym-b { color: var(--sym-b) !important; }
@@ -222,18 +231,12 @@ html, body {
 .glyph.gold { color: var(--pow); }
 .token.rose { color: var(--strike); }
 
-/* Force true superscripts (flex + Reveal theme were rendering them as subscripts) */
-.reveal .token .pow,
-.reveal .src .pow,
-.reveal .m-sub .pow,
-.reveal .m-eq .pow,
-.reveal .example-row .pow,
-.reveal .pow,
-.reveal sup.pow,
-.reveal .token sup,
-.reveal .src sup,
+/* True superscripts only on <sup class="pow"> inside tokens */
+.reveal .token > .pow,
+.reveal .src > .pow,
 .reveal .example-row .src > .pow,
-.reveal .example-row .src > span + .pow {
+.reveal .example-row .src > span + .pow,
+.reveal .stage-pane .token > .pow {
   color: var(--pow) !important;
   font-size: 0.62em !important;
   line-height: 0 !important;
@@ -447,21 +450,97 @@ html, body {
   to { opacity: 1; transform: none; }
 }
 
-/* Description entrance (入場動畫) */
+/* PPT-style entrance — final transform always none (fixed seat) */
 .reveal .fragment.m-sub,
 .reveal .fragment.desc-enter,
-.reveal .fragment.note {
+.reveal .fragment.note,
+.reveal .fragment.enter-wipe,
+.reveal .fragment.enter-bounce,
+.reveal .fragment.enter-fade,
+.reveal .fragment.enter-pop {
   animation: none;
 }
 .reveal .fragment.m-sub.visible,
-.reveal .fragment.desc-enter.visible,
+.reveal .fragment.enter-wipe.visible,
+.reveal .fragment.desc-enter.visible {
+  animation: enterWipe 0.65s ease both;
+}
+.reveal .fragment.m-result.visible,
+.reveal .fragment.enter-bounce.visible,
 .reveal .fragment.note.visible {
-  animation: descEnter 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: enterBounce 0.7s cubic-bezier(0.22, 1.25, 0.36, 1) both;
+}
+.reveal .fragment.m-eq.visible,
+.reveal .fragment.enter-fade.visible {
+  animation: enterFade 0.55s ease both;
+}
+.reveal .fragment.enter-pop.visible,
+.reveal .fragment.work-slot.visible {
+  animation: enterPop 0.55s cubic-bezier(0.22, 1.35, 0.36, 1) both;
 }
 
-@keyframes descEnter {
-  from { opacity: 0; transform: translateY(18px); filter: blur(2px); }
-  to { opacity: 1; transform: none; filter: none; }
+@keyframes enterWipe {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+@keyframes enterBounce {
+  0% { opacity: 0; transform: translateY(32px) scale(0.9); }
+  70% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes enterFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes enterPop {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Reserved bands keep vertical seats fixed while fragments enter */
+.story-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 1000px;
+}
+.story-band {
+  position: relative;
+  width: 100%;
+  min-height: 2.35em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.story-band-work { min-height: 2.9em; }
+.story-band-count { min-height: 2.2em; }
+.story-band-eq { min-height: 2.5em; }
+.story-band-result { min-height: 2.7em; }
+
+/* Peel-right ghost for power → factor expand */
+.peel-ghost {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  color: var(--pow);
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-weight: normal;
+  line-height: 1;
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s ease;
+  will-change: transform, opacity;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+}
+.work-fixed-frame .stage-pane.is-active.peel-arrive {
+  animation: peelArrive 0.48s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@keyframes peelArrive {
+  from { opacity: 0; transform: translateY(-50%) translateX(36px) scale(0.96); }
+  to { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
 }
 
 /* One Reveal step = whole row; glyphs still fade / fly independently */
@@ -490,7 +569,7 @@ html, body {
   pointer-events: none !important;
 }
 
-.reveal .fragment:not(.step-row):not(.step-block):not(.work-row):not(.m-sub):not(.desc-enter):not(.note) {
+.reveal .fragment:not(.step-row):not(.step-block):not(.work-row):not(.m-sub):not(.desc-enter):not(.note):not(.m-eq):not(.m-result):not(.work-slot):not(.enter-wipe):not(.enter-bounce):not(.enter-fade):not(.enter-pop) {
   animation: manimFadeIn 0.4s ease both;
 }
 
