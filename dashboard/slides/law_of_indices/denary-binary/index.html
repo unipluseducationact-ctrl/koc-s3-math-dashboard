@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JM24 · Denary &amp; Binary</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="../_manim-deck.css">
+  <style>
+    .pv-grid {
+      display: inline-grid;
+      border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 12px auto;
+      background: rgba(15,23,42,0.55);
+    }
+    .pv-grid .c {
+      padding: 10px 12px;
+      border-right: 1px solid rgba(148,163,184,0.22);
+      border-bottom: 1px solid rgba(148,163,184,0.22);
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      min-width: 54px;
+      text-align: center;
+    }
+    .pv-grid .c:last-child, .pv-grid .row1 .c:last-child { border-right: none; }
+    .pv-grid .d { color: #fff; font-weight: 800; font-size: 1.35em; }
+    .pv-grid .p { color: #4FC3F7; font-size: 0.95em; }
+    .pv-grid.denary { border-color: rgba(59,130,246,0.55); }
+    .pv-grid.denary .p { color: #60a5fa; }
+    .pv-grid.binary { border-color: rgba(236,72,153,0.55); }
+    .pv-grid.binary .p { color: #f472b6; }
+    .expand {
+      font-size: 1.05em; line-height: 1.7; color: #e2e8f0;
+      text-align: left; max-width: 920px; margin: 10px auto 0;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+    }
+    .zero-hl {
+      color: #f9a8d4;
+      text-decoration: underline;
+      text-decoration-color: #ec4899;
+      text-underline-offset: 3px;
+    }
+    .conv-flow {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 10px; margin: 16px 0;
+    }
+    .conv-box {
+      border-radius: 12px; padding: 10px 14px;
+      background: rgba(30,41,59,0.9);
+      border: 1px solid rgba(79,195,247,0.3);
+      font-size: 1.15em; font-weight: 700;
+    }
+    .arrow { color: #facc15; font-size: 1.4em; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Title -->
+      <section>
+        <span class="pill">JM24 · Concept 3</span>
+        <h2 class="manim-title">Place Value &amp; Expanded Form</h2>
+        <div class="manim-line"></div>
+        <div class="card">
+          <p class="prompt">Every digit is a coefficient times a power of the base.</p>
+          <div class="math math-hi">\[ \text{digit} \times \text{base}^{\text{place}} \]</div>
+          <div class="fragment" data-fragment-index="1">
+            <p class="prompt">Denary uses base \(10\). Binary uses base \(2\).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Denary place value -->
+      <section>
+        <span class="pill">Denary · Base 10</span>
+        <h2 class="manim-title">Number: \(8307.11_{10}\)</h2>
+        <div class="manim-line"></div>
+        <div class="card">
+          <div class="pv-grid denary" style="grid-template-columns: repeat(7, auto);">
+            <div class="c d">8</div><div class="c d">3</div><div class="c d">0</div><div class="c d">7</div>
+            <div class="c d">.</div><div class="c d">1</div><div class="c d">1</div>
+            <div class="c p fragment" data-fragment-index="1">\(10^3\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(10^2\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(10^1\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(10^0\)</div>
+            <div class="c p fragment" data-fragment-index="1">—</div>
+            <div class="c p fragment" data-fragment-index="1">\(10^{-1}\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(10^{-2}\)</div>
+          </div>
+          <div class="fragment expand" data-fragment-index="2">
+            \(8307.11_{10} =\)<br>
+            \(8\times 10^3 + 3\times 10^2 + 0\times 10^1 + 7\times 10^0 + 1\times 10^{-1} + 1\times 10^{-2}\)
+          </div>
+        </div>
+      </section>
+
+      <!-- Binary place value -->
+      <section>
+        <span class="pill">Binary · Base 2</span>
+        <h2 class="manim-title">Number: \(10111.101_{2}\)</h2>
+        <div class="manim-line"></div>
+        <div class="card">
+          <div class="pv-grid binary" style="grid-template-columns: repeat(9, auto);">
+            <div class="c d">1</div><div class="c d">0</div><div class="c d">1</div><div class="c d">1</div><div class="c d">1</div>
+            <div class="c d">.</div>
+            <div class="c d">1</div><div class="c d">0</div><div class="c d">1</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^4\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^3\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^2\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^1\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^0\)</div>
+            <div class="c p fragment" data-fragment-index="1">—</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^{-1}\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^{-2}\)</div>
+            <div class="c p fragment" data-fragment-index="1">\(2^{-3}\)</div>
+          </div>
+          <div class="fragment expand" data-fragment-index="2">
+            \(10111.101_{2} =\)<br>
+            \(1\times 2^4 +\) <span class="zero-hl">\(0\times 2^3\)</span> \(+ 1\times 2^2 + 1\times 2^1 + 1\times 2^0\)<br>
+            \(+\; 1\times 2^{-1} +\) <span class="zero-hl">\(0\times 2^{-2}\)</span> \(+ 1\times 2^{-3}\)
+          </div>
+          <div class="fragment note-tape" data-fragment-index="3">
+            Note: in expanded form, do <b>not</b> skip digit = 0 terms!
+            Keep writing \(0\times 2^3\) and \(0\times 2^{-2}\).
+          </div>
+        </div>
+      </section>
+
+      <!-- Evaluate binary to denary -->
+      <section>
+        <span class="pill">Binary → Denary</span>
+        <h2 class="manim-title">Evaluate the powers of 2</h2>
+        <div class="manim-line"></div>
+        <div class="card">
+          <div class="math">\[ 10111_{2} \]</div>
+          <div class="fragment" data-fragment-index="1">
+            <div class="math">\[ = 1\times 2^4 + 0\times 2^3 + 1\times 2^2 + 1\times 2^1 + 1\times 2^0 \]</div>
+          </div>
+          <div class="fragment" data-fragment-index="2">
+            <div class="math">\[ = 16 + 0 + 4 + 2 + 1 \]</div>
+          </div>
+          <div class="fragment theorem" data-fragment-index="3">
+            \[ = \hl{23_{10}} \]
+          </div>
+        </div>
+      </section>
+
+      <!-- Denary to binary by powers -->
+      <section>
+        <span class="pill">Denary → Binary</span>
+        <h2 class="manim-title">Factor into \(a \times 2^{b}\)</h2>
+        <div class="manim-line"></div>
+        <div class="card">
+          <p class="prompt">Convert \(23_{10}\) by peeling off the largest power of 2 each time.</p>
+          <div class="fragment" data-fragment-index="1">
+            <div class="conv-flow">
+              <div class="conv-box">\(23 = 16 + 7\)</div>
+              <span class="arrow">→</span>
+              <div class="conv-box">\(1\times 2^4\)</div>
+            </div>
+          </div>
+          <div class="fragment" data-fragment-index="2">
+            <div class="conv-flow">
+              <div class="conv-box">\(7 = 4 + 3\)</div>
+              <span class="arrow">→</span>
+              <div class="conv-box">\(1\times 2^2\)</div>
+            </div>
+          </div>
+          <div class="fragment" data-fragment-index="3">
+            <div class="conv-flow">
+              <div class="conv-box">\(3 = 2 + 1\)</div>
+              <span class="arrow">→</span>
+              <div class="conv-box">\(1\times 2^1 + 1\times 2^0\)</div>
+            </div>
+          </div>
+          <div class="fragment theorem" data-fragment-index="4">
+            \[ 23_{10} = 10111_{2} \]
+          </div>
+        </div>
+      </section>
+
+      <!-- Side by side comparison -->
+      <section>
+        <span class="pill">Compare</span>
+        <h2 class="manim-title">Same idea, different base</h2>
+        <div class="manim-line"></div>
+        <div class="two-col">
+          <div class="panel-box blue">
+            <h3>Denary</h3>
+            <div class="math" style="font-size:1.1em; text-align:left;">
+              \[ 8307.11_{10} \]
+            </div>
+            <p class="prompt" style="text-align:left;">Places: \(\ldots,10^2,10^1,10^0,10^{-1},\ldots\)</p>
+            <p class="prompt" style="text-align:left;">Digits allowed: \(0\)–\(9\)</p>
+          </div>
+          <div class="panel-box pink">
+            <h3>Binary</h3>
+            <div class="math" style="font-size:1.1em; text-align:left;">
+              \[ 10111.101_{2} \]
+            </div>
+            <p class="prompt" style="text-align:left;">Places: \(\ldots,2^2,2^1,2^0,2^{-1},\ldots\)</p>
+            <p class="prompt" style="text-align:left;">Digits allowed: \(0\) or \(1\) only</p>
+          </div>
+        </div>
+        <div class="fragment note-tape" data-fragment-index="1">
+          Expanded form always keeps zero-coefficient terms so the place-value pattern stays clear.
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.2, maxScale: 2.0,
+      controls: false, progress: true, slideNumber: false,
+      history: false, keyboard: true, touch: true,
+      center: true, embedded: false,
+      transition: 'fade', backgroundTransition: 'fade'
+    });
+    function renderMath() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ]
+        });
+      }
+    }
+    if (Reveal.isReady && Reveal.isReady()) renderMath();
+    else if (Reveal.on) Reveal.on('ready', renderMath);
+    else setTimeout(renderMath, 60);
+  </script>
+  <script src="../../../shared/manim-deck-nav.js?v=20260911"></script>
+</body>
+</html>
