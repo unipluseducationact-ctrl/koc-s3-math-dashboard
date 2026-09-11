@@ -29,17 +29,22 @@
   }
 
   function clearSourceMarks() {
-    document.querySelectorAll(".example-row .src.is-source, .example-row .src.is-spent")
-      .forEach(function (el) {
-        el.classList.remove("is-source");
-      });
+    document.querySelectorAll(".example-row .src").forEach(function (el) {
+      el.classList.remove("is-source", "is-spent");
+    });
   }
 
   function markSource(sel, spent) {
     if (!sel) return;
     var src = document.querySelector(sel);
     if (!src) return;
-    src.classList.add(spent ? "is-spent" : "is-source");
+    if (spent) {
+      src.classList.remove("is-source");
+      src.classList.add("is-spent");
+    } else {
+      src.classList.remove("is-spent");
+      src.classList.add("is-source");
+    }
   }
 
   /** JM32-style TransformFromCopy: ghost flies from source → target */
@@ -152,7 +157,7 @@
     history: false,
     keyboard: true,
     touch: true,
-    center: true,
+    center: false,
     embedded: false,
     transition: "none",
     backgroundTransition: "none",

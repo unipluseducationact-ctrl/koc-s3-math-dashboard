@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="../_manim-deck.css?v=20260911f">
+  <link rel="stylesheet" href="../_manim-deck.css?v=20260911i">
 </head>
 <body>
   <div class="reveal">
@@ -16,14 +16,17 @@
       <section>
         <h2 class="m-title">Scientific Notation</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <p class="m-sub fragment">Write a number as <span class="sym-a">a</span> × 10<sup class="pow">n</sup> where 1 ≤ <span class="sym-a">a</span> &lt; 10.</p>
         <p class="m-sub fragment">Move the decimal to just after the first non-zero digit.</p>
         <p class="m-sub note-tone fragment">Left → 10<sup class="pow">+n</sup>. &nbsp; Right → 10<sup class="pow">−n</sup>.</p>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Large numbers — move left</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <p class="m-sub">Decimal left by \(n\) places \(\Rightarrow \times 10^{\textcolor{#facc15}{n}}\)</p>
         <div class="digit-row fragment step-row">
           <span class="digit focus">5</span>
@@ -37,11 +40,13 @@
           <text x="175" y="14">← 3 jumps</text>
         </svg>
         <div class="m-result fragment">\[ 5000 = 5 \times 10^{\textcolor{#facc15}{3}} \]</div>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Example: \(234560\)</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <div class="digit-row fragment step-row">
           <span class="digit focus">2</span>
           <span class="digit">3</span>
@@ -56,20 +61,24 @@
           <text x="195" y="14">← 5 jumps</text>
         </svg>
         <div class="m-result fragment">\[ 234560 = 2.3456 \times 10^{\textcolor{#facc15}{5}} \]</div>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Already has a power of 10</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <div class="m-eq">\[ 428.9 \times 10^{\textcolor{#facc15}{5}} \]</div>
         <p class="m-sub fragment">Move left 2 places:</p>
         <div class="m-eq fragment">\[ = 4.289 \times 10^{\textcolor{#facc15}{2}} \times 10^{\textcolor{#facc15}{5}} \]</div>
         <div class="m-result fragment">\[ = 4.289 \times 10^{\textcolor{#facc15}{7}} \]</div>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Small numbers — move right</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <p class="m-sub">Decimal right by \(n\) places \(\Rightarrow \times 10^{-\textcolor{#facc15}{n}}\)</p>
         <div class="digit-row fragment step-row">
           <span class="digit dim">0</span>
@@ -85,11 +94,13 @@
           <text x="140" y="14">2 jumps →</text>
         </svg>
         <div class="m-result fragment">\[ 0.09123 = 9.123 \times 10^{\textcolor{#facc15}{-2}} \]</div>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Example: \(0.00008\)</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <div class="digit-row fragment step-row">
           <span class="digit dim">0</span>
           <span class="dp">.</span>
@@ -104,23 +115,28 @@
           <text x="200" y="14">5 jumps →</text>
         </svg>
         <div class="m-result fragment">\[ 0.00008 = 8 \times 10^{\textcolor{#facc15}{-5}} \]</div>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Combine negative powers</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <div class="m-eq">\[ 0.097 \times 10^{\textcolor{#facc15}{-2}} \]</div>
         <div class="m-eq fragment">\[ = 9.7 \times 10^{\textcolor{#facc15}{-2}} \times 10^{\textcolor{#facc15}{-2}} \]</div>
         <div class="m-result fragment">\[ = 9.7 \times 10^{\textcolor{#facc15}{-4}} \]</div>
+        </div>
       </section>
 
       <section>
         <h2 class="m-title">Negative numbers</h2>
         <div class="m-line"></div>
+        <div class="m-stage">
         <p class="m-sub fragment">1. Ignore the minus sign.</p>
         <p class="m-sub fragment">2. Convert the magnitude.</p>
         <p class="m-sub fragment">3. Put the minus back.</p>
         <div class="m-result fragment">\[ -428.9 \times 10^{\textcolor{#facc15}{5}} = -4.289 \times 10^{\textcolor{#facc15}{7}} \]</div>
+        </div>
       </section>
 
     </div>
@@ -129,7 +145,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script src="../_manim-boot.js?v=20260911f"></script>
-  <script src="../../../shared/manim-deck-nav.js?v=20260911f"></script>
+  <script src="../_manim-boot.js?v=20260911i"></script>
+  <script src="../../../shared/manim-deck-nav.js?v=20260911i"></script>
 </body>
 </html>

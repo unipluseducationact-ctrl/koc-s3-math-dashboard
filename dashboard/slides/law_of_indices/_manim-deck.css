@@ -44,31 +44,84 @@ html, body {
 
 .reveal .slides { text-align: center; }
 
-.reveal .slides section {
-  padding: 36px 56px 44px;
-  height: 100%;
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* Match JM25–27 / 30 / 32: title fixed at top, body in remaining frame */
+.reveal .slides > section {
+  /* Keep Reveal absolute stacking; title/stage position against this box */
+  position: absolute !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  display: block !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  text-align: center;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal .m-title {
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
 }
 
 .m-title {
-  font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 40px !important;
-  font-weight: normal;
+  position: absolute !important;
+  top: 48px !important;
+  left: 48px !important;
+  right: 48px !important;
+  z-index: 5;
+  font-family: "Times New Roman", Times, Georgia, serif !important;
+  font-size: 36px !important;
+  font-weight: normal !important;
   color: #ffffff;
-  margin: 0 0 6px !important;
-  line-height: 1.2;
-  max-width: 1100px;
+  margin: 0 !important;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
 }
 
 .m-line {
-  width: 200px;
+  position: absolute !important;
+  top: 100px !important;
+  left: 50% !important;
+  z-index: 5;
+  width: 160px;
   height: 2px;
+  margin: 0 !important;
+  transform: translateX(-50%);
   background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
-  margin: 0 auto 20px;
-  flex: none;
+  pointer-events: none;
+}
+
+/* Content stage: fixed band under title (never overlaps header) */
+.m-stage {
+  position: absolute !important;
+  top: 124px !important;
+  left: 48px !important;
+  right: 48px !important;
+  bottom: 36px !important;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  box-sizing: border-box;
+  height: auto !important;
+}
+
+/* Keep KaTeX a11y layer from painting over the slide */
+.katex .katex-mathml {
+  position: absolute !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  height: 1px !important;
+  width: 1px !important;
+  overflow: hidden !important;
 }
 
 .m-sub {
@@ -125,12 +178,11 @@ html, body {
   color: #fff;
 }
 .example-row .src {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 1px;
-  padding: 2px 4px;
+  display: inline-block;
+  padding: 2px 5px;
   border-radius: 4px;
   transition: box-shadow 0.35s ease, opacity 0.35s ease;
+  line-height: 1.2;
 }
 .example-row .src.is-source {
   box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.55);
@@ -144,7 +196,7 @@ html, body {
 .work-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
   gap: 4px 6px;
   margin: 10px 0;
@@ -153,15 +205,14 @@ html, body {
 
 .token,
 .glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   position: relative;
   font-family: "Times New Roman", Times, Georgia, serif;
   font-size: 30px;
   color: #ffffff;
-  line-height: 1.2;
+  line-height: 1.25;
   padding: 0 1px;
+  vertical-align: baseline;
 }
 
 .token.op,
@@ -171,11 +222,25 @@ html, body {
 .glyph.gold { color: var(--pow); }
 .token.rose { color: var(--strike); }
 
-.token .pow,
-sup.pow {
-  color: var(--pow);
-  font-size: 0.65em;
-  line-height: 1;
+/* Force true superscripts (flex + Reveal theme were rendering them as subscripts) */
+.reveal .token .pow,
+.reveal .src .pow,
+.reveal .m-sub .pow,
+.reveal .m-eq .pow,
+.reveal .example-row .pow,
+.reveal .pow,
+.reveal sup.pow,
+.reveal .token sup,
+.reveal .src sup,
+.reveal .example-row .src > .pow,
+.reveal .example-row .src > span + .pow {
+  color: var(--pow) !important;
+  font-size: 0.62em !important;
+  line-height: 0 !important;
+  vertical-align: super !important;
+  position: relative;
+  top: -0.15em;
+  font-style: normal;
 }
 
 /* Red cancel strike */
@@ -227,7 +292,7 @@ sup.pow {
 .frac-stack .den {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
   gap: 4px 6px;
 }
@@ -409,6 +474,20 @@ sup.pow {
 .reveal .fragment.current-fragment {
   opacity: 1;
   visibility: visible;
+}
+
+/* Critical: unseen fragments must NOT reserve layout space (was overlapping the fixed title) */
+.reveal .m-stage .fragment:not(.visible) {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .reveal .fragment:not(.step-row):not(.step-block):not(.work-row):not(.m-sub):not(.desc-enter):not(.note) {
