@@ -711,7 +711,7 @@
               subject: 'MATH',
               quizId: 'math-factorization',
               questionId: 'fac-q' + q.id,
-              section: 'factorization',
+              section: 'JM25 More about Factorization of Polynomials',
               difficulty: 'standard',
               stem: q.stem || null,
               selectedAnswer: userAnswerIdx !== undefined ? String(userAnswerIdx) : null,
