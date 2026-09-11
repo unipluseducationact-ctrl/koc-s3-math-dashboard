@@ -1,4 +1,4 @@
-/* JM24 Concept decks — match JM25-27 / 30 / 32 Manim frame look */
+/* JM24 Concept — Manim-frame look (JM25-27 / 30 / 32 preset) */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
@@ -29,155 +29,177 @@ html, body {
   font-family: "Times New Roman", Times, Georgia, serif;
 }
 
-.reveal .slides {
-  text-align: center;
-}
+.reveal .slides { text-align: center; }
 
 .reveal .slides section {
-  padding: 28px 48px;
+  padding: 36px 56px 44px;
   height: 100%;
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0;
 }
 
-/* Title — Manim serif, no pill / no card */
+/* Preset type scale — closer to Manim Community default */
 .m-title {
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 1.85em !important;
+  font-size: 42px !important;
   font-weight: normal;
   color: #ffffff;
-  margin: 0 0 8px !important;
-  line-height: 1.25;
+  margin: 0 0 6px !important;
+  line-height: 1.2;
   letter-spacing: 0.01em;
+  max-width: 1100px;
 }
 
 .m-line {
-  width: 220px;
-  height: 2.5px;
+  width: 200px;
+  height: 2px;
   background: linear-gradient(90deg, transparent, #e2b714, transparent);
-  margin: 0 auto 28px;
+  margin: 0 auto 22px;
   flex: none;
 }
 
 .m-sub {
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 1.05em;
-  color: #cbd5e1;
-  margin: 0 0 18px;
-  line-height: 1.45;
-  max-width: 920px;
+  font-size: 28px;
+  color: #e2e8f0;
+  margin: 8px 0;
+  line-height: 1.35;
+  max-width: 1000px;
 }
 
 .m-eq {
-  font-size: 1.55em;
+  font-size: 32px;
   color: #ffffff;
-  margin: 10px 0;
-  line-height: 1.55;
+  margin: 8px 0;
+  line-height: 1.4;
+  max-width: 1100px;
 }
 
-.m-eq .katex { font-size: 1.05em; }
-
-.m-hi {
-  color: #7dd3fc;
+.m-eq .katex,
+.m-sub .katex,
+.m-result .katex,
+.m-title .katex {
+  font-size: 1em !important;
 }
 
-.m-gold {
-  color: #facc15;
-}
+.m-hi { color: #7dd3fc; }
+.m-gold { color: #facc15; }
 
 .m-result {
-  font-size: 1.45em;
+  font-size: 34px;
   color: #7dd3fc;
-  margin-top: 18px;
-  line-height: 1.5;
+  margin-top: 14px;
+  line-height: 1.35;
+  max-width: 1000px;
 }
 
-/* Yellow brush highlight under result (no custom KaTeX macros) */
 .m-mark {
   display: inline;
   background: linear-gradient(180deg, transparent 58%, rgba(250, 204, 21, 0.45) 58%);
-  padding: 0 0.12em;
+  padding: 0 0.1em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
-/* Factor chips used in proofs — sit on flat navy, no outer card */
-.factor-row {
+/* Token row — each glyph / digit fades in like Manim Write */
+.token-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin: 14px 0;
+  gap: 4px 6px;
+  margin: 10px 0;
+  min-height: 1.4em;
 }
 
-.factor {
+.token {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  height: 48px;
-  padding: 0 10px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 1.25em;
-  color: #fff;
-  background: #3b82f6;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 32px;
+  color: #ffffff;
+  line-height: 1.2;
+  padding: 0 1px;
 }
 
-.factor.p { background: #8b5cf6; }
-.factor.r { background: #e11d48; }
-.factor.a { background: #d97706; color: #fff; }
-
-.op {
+.token.op { color: #cbd5e1; }
+.token.hi { color: #7dd3fc; }
+.token.gold { color: #facc15; }
+.token.rose { color: #f87171; }
+.token.cancel {
+  position: relative;
   color: #94a3b8;
-  font-size: 1.35em;
-  font-weight: 700;
-  margin: 0 2px;
+}
+.token.cancel::after {
+  content: "";
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  top: 48%;
+  height: 2px;
+  background: #f87171;
+  transform: rotate(-28deg);
 }
 
-/* Digit / place-value visuals */
+.frac-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0;
+}
+.frac-bar {
+  width: 100%;
+  min-width: 220px;
+  height: 2px;
+  background: #ffffff;
+  margin: 2px 0;
+}
+
 .digit-row {
   display: inline-flex;
   align-items: flex-end;
-  gap: 4px;
-  font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 2.1rem;
-  font-weight: 700;
-  margin: 12px 0 6px;
+  gap: 2px;
+  margin: 10px 0 4px;
 }
 
 .digit {
-  min-width: 1.2em;
+  min-width: 0.95em;
   text-align: center;
-  padding: 2px 4px;
-  color: #fff;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 36px;
+  font-weight: normal;
+  color: #ffffff;
+  padding: 0 2px;
+  line-height: 1.15;
 }
-
 .digit.dim { color: #94a3b8; }
 .digit.focus { color: #7dd3fc; }
 
 .dp {
   color: #f87171;
-  font-size: 1.2em;
+  font-size: 34px;
   padding: 0 2px;
+  font-family: "Times New Roman", Times, Georgia, serif;
   position: relative;
-  top: -2px;
+  top: -1px;
 }
 
 .jump-note {
   color: #f87171;
-  font-size: 1em;
-  margin: 6px 0 10px;
+  font-size: 26px;
+  margin: 4px 0 8px;
   font-family: "Times New Roman", Times, Georgia, serif;
 }
 
 .arc-svg {
-  width: min(520px, 90%);
-  height: 36px;
-  margin: 0 auto 8px;
+  width: min(480px, 88%);
+  height: 32px;
+  margin: 2px auto 6px;
   display: block;
 }
 .arc-svg path {
@@ -188,39 +210,40 @@ html, body {
 }
 .arc-svg text {
   fill: #f87171;
-  font-size: 15px;
+  font-size: 16px;
   font-family: "Times New Roman", Times, Georgia, serif;
 }
 
 .pv-grid {
   display: inline-grid;
   gap: 0;
-  margin: 12px auto;
+  margin: 10px auto;
   border: 1px solid rgba(148, 163, 184, 0.35);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 .pv-grid .c {
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-right: 1px solid rgba(148, 163, 184, 0.22);
   border-bottom: 1px solid rgba(148, 163, 184, 0.22);
   font-family: "Times New Roman", Times, Georgia, serif;
-  min-width: 52px;
+  min-width: 48px;
   text-align: center;
 }
-.pv-grid .d { color: #fff; font-size: 1.35em; font-weight: 700; }
-.pv-grid .p { color: #7dd3fc; font-size: 0.95em; }
+.pv-grid .d { color: #fff; font-size: 28px; }
+.pv-grid .p { color: #7dd3fc; font-size: 22px; }
 .pv-grid.denary { border-color: rgba(96, 165, 250, 0.5); }
 .pv-grid.binary { border-color: rgba(244, 114, 182, 0.5); }
 .pv-grid.binary .p { color: #f9a8d4; }
 
 .expand-line {
-  font-size: 1.05em;
+  font-size: 24px;
   color: #e2e8f0;
-  line-height: 1.65;
-  max-width: 980px;
+  line-height: 1.45;
+  max-width: 1040px;
   margin: 10px auto 0;
 }
+.expand-line .katex { font-size: 1em !important; }
 
 .zero-hl {
   color: #f9a8d4;
@@ -230,70 +253,78 @@ html, body {
 }
 
 .note {
-  margin-top: 16px;
-  font-size: 0.98em;
+  margin-top: 12px;
+  font-size: 24px;
   color: #fde68a;
-  max-width: 880px;
-  line-height: 1.45;
+  max-width: 900px;
+  line-height: 1.35;
 }
 
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  max-width: 1000px;
-  width: 100%;
-  margin: 0 auto;
-  text-align: left;
-}
-
-.col-h {
-  font-size: 1.15em;
-  margin: 0 0 10px;
-  font-weight: normal;
-}
-.col-h.blue { color: #60a5fa; }
-.col-h.pink { color: #f472b6; }
-
-.laws-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 36px;
+  gap: 24px 40px;
   max-width: 980px;
   width: 100%;
   margin: 0 auto;
   text-align: left;
-  font-size: 1.35em;
+}
+.col-h {
+  font-size: 28px;
+  margin: 0 0 8px;
+  font-weight: normal;
+}
+.col-h.blue { color: #60a5fa; }
+.col-h.pink { color: #f472b6; }
+.two-col .m-sub { font-size: 24px; text-align: left; }
+
+.laws-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 40px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+  font-size: 30px;
   color: #fff;
 }
-
 .laws-grid .full { grid-column: 1 / -1; }
+.laws-grid .katex { font-size: 1em !important; }
 
 .conv-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin: 12px 0;
-  font-size: 1.2em;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 28px;
 }
-.arrow { color: #facc15; font-size: 1.25em; }
+.arrow { color: #facc15; font-size: 1.1em; }
 
-/* Fragment fade like Manim Write / FadeIn */
+/* Manim-like Write / FadeIn per fragment (incl. each digit) */
 .reveal .fragment {
   opacity: 0;
-  transition: opacity 0.45s ease, transform 0.45s ease !important;
-  transform: translateY(8px);
+  visibility: hidden;
+  transition: none !important;
 }
-.reveal .fragment.visible {
+.reveal .fragment.visible,
+.reveal .fragment.current-fragment {
   opacity: 1;
-  transform: none;
+  visibility: visible;
+  animation: manimFadeIn 0.42s ease both;
+}
+
+@keyframes manimFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (max-width: 900px) {
-  .m-title { font-size: 1.45em !important; }
-  .m-eq, .m-result { font-size: 1.2em; }
+  .m-title { font-size: 32px !important; }
+  .m-sub, .note { font-size: 22px; }
+  .m-eq, .m-result, .token, .digit { font-size: 26px; }
   .laws-grid, .two-col { grid-template-columns: 1fr; }
-  .digit-row { font-size: 1.5rem; }
+  .laws-grid { font-size: 24px; }
 }
