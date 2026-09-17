@@ -32,8 +32,30 @@ window.IndicesGame = (function () {
   var onKeyDown = null;
   var onKeyUp = null;
 
+  var STRINGS = {
+    "game.ready": "Indices Space Shooter",
+    "game.readyMsg": "Move with arrows or A/D. Shoot the falling box with the correct simplified answer.",
+    "game.start": "Start Game",
+    "game.again": "Play Again",
+    "game.victory": "Victory!",
+    "game.over": "Game Over",
+    "game.victoryMsg": "You cleared every question.",
+    "game.score": "Score",
+    "game.accuracy": "Accuracy",
+    "game.weakest": "Weakest topic",
+    "game.weakestDetail": "{topic} ({count} miss)",
+    "game.noWeakness": "No weak topic this round.",
+    "game.reviewComics": "Review that topic",
+    "game.wrong": "Wrong answer — see why below.",
+    "game.missed": "The correct answer fell past you.",
+  };
+
   function t(key) {
-    return window.I18n && window.I18n.t ? window.I18n.t(key) : key;
+    if (window.I18n && typeof window.I18n.t === "function") {
+      var translated = window.I18n.t(key);
+      if (translated && translated !== key) return translated;
+    }
+    return STRINGS[key] || key;
   }
 
   function lang() {
@@ -119,6 +141,55 @@ window.IndicesGame = (function () {
     el.textContent = lang() === "zh" ? question.questionZh : question.questionEn;
   }
 
+  function correctChoice(q) {
+    if (!q || !q.choices) return null;
+    return q.choices.filter(function (c) {
+      return c.correct;
+    })[0] || null;
+  }
+
+  function explainQuestion(q) {
+    if (!q) return "";
+    var why = lang() === "zh" ? (q.whyZh || q.whyEn) : (q.whyEn || q.whyZh);
+    var ans = correctChoice(q);
+    var label = ans ? getChoiceLabel(ans) : "";
+    if (why && label) return "Correct: " + label + " — " + why;
+    if (why) return why;
+    if (label) return "Correct answer: " + label;
+    return "";
+  }
+
+  function setExplain(text, kind) {
+    var el = document.getElementById("game-explain");
+    if (!el) return;
+    el.textContent = text || "";
+    el.classList.remove("is-ok", "is-bad");
+    if (kind) el.classList.add(kind);
+  }
+
+  function gamePanelVisible() {
+    var panel = document.getElementById("panel-game");
+    return !!(panel && !panel.classList.contains("hidden"));
+  }
+
+  function setOverlayVisible(on) {
+    var overlay = document.getElementById("game-overlay");
+    if (!overlay) return;
+    overlay.classList.toggle("is-visible", !!on);
+    overlay.classList.toggle("hidden", !on);
+    overlay.style.display = on ? "flex" : "none";
+  }
+
+  function goToTopicLab(topicId) {
+    var lab = "powers";
+    if (topicId === "scientific-notation") lab = "scientific";
+    else if (topicId === "binary") lab = "binary";
+    var toolsTab = document.querySelector('.jm-tab[data-tab="tools"]');
+    if (toolsTab) toolsTab.click();
+    var chip = document.querySelector('.subnav .chip[data-lab="' + lab + '"]');
+    if (chip) chip.click();
+  }
+
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
@@ -163,6 +234,7 @@ window.IndicesGame = (function () {
     }
     question = questions[questionIndex];
     setQuestionText();
+    setExplain("", "");
     bullets = [];
     spawnFourAnswers();
     updateHud();
@@ -219,12 +291,16 @@ window.IndicesGame = (function () {
     ensureAudio();
     playTone("life");
     showToast("game.missed");
+    setExplain(explainQuestion(question), "is-bad");
     updateHud();
     if (lives <= 0) {
       endGame();
       return;
     }
-    advanceQuestion();
+    window.setTimeout(function () {
+      if (!running) return;
+      advanceQuestion();
+    }, 1600);
   }
 
   function endGame() {
@@ -302,6 +378,7 @@ window.IndicesGame = (function () {
           ensureAudio();
           playTone("wrong");
           showToast("game.wrong");
+          setExplain(explainQuestion(question), "is-bad");
           burst(e.x + e.w / 2, e.y + e.h / 2, "#ff6b5a");
           updateHud();
           if (lives <= 0) {
@@ -435,8 +512,8 @@ window.IndicesGame = (function () {
     resetTopicMisses();
     lastWeakestTopic = null;
 
-    var overlay = document.getElementById("game-overlay");
-    if (overlay) overlay.classList.remove("is-visible");
+    setOverlayVisible(false);
+    setExplain("", "");
 
     loadCurrentQuestion();
     updateHud();
@@ -512,8 +589,8 @@ window.IndicesGame = (function () {
     var acc = shots ? Math.round((hits / shots) * 100) : 0;
     lastWeakestTopic = getWeakestTopic();
 
-    if (overlay) overlay.classList.add("is-visible");
-    if (title) title.textContent = isVictory ? (t("game.victory") || "Victory!") : (t("game.over") || "Game Over");
+    setOverlayVisible(true);
+    if (title) title.textContent = isVictory ? t("game.victory") : t("game.over");
 
     if (msg) {
       if (isVictory) {
@@ -549,6 +626,7 @@ window.IndicesGame = (function () {
           if (window.LessonComics && window.LessonComics.switchSubTopic) {
             window.LessonComics.switchSubTopic(lastWeakestTopic);
           }
+          goToTopicLab(lastWeakestTopic);
         };
       } else {
         hideReviewButton();
@@ -562,9 +640,9 @@ window.IndicesGame = (function () {
     var msg = document.getElementById("overlay-msg");
     var weakestEl = document.getElementById("overlay-weakest");
     var btn = document.getElementById("btn-start");
-    if (overlay) overlay.classList.add("is-visible");
-    if (title) title.textContent = t("game.ready") || "Indices Space Shooter";
-    if (msg) msg.textContent = t("game.readyMsg") || "Shoot the correct index law answer to advance!";
+    setOverlayVisible(true);
+    if (title) title.textContent = t("game.ready");
+    if (msg) msg.textContent = t("game.readyMsg");
     if (weakestEl) {
       weakestEl.hidden = true;
       weakestEl.textContent = "";
@@ -582,11 +660,12 @@ window.IndicesGame = (function () {
 
   function bindControls() {
     onKeyDown = function (e) {
+      if (!gamePanelVisible()) return;
       keys[e.key] = true;
-      if (e.code === "Space") {
-        e.preventDefault();
-        fire();
+      if (e.code === "Space" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        if (running) e.preventDefault();
       }
+      if (e.code === "Space" && running) fire();
     };
     onKeyUp = function (e) {
       keys[e.key] = false;

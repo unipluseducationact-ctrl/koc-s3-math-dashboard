@@ -10,6 +10,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "x²·⁵", textZh: "x²·⁵", correct: false },
         { textEn: "x¹⁰", textZh: "x¹⁰", correct: false },
       ],
+      whyEn: "Quotient rule: x⁵ ÷ x² = x⁵⁻² = x³. Subtract the indices; do not multiply or divide them.",
+      whyZh: "商定律：x⁵ ÷ x² = x⁵⁻² = x³。指數相減，不要相乘或相除。",
     },
     {
       id: "rules-q5",
@@ -21,6 +23,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "x⁸", textZh: "x⁸", correct: false },
         { textEn: "x⁹", textZh: "x⁹", correct: false },
       ],
+      whyEn: "Power of a power: (x²)³ = x^(2×3) = x⁶. Multiply the indices.",
+      whyZh: "冪的冪：(x²)³ = x^(2×3) = x⁶。指數相乘。",
     },
     {
       id: "rules-q6",
@@ -32,6 +36,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "-8", textZh: "-8", correct: false },
         { textEn: "1/6", textZh: "1/6", correct: false },
       ],
+      whyEn: "Negative index: 2⁻³ = 1 / 2³ = 1/8. The minus sign is not a minus in front of the number.",
+      whyZh: "負指數：2⁻³ = 1 / 2³ = 1/8。負號不是把答案變成負數。",
     },
     {
       id: "rules-q7",
@@ -43,6 +49,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "x", textZh: "x", correct: false },
         { textEn: "Undefined", textZh: "無意義", correct: false },
       ],
+      whyEn: "Zero exponent: x⁰ = 1 when x ≠ 0. Only 0⁰ is undefined.",
+      whyZh: "零指數：當 x ≠ 0 時，x⁰ = 1。只有 0⁰ 無意義。",
     },
     {
       id: "rules-q8",
@@ -54,6 +62,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "2³ⁿ", textZh: "2³ⁿ", correct: false },
         { textEn: "8ⁿ⁺²", textZh: "8ⁿ⁺²", correct: false },
       ],
+      whyEn: "8 = 2³, so 8ⁿ × 2 = (2³)ⁿ × 2¹ = 2³ⁿ × 2 = 2³ⁿ⁺¹.",
+      whyZh: "8 = 2³，所以 8ⁿ × 2 = (2³)ⁿ × 2¹ = 2³ⁿ × 2 = 2³ⁿ⁺¹。",
     },
   ],
   "scientific-notation": [
@@ -67,6 +77,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "56.2 × 10⁻⁵", textZh: "56.2 × 10⁻⁵", correct: false },
         { textEn: "0.562 × 10⁻³", textZh: "0.562 × 10⁻³", correct: false },
       ],
+      whyEn: "Move the decimal 4 places right until one non-zero digit is in front: 0.000562 = 5.62 × 10⁻⁴.",
+      whyZh: "小數點向右移 4 位，直到前面只剩一個非零數字：0.000562 = 5.62 × 10⁻⁴。",
     },
     {
       id: "sci-q5",
@@ -78,6 +90,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "8 × 10²¹", textZh: "8 × 10²¹", correct: false },
         { textEn: "1.2 × 10²¹", textZh: "1.2 × 10²¹", correct: false },
       ],
+      whyEn: "Multiply coefficients 2 × 6 = 12 and add indices 12 + 9 = 21. Then 12 × 10²¹ = 1.2 × 10²².",
+      whyZh: "係數 2 × 6 = 12，指數 12 + 9 = 21。再寫成標準式：12 × 10²¹ = 1.2 × 10²²。",
     },
     {
       id: "sci-q6",
@@ -89,6 +103,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "5 × 10¹⁰", textZh: "5 × 10¹⁰", correct: false },
         { textEn: "2.3 × 10⁹", textZh: "2.3 × 10⁹", correct: false },
       ],
+      whyEn: "Match the power first: 2 × 10¹⁰ = 20 × 10⁹, so 3 × 10⁹ + 20 × 10⁹ = 23 × 10⁹ = 2.3 × 10¹⁰.",
+      whyZh: "先統一次方：2 × 10¹⁰ = 20 × 10⁹，所以 3 × 10⁹ + 20 × 10⁹ = 23 × 10⁹ = 2.3 × 10¹⁰。",
     },
     {
       id: "sci-q7",
@@ -100,6 +116,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "They are equal", textZh: "兩者相等", correct: false },
         { textEn: "Cannot compare", textZh: "無法比較", correct: false },
       ],
+      whyEn: "Compare the powers of 10 first. 10⁶ is 10 times 10⁵, so 3.8 × 10⁶ is larger than 7.2 × 10⁵.",
+      whyZh: "先比較 10 的次方。10⁶ 是 10⁵ 的 10 倍，所以 3.8 × 10⁶ 較大。",
     },
     {
       id: "sci-q8",
@@ -111,6 +129,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "4.56 × 10²", textZh: "4.56 × 10²", correct: false },
         { textEn: "456 × 10¹", textZh: "456 × 10¹", correct: false },
       ],
+      whyEn: "Move the decimal 3 places left: 4560 = 4.56 × 10³. The coefficient must satisfy 1 ≤ a < 10.",
+      whyZh: "小數點向左移 3 位：4560 = 4.56 × 10³。係數必須滿足 1 ≤ a < 10。",
     },
   ],
   binary: [
@@ -124,6 +144,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "15", textZh: "15", correct: false },
         { textEn: "12", textZh: "12", correct: false },
       ],
+      whyEn: "1101₂ = 1×2³ + 1×2² + 0×2¹ + 1×2⁰ = 8 + 4 + 0 + 1 = 13.",
+      whyZh: "1101₂ = 1×2³ + 1×2² + 0×2¹ + 1×2⁰ = 8 + 4 + 0 + 1 = 13。",
     },
     {
       id: "bin-q5",
@@ -135,6 +157,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "1011₂", textZh: "1011₂", correct: false },
         { textEn: "1101₂", textZh: "1101₂", correct: false },
       ],
+      whyEn: "15 = 8 + 4 + 2 + 1 = 2³ + 2² + 2¹ + 2⁰, so 15₁₀ = 1111₂.",
+      whyZh: "15 = 8 + 4 + 2 + 1 = 2³ + 2² + 2¹ + 2⁰，所以 15₁₀ = 1111₂。",
     },
     {
       id: "bin-q6",
@@ -146,6 +170,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "111₂", textZh: "111₂", correct: false },
         { textEn: "1101₂", textZh: "1101₂", correct: false },
       ],
+      whyEn: "Convert first: 101₂ = 5 and 110₂ = 6. Then 5 + 6 = 11 = 1011₂.",
+      whyZh: "先轉十進制：101₂ = 5，110₂ = 6。5 + 6 = 11 = 1011₂。",
     },
     {
       id: "bin-q7",
@@ -157,6 +183,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "12", textZh: "12", correct: false },
         { textEn: "1010", textZh: "1010", correct: false },
       ],
+      whyEn: "1010₂ = 1×2³ + 0×2² + 1×2¹ + 0×2⁰ = 8 + 2 = 10. Do not read the digits as a denary number.",
+      whyZh: "1010₂ = 1×2³ + 0×2² + 1×2¹ + 0×2⁰ = 8 + 2 = 10。不要把二進制數字直接當成十進制。",
     },
     {
       id: "bin-q8",
@@ -168,6 +196,8 @@ window.JM24_GAME_EXTRA = {
         { textEn: "64", textZh: "64", correct: false },
         { textEn: "20", textZh: "20", correct: false },
       ],
+      whyEn: "100000₂ has a 1 in the 2⁵ place: 1×2⁵ = 32.",
+      whyZh: "100000₂ 的 1 在 2⁵ 位：1×2⁵ = 32。",
     },
   ],
 };
