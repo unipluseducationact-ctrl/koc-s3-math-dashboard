@@ -53,7 +53,8 @@ html, body {
   height: 100% !important;
   min-height: 100% !important;
   max-height: 100% !important;
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
   text-align: center;
@@ -66,43 +67,70 @@ html, body {
   letter-spacing: 0.01em !important;
 }
 
+/* Title + gold rule sit in one header so tall KaTeX never crosses the line */
+.m-head {
+  position: relative !important;
+  flex: 0 0 auto;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 32px 48px 8px;
+  pointer-events: none;
+}
+
 .m-title {
-  position: absolute !important;
-  top: 48px !important;
-  left: 48px !important;
-  right: 48px !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
   z-index: 5;
   font-family: "Times New Roman", Times, Georgia, serif !important;
   font-size: 36px !important;
   font-weight: normal !important;
   color: #ffffff;
   margin: 0 !important;
-  line-height: 1.25;
+  line-height: 1.35;
   text-align: center;
   pointer-events: none;
 }
 
+.m-title.m-title-eq {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
+}
+.m-title .m-why {
+  display: block;
+  line-height: 1.2;
+}
+
 .m-line {
-  position: absolute !important;
-  top: 100px !important;
-  left: 50% !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
   z-index: 5;
   width: 160px;
   height: 2px;
   margin: 0 !important;
-  transform: translateX(-50%);
+  transform: none;
   background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
   pointer-events: none;
 }
 
-/* Content stage: fixed band under title — TOP-ALIGNED so rows never reflow upward */
+/* Content stage fills the remaining frame under the header */
 .m-stage {
-  position: absolute !important;
-  top: 124px !important;
-  left: 48px !important;
-  right: 48px !important;
-  bottom: 36px !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
   z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -111,7 +139,7 @@ html, body {
   overflow: hidden;
   box-sizing: border-box;
   height: auto !important;
-  padding-top: 4px;
+  padding: 10px 48px 28px;
 }
 
 /* Keep KaTeX a11y layer from painting over the slide */
@@ -550,8 +578,6 @@ html, body {
 @keyframes peelArrive {
   from { opacity: 0; transform: translateY(-50%) translateX(36px) scale(0.96); }
   to { opacity: 1; transform: translateY(-50%) scale(1); }
-}
-
 }
 
 /* One Reveal step = whole row; glyphs still fade / fly independently */
