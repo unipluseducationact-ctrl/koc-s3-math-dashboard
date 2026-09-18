@@ -2,13 +2,22 @@
 (function () {
   "use strict";
 
-  var FLY_MS = 560;
-  var PEEL_MS = 700;
-  var STAGE_MS = 720;
-  var CANCEL_MS = 420;
-  var JUMP_MS = 620;
+  var FLY_MS = 520;
+  var PEEL_MS = 640;
+  var STAGE_MS = 580;
+  var CANCEL_MS = 480;
+  var JUMP_MS = 560;
   var autoTimers = [];
+  var rafIds = [];
   var playToken = 0;
+
+  /** Current micro-animation; advance while busy → finish immediately */
+  var anim = {
+    busy: false,
+    skip: false,
+    finish: null,
+    slot: null
+  };
 
   function renderMath(root) {
     if (!window.renderMathInElement) return;
@@ -24,7 +33,12 @@
   function clearAutoTimers() {
     autoTimers.forEach(function (id) { window.clearTimeout(id); });
     autoTimers = [];
+    rafIds.forEach(function (id) { try { cancelAnimationFrame(id); } catch (e) { /* */ } });
+    rafIds = [];
     playToken += 1;
+    anim.busy = false;
+    anim.skip = false;
+    anim.finish = null;
   }
 
   function later(fn, ms) {
@@ -37,15 +51,23 @@
     return id;
   }
 
+  function raf(fn) {
+    var id = window.requestAnimationFrame(fn);
+    rafIds.push(id);
+    return id;
+  }
+
   function purgeGhosts() {
-    document.querySelectorAll(".fly-ghost, .peel-ghost, .times-ghost, .dp-ghost, .pv-frame").forEach(function (g) {
+    document.querySelectorAll(
+      ".fly-ghost, .peel-ghost, .times-ghost, .dp-ghost, .pv-drag-box, .expand-halo"
+    ).forEach(function (g) {
       if (g.parentNode) g.parentNode.removeChild(g);
     });
   }
 
   function clearSourceMarks() {
     document.querySelectorAll(".example-row .src").forEach(function (el) {
-      el.classList.remove("is-source", "is-spent");
+      el.classList.remove("is-source", "is-spent", "expand-framed");
     });
   }
 
@@ -62,38 +84,32 @@
     }
   }
 
+  function setExpandFrame(el, on) {
+    if (!el) return;
+    el.classList.toggle("expand-framed", !!on);
+  }
+
   function restoreVisualState(scope) {
     var root = scope || document;
-    root.querySelectorAll(".token.cancelable, .token.struck").forEach(function (t) {
-      t.classList.remove("struck", "gather-left", "gather-right", "gather-mid", "is-remaining");
+    root.querySelectorAll(".token, .src, .c, .expand-term, .conv-extra, .sci-jump-eq").forEach(function (t) {
+      t.classList.remove(
+        "struck", "gather-left", "gather-right", "gather-mid", "is-remaining",
+        "expand-framed", "framed", "dragged", "landed", "awaiting",
+        "dragging", "spent", "is-on", "fly-wait", "fly-land", "combined"
+      );
     });
-    root.querySelectorAll(".frac-stack").forEach(function (f) {
-      f.classList.remove("cancelled", "cancel-done", "gathering", "gathered");
+    root.querySelectorAll(".frac-stack, .frac-build").forEach(function (f) {
+      f.classList.remove("cancelled", "cancel-done", "gathering", "gathered", "phase-bar", "phase-num", "phase-den", "phase-cancel", "phase-result");
       f.removeAttribute("data-cancel-step");
+      f.removeAttribute("data-phase");
     });
-    root.querySelectorAll("sup.pow, .pow").forEach(function (p) {
-      p.style.opacity = "";
+    root.querySelectorAll("sup.pow, .pow").forEach(function (p) { p.style.opacity = ""; });
+    root.querySelectorAll(".cancel-result").forEach(function (r) { r.classList.remove("show"); });
+    root.querySelectorAll(".sci-rhs-live").forEach(function (el) {
+      el.removeAttribute("data-jump-step");
     });
-    root.querySelectorAll(".token.fly-wait, .token.fly-land").forEach(function (t) {
-      t.classList.remove("fly-wait", "fly-land");
-    });
-    root.querySelectorAll(".sci-jump-eq").forEach(function (el) {
-      el.classList.remove("is-on");
-    });
-    root.querySelectorAll(".dp-jump-row").forEach(function (row) {
-      row.querySelectorAll(".dp").forEach(function (dp) {
-        dp.classList.remove("jumping", "at-pos");
-      });
-      row.removeAttribute("data-jump-step");
-    });
-    root.querySelectorAll(".pv-pair, .pv-cell").forEach(function (c) {
-      c.classList.remove("framed", "dragged");
-    });
-    root.querySelectorAll(".expand-term").forEach(function (t) {
-      t.classList.remove("landed", "awaiting");
-    });
-    root.querySelectorAll(".conv-extra").forEach(function (e) {
-      e.classList.remove("dragging", "spent");
+    root.querySelectorAll(".conv-row").forEach(function (r) {
+      r.classList.remove("recv-extra", "rhs-in");
     });
     clearSourceMarks();
     purgeGhosts();
@@ -103,12 +119,10 @@
     var f = -1;
     try {
       if (window.Reveal && Reveal.getIndices) f = Reveal.getIndices().f;
-    } catch (e) { /* ignore */ }
-
+    } catch (e) { /* */ }
     document.querySelectorAll(".frac-stack[data-cancel-at]").forEach(function (frac) {
       var at = parseInt(frac.getAttribute("data-cancel-at"), 10);
-      if (isNaN(at)) return;
-      if (frac.getAttribute("data-cancel-seq") != null) return;
+      if (isNaN(at) || frac.getAttribute("data-cancel-seq") != null) return;
       frac.classList.toggle("cancelled", f >= at);
     });
   }
@@ -121,10 +135,8 @@
       }
       return;
     }
-
     toEl.classList.add("fly-wait");
     toEl.classList.remove("fly-land");
-
     later(function () {
       var from = fromEl.getBoundingClientRect();
       var to = toEl.getBoundingClientRect();
@@ -133,7 +145,6 @@
         toEl.classList.add("fly-land");
         return;
       }
-
       var ghost = fromEl.cloneNode(true);
       ghost.classList.add("fly-ghost", "flying");
       ghost.style.left = from.left + "px";
@@ -141,16 +152,13 @@
       ghost.style.width = from.width + "px";
       ghost.style.height = from.height + "px";
       document.body.appendChild(ghost);
-
       var dx = to.left - from.left + (to.width - from.width) / 2;
       var dy = to.top - from.top + (to.height - from.height) / 2;
-
-      window.requestAnimationFrame(function () {
-        window.requestAnimationFrame(function () {
+      raf(function () {
+        raf(function () {
           ghost.style.transform = "translate(" + dx + "px, " + dy + "px) scale(1.05)";
         });
       });
-
       later(function () {
         toEl.classList.remove("fly-wait");
         toEl.classList.add("fly-land");
@@ -162,18 +170,12 @@
   function runFlyIns(root) {
     if (!root) return;
     var nodes = root.querySelectorAll("[data-fly-from]");
-    if (!nodes.length && root.getAttribute && root.getAttribute("data-fly-from")) {
-      nodes = [root];
-    }
-
     Array.prototype.forEach.call(nodes, function (toEl, i) {
       var sel = toEl.getAttribute("data-fly-from");
       if (!sel) return;
       markSource(sel, false);
-      flyFromTo(document.querySelector(sel), toEl, i * 70);
-      later(function () {
-        markSource(sel, true);
-      }, FLY_MS + i * 70 + 40);
+      flyFromTo(document.querySelector(sel), toEl, i * 60);
+      later(function () { markSource(sel, true); }, FLY_MS + i * 60 + 40);
     });
   }
 
@@ -182,15 +184,11 @@
     var panes = slot.querySelectorAll(".stage-pane");
     var active = panes[index];
     if (!active) return;
-
     panes.forEach(function (pane, i) {
-      if (i !== index) {
-        pane.classList.remove("is-active", "peel-arrive", "is-measure");
-      }
+      if (i !== index) pane.classList.remove("is-active", "peel-arrive", "is-measure");
     });
     active.classList.add("is-active");
     if (opts.peel) active.classList.add("peel-arrive");
-
     var flyNodes = active.querySelectorAll("[data-fly-from]");
     if (flyNodes.length) {
       clearSourceMarks();
@@ -198,15 +196,16 @@
         var sel = toEl.getAttribute("data-fly-from");
         if (!sel) return;
         markSource(sel, false);
-        flyFromTo(document.querySelector(sel), toEl, i * 70);
-        later(function () {
-          markSource(sel, true);
-        }, FLY_MS + i * 70 + 40);
+        flyFromTo(document.querySelector(sel), toEl, i * 60);
+        later(function () { markSource(sel, true); }, FLY_MS + i * 60 + 40);
       });
     }
   }
 
-  /** Lower-arc jump of power to mid-gap; × appears mid-air */
+  /**
+   * Power jumps to the NEXT factor on the right (not leftmost).
+   * × appears mid-air. Yellow frame stays on the expanding term until done.
+   */
   function peelToStage(slot, fromIndex, toIndex, done) {
     var panes = slot.querySelectorAll(".stage-pane");
     var fromPane = panes[fromIndex];
@@ -217,51 +216,49 @@
       return;
     }
 
-    var pow = fromPane.querySelector("sup.pow.outer, .token > .pow.outer");
+    var expandTok = fromPane.querySelector(".token.expand-src, .token[data-fly-from], .token");
+    setExpandFrame(expandTok, true);
+
+    var pow = fromPane.querySelector("sup.pow.outer");
     if (!pow) {
-      var pows = fromPane.querySelectorAll("sup.pow, .token > .pow");
+      var pows = fromPane.querySelectorAll("sup.pow");
       pow = pows.length ? pows[pows.length - 1] : null;
     }
     if (!pow) {
       activateStage(slot, toIndex, { peel: true });
       later(function () {
+        setExpandFrame(expandTok, false);
         toPane.classList.remove("peel-arrive");
         if (done) done();
-      }, 480);
+      }, 400);
       return;
     }
 
-    /* Measure target mid-gap while keeping fromPane visible */
     toPane.classList.add("is-measure");
-    var timesEl = toPane.querySelector(".token.op.peel-times, .token.op");
-    var rightPow = null;
-    var tokens = toPane.querySelectorAll(".token:not(.op)");
-    if (tokens.length >= 2) rightPow = tokens[1];
-    else if (tokens.length === 1) rightPow = tokens[0];
-
-    var fromR = pow.getBoundingClientRect();
-    var midX;
-    var midY;
-    if (timesEl) {
-      var tr = timesEl.getBoundingClientRect();
-      midX = tr.left + tr.width / 2;
-      midY = tr.top + tr.height / 2;
-    } else if (rightPow) {
-      var rr = rightPow.getBoundingClientRect();
-      midX = (fromR.left + fromR.width / 2 + rr.left + rr.width / 2) / 2;
-      midY = (fromR.top + fromR.height / 2 + rr.top + rr.height / 2) / 2;
-    } else {
-      midX = fromR.left + fromR.width / 2 + 72;
-      midY = fromR.top + fromR.height / 2 + 18;
+    /* Target = next upcoming factor on the RIGHT (has remaining power or is the new copy) */
+    var rightFactor = toPane.querySelector(".token.next-factor, .token.peel-target");
+    if (!rightFactor) {
+      var toks = toPane.querySelectorAll(".token:not(.op)");
+      rightFactor = toks.length >= 2 ? toks[1] : toks[0];
     }
+    var timesEl = toPane.querySelector(".token.op.peel-times");
+    var fromR = pow.getBoundingClientRect();
+    var targetR = rightFactor
+      ? (rightFactor.querySelector("sup.pow") || rightFactor).getBoundingClientRect()
+      : { left: fromR.left + 90, top: fromR.top, width: 20, height: 20 };
+    var midX = timesEl
+      ? timesEl.getBoundingClientRect().left + timesEl.getBoundingClientRect().width / 2
+      : (fromR.left + fromR.width / 2 + targetR.left + targetR.width / 2) / 2;
+    var midY = timesEl
+      ? timesEl.getBoundingClientRect().top + timesEl.getBoundingClientRect().height / 2
+      : (fromR.top + targetR.top) / 2 + 8;
+    var landX = targetR.left + targetR.width / 2;
+    var landY = targetR.top + targetR.height / 2;
     toPane.classList.remove("is-measure");
 
     var startX = fromR.left + fromR.width / 2;
     var startY = fromR.top + fromR.height / 2;
-    var dx = midX - startX;
-    var dy = midY - startY;
-    /* Lower semicircle: dip below the line */
-    var dip = Math.max(36, Math.abs(dx) * 0.28);
+    var dip = Math.max(32, Math.abs(landX - startX) * 0.32);
 
     var ghost = document.createElement("span");
     ghost.className = "peel-ghost";
@@ -280,89 +277,112 @@
     timesGhost.style.opacity = "0";
     document.body.appendChild(timesGhost);
 
+    var peelToken = playToken;
+    var finished = false;
+    function cleanup(skipToEnd) {
+      if (finished) return;
+      finished = true;
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
+      fromPane.classList.remove("is-active");
+      pow.style.opacity = "";
+      activateStage(slot, toIndex, { peel: true });
+      setExpandFrame(expandTok, false);
+      /* Keep frame on the new right factor being expanded if it still has a power */
+      var nextExpand = toPane.querySelector(".token.peel-target, .token.next-factor");
+      if (nextExpand && nextExpand.querySelector("sup.pow")) {
+        setExpandFrame(nextExpand, true);
+        later(function () { setExpandFrame(nextExpand, false); }, skipToEnd ? 80 : 500);
+      }
+      later(function () {
+        toPane.classList.remove("peel-arrive");
+        anim.busy = false;
+        anim.finish = null;
+        if (done) done();
+      }, skipToEnd ? 40 : 360);
+    }
+
+    anim.busy = true;
+    anim.finish = function () { cleanup(true); };
+
     var t0 = null;
     function frame(now) {
-      if (playToken !== peelToken) {
-        if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-        if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
+      if (playToken !== peelToken || finished) return;
+      if (anim.skip) {
+        cleanup(true);
         return;
       }
       if (t0 == null) t0 = now;
       var p = Math.min(1, (now - t0) / PEEL_MS);
       var ease = 1 - Math.pow(1 - p, 2.4);
-      var arcY = Math.sin(Math.PI * ease) * dip;
-      var x = dx * ease;
-      var y = dy * ease + arcY;
-      ghost.style.transform = "translate(" + x + "px, " + y + "px) scale(" + (1 + 0.2 * Math.sin(Math.PI * ease)) + ")";
-      if (p >= 0.42 && p <= 0.85) {
-        timesGhost.style.opacity = String(Math.min(1, (p - 0.42) / 0.2));
-        timesGhost.style.transform = "translate(-50%, -50%) scale(" + (0.7 + 0.4 * Math.min(1, (p - 0.42) / 0.25)) + ")";
-      }
-      if (p < 1) {
-        window.requestAnimationFrame(frame);
+      /* Path: start → mid (with ×) → land on next a */
+      var x1 = midX - startX;
+      var y1 = midY - startY + Math.sin(Math.PI * Math.min(1, ease * 1.15)) * dip;
+      var x2 = landX - startX;
+      var y2 = landY - startY;
+      var x, y;
+      if (ease < 0.55) {
+        var u = ease / 0.55;
+        x = x1 * u;
+        y = (midY - startY) * u + Math.sin(Math.PI * u) * dip;
       } else {
-        ghost.style.opacity = "0";
-        timesGhost.style.opacity = "0";
-        fromPane.classList.remove("is-active");
-        pow.style.opacity = "";
-        activateStage(slot, toIndex, { peel: true });
-        later(function () {
-          if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-          if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
-          toPane.classList.remove("peel-arrive");
-          if (done) done();
-        }, 420);
+        var v = (ease - 0.55) / 0.45;
+        x = x1 + (x2 - x1) * v;
+        y = (midY - startY) + (y2 - (midY - startY)) * v;
       }
+      ghost.style.transform = "translate(" + x + "px, " + y + "px) scale(" + (1 + 0.18 * Math.sin(Math.PI * ease)) + ")";
+      if (ease >= 0.35 && ease <= 0.75) {
+        timesGhost.style.opacity = String(Math.min(1, (ease - 0.35) / 0.15));
+        timesGhost.style.transform = "translate(-50%, -50%) scale(" + (0.75 + 0.35 * Math.min(1, (ease - 0.35) / 0.2)) + ")";
+      } else if (ease > 0.75) {
+        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.75) / 0.25));
+      }
+      if (p < 1) raf(frame);
+      else cleanup(false);
     }
-    var peelToken = playToken;
-    window.requestAnimationFrame(frame);
+    raf(frame);
   }
 
   function runGatherFactors(pane, done) {
-    var factors = pane.querySelectorAll(".token.factor");
-    if (!factors.length) {
-      factors = pane.querySelectorAll(".token.sym-a, .token.sym-a2");
-    }
-    var list = Array.prototype.filter.call(factors, function (t) {
-      return !t.classList.contains("op");
-    });
+    var list = Array.prototype.slice.call(pane.querySelectorAll(".token.factor"));
     if (list.length < 3) {
       if (done) done();
       return;
     }
+    anim.busy = true;
     var n = list.length;
-    /* For 6 factors: 1→2, 6→5, 3+4→mid → three a², then sides → center */
+    function clearG() {
+      list.forEach(function (t) {
+        t.classList.remove("gather-left", "gather-right", "gather-mid");
+      });
+    }
+    function end() {
+      clearG();
+      anim.busy = false;
+      anim.finish = null;
+      if (done) done();
+    }
+    anim.finish = end;
     if (n === 6) {
       list[0].classList.add("gather-right");
       list[5].classList.add("gather-left");
       list[2].classList.add("gather-right");
       list[3].classList.add("gather-left");
       later(function () {
-        list.forEach(function (t) {
-          t.classList.remove("gather-left", "gather-right", "gather-mid");
-        });
-        list[0].classList.add("gather-right");
+        if (anim.skip) { end(); return; }
+        clearG();
         list[1].classList.add("gather-mid");
-        list[4].classList.add("gather-left");
-        list[5].classList.add("gather-left");
+        list[4].classList.add("gather-mid");
         list[2].classList.add("gather-mid");
         list[3].classList.add("gather-mid");
         later(function () {
-          list.forEach(function (t) {
-            t.classList.remove("gather-left", "gather-right", "gather-mid");
-          });
+          if (anim.skip) { end(); return; }
+          clearG();
           list[0].classList.add("gather-right");
           list[5].classList.add("gather-left");
-          list[1].classList.add("gather-right");
-          list[4].classList.add("gather-left");
-          later(function () {
-            list.forEach(function (t) {
-              t.classList.remove("gather-left", "gather-right", "gather-mid");
-            });
-            if (done) done();
-          }, 650);
-        }, 650);
-      }, 650);
+          later(end, 520);
+        }, 520);
+      }, 520);
       return;
     }
     list.forEach(function (t, i) {
@@ -371,67 +391,124 @@
       else if (i < n / 2) t.classList.add("gather-right");
       else t.classList.add("gather-left");
     });
-    later(function () {
-      list.forEach(function (t) {
-        t.classList.remove("gather-left", "gather-right", "gather-mid");
-      });
-      if (done) done();
-    }, 780);
+    later(end, 640);
   }
 
-  function runCancelSeq(frac, done) {
-    if (!frac) {
-      if (done) done();
+  /** Multi-phase fraction build driven by data-phase on successive fragments */
+  function runFracPhase(root) {
+    if (!root) return;
+    var build = root.closest(".frac-build") || root;
+    var phase = root.getAttribute("data-phase") || build.getAttribute("data-phase");
+    if (!phase && root.classList.contains("frac-phase")) {
+      phase = root.getAttribute("data-phase");
+    }
+    var frac = build.querySelector(".frac-stack") || build;
+    if (phase === "bar") {
+      frac.classList.add("phase-bar");
+      var bar = frac.querySelector(".frac-bar");
+      if (bar) bar.classList.add("bar-in");
       return;
     }
-    restoreVisualState(frac);
+    if (phase === "num") {
+      frac.classList.add("phase-num");
+      var num = frac.querySelector(".num");
+      if (num) {
+        num.classList.add("show-row");
+        runFlyIns(num);
+        later(function () {
+          /* expand powers already laid out as separate a tokens */
+          num.classList.add("expanded");
+        }, FLY_MS + 200);
+      }
+      return;
+    }
+    if (phase === "den") {
+      frac.classList.add("phase-den");
+      var den = frac.querySelector(".den");
+      if (den) {
+        den.classList.add("show-row");
+        runFlyIns(den);
+        later(function () { den.classList.add("expanded"); }, FLY_MS + 200);
+      }
+      return;
+    }
+    if (phase === "cancel") {
+      runCancelOnly(frac);
+      return;
+    }
+    if (phase === "result") {
+      runGatherToResult(frac);
+      return;
+    }
+  }
+
+  function runCancelOnly(frac) {
+    if (!frac) return;
+    anim.busy = true;
     var numCancels = frac.querySelectorAll(".num .token.cancelable");
     var denCancels = frac.querySelectorAll(".den .token.cancelable");
-    var remaining = frac.querySelectorAll(".num .token.remain, .num .token:not(.cancelable):not(.op)");
     var pairs = Math.min(numCancels.length, denCancels.length);
     var steps = [];
     var i;
     for (i = 0; i < pairs; i++) {
-      steps.push({ el: numCancels[i], side: "num" });
-      steps.push({ el: denCancels[i], side: "den" });
+      steps.push(numCancels[i]);
+      steps.push(denCancels[i]);
     }
-
     var step = 0;
-    function next() {
-      if (step < steps.length) {
-        var s = steps[step];
-        if (s.el) s.el.classList.add("struck");
-        frac.setAttribute("data-cancel-step", String(step + 1));
+    function finishAll() {
+      while (step < steps.length) {
+        if (steps[step]) steps[step].classList.add("struck");
         step += 1;
-        later(next, CANCEL_MS);
-        return;
       }
       frac.classList.add("cancelled", "cancel-done");
-      Array.prototype.forEach.call(remaining, function (t) {
+      frac.querySelectorAll(".token.remain").forEach(function (t) {
         t.classList.add("is-remaining");
       });
-      later(function () {
-        frac.classList.add("gathering");
-        var rem = frac.querySelectorAll(".num .token.is-remaining");
-        if (rem.length >= 3) {
-          rem[0].classList.add("gather-right");
-          rem[rem.length - 1].classList.add("gather-left");
-          if (rem.length === 3) rem[1].classList.add("gather-mid");
-        } else {
-          Array.prototype.forEach.call(rem, function (t, idx) {
-            if (idx < rem.length / 2) t.classList.add("gather-right");
-            else t.classList.add("gather-left");
-          });
-        }
-        later(function () {
-          frac.classList.add("gathered");
-          var result = frac.querySelector(".cancel-result");
-          if (result) result.classList.add("show");
-          if (done) done();
-        }, 700);
-      }, 280);
+      anim.busy = false;
+      anim.finish = null;
     }
-    later(next, 200);
+    anim.finish = finishAll;
+    function next() {
+      if (anim.skip) { finishAll(); return; }
+      if (step >= steps.length) {
+        finishAll();
+        return;
+      }
+      if (steps[step]) steps[step].classList.add("struck");
+      step += 1;
+      later(next, CANCEL_MS);
+    }
+    later(next, 180);
+  }
+
+  function runGatherToResult(frac) {
+    if (!frac) return;
+    anim.busy = true;
+    frac.classList.add("gathering");
+    var rem = frac.querySelectorAll(".token.remain, .token.is-remaining");
+    Array.prototype.forEach.call(rem, function (t) { t.classList.add("is-remaining"); });
+    if (rem.length >= 2) {
+      rem[0].classList.add("gather-right");
+      rem[rem.length - 1].classList.add("gather-left");
+      if (rem.length === 3) rem[1].classList.add("gather-mid");
+    }
+    var eq = frac.querySelector(".gather-eq");
+    if (eq) eq.classList.add("show");
+    function end() {
+      frac.classList.add("gathered");
+      var result = frac.querySelector(".cancel-result");
+      if (result) {
+        result.classList.add("show");
+        renderMath(result);
+      }
+      Array.prototype.forEach.call(rem, function (t) {
+        t.classList.remove("gather-left", "gather-right", "gather-mid");
+      });
+      anim.busy = false;
+      anim.finish = null;
+    }
+    anim.finish = end;
+    later(end, 700);
   }
 
   function runAutoSlot(slot) {
@@ -439,20 +516,25 @@
     clearAutoTimers();
     clearSourceMarks();
     purgeGhosts();
-
     var panes = slot.querySelectorAll(".stage-pane");
     if (!panes.length) {
       runFlyIns(slot);
       return;
     }
-
     slot.classList.add("playing");
+    anim.slot = slot;
     activateStage(slot, 0);
+    var first = panes[0].querySelector(".token");
+    if (first) setExpandFrame(first, true);
 
     var i = 1;
     function step() {
       if (i >= panes.length) {
         slot.classList.remove("playing");
+        anim.slot = null;
+        slot.querySelectorAll(".expand-framed").forEach(function (el) {
+          el.classList.remove("expand-framed");
+        });
         return;
       }
       var prev = panes[i - 1];
@@ -464,29 +546,26 @@
       function after() {
         i += 1;
         if (i < panes.length) {
-          var cur = panes[i - 1];
-          var wait = cur && cur.querySelector("[data-fly-from]")
-            ? FLY_MS + STAGE_MS * 0.55
-            : STAGE_MS * 0.9;
-          if (gather) wait = 2200;
-          later(step, wait);
+          later(step, anim.skip ? 80 : STAGE_MS * 0.85);
         } else {
-          later(function () { slot.classList.remove("playing"); }, 280);
+          later(function () {
+            slot.classList.remove("playing");
+            anim.slot = null;
+          }, 200);
         }
       }
 
       if (gather) {
         activateStage(slot, i);
         runGatherFactors(next, after);
-      } else if (prevHasPow && !nextHasFly) {
+      } else if (prevHasPow && !nextHasFly && next.querySelector(".peel-times, .next-factor, .peel-target")) {
         peelToStage(slot, i - 1, i, after);
       } else {
         activateStage(slot, i);
         after();
       }
     }
-
-    later(step, FLY_MS + STAGE_MS * 0.55);
+    later(step, FLY_MS + 280);
   }
 
   function resetAutoSlots(scope) {
@@ -494,35 +573,49 @@
     (scope || document).querySelectorAll(".work-slot").forEach(function (slot) {
       slot.classList.remove("playing");
       var panes = slot.querySelectorAll(".stage-pane");
-      panes.forEach(function (pane, i) {
-        pane.classList.remove("peel-arrive", "is-measure");
-        pane.classList.toggle("is-active", i === 0 && slot.classList.contains("visible"));
+      panes.forEach(function (pane, idx) {
+        pane.classList.remove("peel-arrive", "is-measure", "expand-framed");
+        pane.classList.toggle("is-active", idx === 0 && slot.classList.contains("visible"));
         if (!slot.classList.contains("visible")) pane.classList.remove("is-active");
       });
     });
   }
 
-  /** Step-by-step lower-arc decimal jumps: 5000.=5000.×10^0 → … → 5×10^3 */
+  /** Animate decimal inside the big RHS equation (not a separate digit row) */
   function runSciJump(root) {
     if (!root) return;
     clearAutoTimers();
     var eqs = root.querySelectorAll(".sci-jump-eq");
-    var row = root.querySelector(".dp-jump-row");
     if (!eqs.length) return;
-
     eqs.forEach(function (el) { el.classList.remove("is-on"); });
-    if (eqs[0]) eqs[0].classList.add("is-on");
-
+    eqs[0].classList.add("is-on");
     var step = 1;
-    function jump() {
-      if (step >= eqs.length) return;
-      var dp = row && row.querySelector(".dp");
-      if (dp && row) {
-        var slots = row.querySelectorAll("[data-dp-slot]");
-        var fromSlot = slots[step - 1] || dp;
-        var toSlot = slots[step] || slots[slots.length - 1];
-        var fr = fromSlot.getBoundingClientRect();
-        var tr = toSlot.getBoundingClientRect();
+
+    function doJump() {
+      if (step >= eqs.length) {
+        anim.busy = false;
+        anim.finish = null;
+        return;
+      }
+      anim.busy = true;
+      var cur = eqs[step - 1];
+      var nxt = eqs[step];
+      var dp = cur && cur.querySelector(".dp-live");
+      var dpTo = nxt && nxt.querySelector(".dp-live");
+
+      function finishJump() {
+        eqs.forEach(function (el) { el.classList.remove("is-on"); });
+        nxt.classList.add("is-on");
+        root.setAttribute("data-jump-step", String(step));
+        step += 1;
+        later(doJump, anim.skip ? 60 : 640);
+      }
+      anim.finish = finishJump;
+
+      if (dp && dpTo && !anim.skip) {
+        var fr = dp.getBoundingClientRect();
+        var tr = dpTo.getBoundingClientRect();
+        /* Force leftward jump: if target is to the right, still use lower arc */
         var ghost = document.createElement("span");
         ghost.className = "dp-ghost";
         ghost.textContent = ".";
@@ -530,10 +623,9 @@
         ghost.style.top = fr.top + "px";
         document.body.appendChild(ghost);
         dp.style.opacity = "0";
-
         var dx = tr.left - fr.left;
         var dy = tr.top - fr.top;
-        var dip = Math.max(28, Math.abs(dx) * 0.35);
+        var dip = Math.max(30, Math.abs(dx) * 0.4);
         var t0 = null;
         var token = playToken;
         function frame(now) {
@@ -541,42 +633,38 @@
             if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
             return;
           }
+          if (anim.skip) {
+            if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+            dp.style.opacity = "";
+            finishJump();
+            return;
+          }
           if (t0 == null) t0 = now;
           var p = Math.min(1, (now - t0) / JUMP_MS);
           var ease = 1 - Math.pow(1 - p, 2.2);
-          var y = dy * ease + Math.sin(Math.PI * ease) * dip;
-          ghost.style.transform = "translate(" + (dx * ease) + "px, " + y + "px)";
-          if (p < 1) {
-            window.requestAnimationFrame(frame);
-          } else {
+          ghost.style.transform = "translate(" + (dx * ease) + "px, " + (dy * ease + Math.sin(Math.PI * ease) * dip) + "px)";
+          if (p < 1) raf(frame);
+          else {
             if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
             dp.style.opacity = "";
-            eqs.forEach(function (el) { el.classList.remove("is-on"); });
-            if (eqs[step]) eqs[step].classList.add("is-on");
-            if (row) row.setAttribute("data-jump-step", String(step));
-            step += 1;
-            later(jump, 520);
+            finishJump();
           }
         }
-        window.requestAnimationFrame(frame);
+        raf(frame);
       } else {
-        eqs.forEach(function (el) { el.classList.remove("is-on"); });
-        if (eqs[step]) eqs[step].classList.add("is-on");
-        step += 1;
-        later(jump, 700);
+        finishJump();
       }
     }
-    later(jump, 700);
+    later(doJump, 700);
   }
 
-  /** Yellow frame around digit+place (same data-pv-pair), drag down into expand term */
+  /** Two separate boxes drag down; at landing bottom slides right to combine with ×; frames fade */
   function runPvDrag(root) {
     if (!root) return;
     clearAutoTimers();
     var cells = root.querySelectorAll("[data-pv-pair]");
     var terms = root.querySelectorAll(".expand-term");
     if (!cells.length) return;
-
     var order = [];
     var map = {};
     Array.prototype.forEach.call(cells, function (cell) {
@@ -587,95 +675,134 @@
       }
       map[key].push(cell);
     });
-
     var i = 0;
+
     function next() {
-      if (i >= order.length) return;
+      if (i >= order.length) {
+        anim.busy = false;
+        anim.finish = null;
+        return;
+      }
+      anim.busy = true;
       var group = map[order[i]] || [];
       var term = terms[i];
-      group.forEach(function (c) { c.classList.add("framed"); });
-      later(function () {
-        if (!term || !group.length) {
-          group.forEach(function (c) {
-            c.classList.remove("framed");
-            c.classList.add("dragged");
-          });
-          i += 1;
-          later(next, 360);
-          return;
+      var digit = group[0];
+      var place = group[1] || group[0];
+      digit.classList.add("framed");
+      place.classList.add("framed");
+
+      function finishPair() {
+        digit.classList.remove("framed");
+        place.classList.remove("framed");
+        digit.classList.add("dragged");
+        place.classList.add("dragged");
+        if (term) {
+          term.classList.remove("awaiting", "combining");
+          term.classList.add("landed");
         }
+        document.querySelectorAll(".pv-drag-box").forEach(function (b) {
+          if (b.parentNode) b.parentNode.removeChild(b);
+        });
+        i += 1;
+        later(next, anim.skip ? 80 : 420);
+      }
+      anim.finish = finishPair;
+
+      later(function () {
+        if (anim.skip) { finishPair(); return; }
+        if (!term) { finishPair(); return; }
         term.classList.add("awaiting");
-        var top = group[0].getBoundingClientRect();
-        var bot = (group[1] || group[0]).getBoundingClientRect();
-        var left = Math.min(top.left, bot.left);
-        var right = Math.max(top.right, bot.right);
-        var fromTop = top.top;
-        var fromBottom = bot.bottom;
-        var frame = document.createElement("div");
-        frame.className = "fly-ghost flying pv-frame";
-        frame.style.left = left + "px";
-        frame.style.top = fromTop + "px";
-        frame.style.width = (right - left) + "px";
-        frame.style.height = (fromBottom - fromTop) + "px";
-        frame.style.border = "2px solid #ffd54f";
-        frame.style.borderRadius = "6px";
-        frame.style.background = "rgba(255,213,79,0.12)";
-        document.body.appendChild(frame);
-        var to = term.getBoundingClientRect();
-        var dx = to.left - left + (to.width - (right - left)) / 2;
-        var dy = to.top - fromTop;
-        window.requestAnimationFrame(function () {
-          window.requestAnimationFrame(function () {
-            frame.style.transform = "translate(" + dx + "px, " + dy + "px) scale(0.55)";
-            frame.style.opacity = "0.35";
+        var dR = digit.getBoundingClientRect();
+        var pR = place.getBoundingClientRect();
+        var tR = term.getBoundingClientRect();
+
+        function makeBox(rect, html) {
+          var box = document.createElement("div");
+          box.className = "pv-drag-box";
+          box.innerHTML = html;
+          box.style.left = rect.left + "px";
+          box.style.top = rect.top + "px";
+          box.style.width = rect.width + "px";
+          box.style.height = rect.height + "px";
+          document.body.appendChild(box);
+          return box;
+        }
+        var boxD = makeBox(dR, digit.innerHTML);
+        var boxP = makeBox(pR, place.innerHTML);
+        /* Keep relative offset between digit and place */
+        var relDy = pR.top - dR.top;
+        var landX = tR.left;
+        var landY = tR.top;
+        raf(function () {
+          raf(function () {
+            boxD.style.transform = "translate(" + (landX - dR.left) + "px, " + (landY - dR.top) + "px)";
+            boxP.style.transform = "translate(" + (landX - pR.left) + "px, " + (landY - pR.top + relDy * 0.15) + "px)";
           });
         });
         later(function () {
-          if (frame.parentNode) frame.parentNode.removeChild(frame);
-          term.classList.remove("awaiting");
-          term.classList.add("landed");
-          group.forEach(function (c) {
-            c.classList.remove("framed");
-            c.classList.add("dragged");
-          });
-          i += 1;
-          later(next, 420);
+          if (anim.skip) { finishPair(); return; }
+          /* Bottom box slides right under digit; × appears; frames fade */
+          term.classList.add("combining");
+          boxP.style.transform = "translate(" + (landX - pR.left + dR.width * 0.85) + "px, " + (landY - pR.top) + "px)";
+          boxD.classList.add("fade-frame");
+          boxP.classList.add("fade-frame");
+          later(finishPair, 480);
         }, FLY_MS);
-      }, 380);
+      }, 360);
     }
-    later(next, 400);
+    later(next, 360);
   }
 
-  function runConvDrag(root) {
-    if (!root) return;
-    var extras = root.querySelectorAll(".conv-extra");
-    extras.forEach(function (extra, idx) {
+  function runConvStep(row) {
+    if (!row) return;
+    anim.busy = true;
+    row.classList.add("rhs-in");
+    var extra = row.querySelector(".conv-extra");
+    var nextRow = row.nextElementSibling;
+    while (nextRow && !nextRow.classList.contains("conv-row")) {
+      nextRow = nextRow.nextElementSibling;
+    }
+    function end() {
+      if (extra) {
+        extra.classList.add("spent");
+        if (nextRow) {
+          var subj = nextRow.querySelector(".conv-subj");
+          if (subj) {
+            flyFromTo(extra, subj, 0);
+            nextRow.classList.add("recv-extra");
+          }
+        }
+      }
+      anim.busy = false;
+      anim.finish = null;
+    }
+    anim.finish = end;
+    if (extra) {
       later(function () {
         extra.classList.add("dragging");
-        later(function () {
-          extra.classList.add("spent");
-          var nextRow = root.querySelectorAll(".conv-row")[idx + 1];
-          if (nextRow) nextRow.classList.add("recv-extra");
-        }, 500);
-      }, 600 + idx * 1100);
-    });
+        later(end, 560);
+      }, 500);
+    } else {
+      later(end, 400);
+    }
   }
 
   function syncWorkChains() {
     document.querySelectorAll(".work-chain").forEach(function (chain) {
       var rows = Array.prototype.slice.call(chain.querySelectorAll(".work-row"));
-      var visible = rows.filter(function (r) {
-        return r.classList.contains("visible");
-      });
-      var current =
-        chain.querySelector(".work-row.current-fragment") ||
-        visible[visible.length - 1] ||
-        null;
+      var visible = rows.filter(function (r) { return r.classList.contains("visible"); });
+      var current = chain.querySelector(".work-row.current-fragment") || visible[visible.length - 1] || null;
       rows.forEach(function (row) {
-        var hide = row.classList.contains("visible") && row !== current;
-        row.classList.toggle("chain-hidden", hide);
+        row.classList.toggle("chain-hidden", row.classList.contains("visible") && row !== current);
       });
     });
+  }
+
+  function trySkipAnim() {
+    if (!anim.busy) return false;
+    anim.skip = true;
+    if (typeof anim.finish === "function") anim.finish();
+    return true;
   }
 
   function onFragmentShown(ev) {
@@ -684,14 +811,17 @@
     try {
       var frag = ev && ev.fragment;
       if (!frag) return;
-
       if (frag.classList.contains("work-slot")) {
         runAutoSlot(frag);
         return;
       }
-      if (frag.classList.contains("cancel-seq") || frag.getAttribute("data-cancel-seq") != null) {
+      if (frag.classList.contains("frac-phase") || frag.getAttribute("data-phase")) {
+        runFracPhase(frag);
+        return;
+      }
+      if (frag.classList.contains("cancel-seq")) {
         runFlyIns(frag);
-        later(function () { runCancelSeq(frag); }, FLY_MS + 120);
+        later(function () { runCancelOnly(frag); }, FLY_MS + 100);
         return;
       }
       if (frag.classList.contains("sci-jump")) {
@@ -702,14 +832,13 @@
         runPvDrag(frag);
         return;
       }
-      if (frag.classList.contains("conv-seq")) {
-        runFlyIns(frag);
-        runConvDrag(frag);
+      if (frag.classList.contains("conv-row") && frag.closest(".conv-seq")) {
+        runConvStep(frag);
         return;
       }
       clearSourceMarks();
       runFlyIns(frag);
-    } catch (err) { /* ignore */ }
+    } catch (err) { /* */ }
   }
 
   function onFragmentHidden(ev) {
@@ -723,9 +852,9 @@
       if (frag.classList.contains("work-slot")) {
         frag.classList.remove("playing");
         var panes = frag.querySelectorAll(".stage-pane");
-        panes.forEach(function (pane, i) {
+        panes.forEach(function (pane, idx) {
           pane.classList.remove("is-active", "peel-arrive", "is-measure");
-          if (i === 0) pane.classList.add("is-active");
+          if (idx === 0) pane.classList.add("is-active");
         });
       }
     }
@@ -752,8 +881,17 @@
 
   function afterReady() {
     renderMath();
-    try { Reveal.layout(); } catch (e) { /* ignore */ }
+    try { Reveal.layout(); } catch (e) { /* */ }
     syncCancelState();
+
+    /* Advance while animating → finish current step, then allow next advance */
+    if (Reveal.next) {
+      var origNext = Reveal.next.bind(Reveal);
+      Reveal.next = function () {
+        if (trySkipAnim()) return;
+        return origNext();
+      };
+    }
   }
 
   if (Reveal.isReady && Reveal.isReady()) afterReady();

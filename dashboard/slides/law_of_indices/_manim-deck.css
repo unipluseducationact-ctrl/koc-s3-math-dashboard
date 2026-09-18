@@ -179,7 +179,201 @@ html, body {
 .m-logic {
   font-size: 28px;
   color: var(--pow);
-  margin: 0 0.15em;
+  margin: 0 0.35em 0 0;
+  flex-shrink: 0;
+}
+.logic-line {
+  display: flex !important;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.25em;
+  width: 100%;
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+.logic-line .m-logic {
+  min-width: 1.1em;
+}
+.paren { color: #94a3b8; }
+
+/* Yellow frame while a term is expanding */
+.expand-framed,
+.token.expand-framed,
+.src.expand-framed {
+  box-shadow: 0 0 0 2px var(--pow), 0 0 12px rgba(255, 213, 79, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 213, 79, 0.08);
+}
+
+.work-fixed-frame.seat-left {
+  justify-content: flex-start;
+  padding-left: 6%;
+  padding-right: 6%;
+}
+.work-fixed-frame.seat-left .stage-pane {
+  justify-content: flex-start;
+  left: 6%;
+  right: 6%;
+}
+
+/* Stepped fraction build */
+.frac-build {
+  position: relative;
+  width: 100%;
+  min-height: 7.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.frac-build .frac-phase {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.frac-build .num,
+.frac-build .den {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease;
+}
+.frac-build .frac-bar {
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+  min-width: 280px;
+}
+.frac-build .frac-stack.phase-bar .frac-bar,
+.frac-build .frac-stack.phase-num .frac-bar,
+.frac-build .frac-stack.phase-den .frac-bar,
+.frac-build .frac-stack.phase-cancel .frac-bar,
+.frac-build .frac-stack.phase-result .frac-bar {
+  transform: scaleX(1);
+}
+.frac-build .frac-stack.phase-num .num,
+.frac-build .frac-stack.phase-den .num,
+.frac-build .frac-stack.phase-cancel .num,
+.frac-build .frac-stack.phase-result .num {
+  opacity: 1;
+  visibility: visible;
+}
+.frac-build .frac-stack.phase-den .den,
+.frac-build .frac-stack.phase-cancel .den,
+.frac-build .frac-stack.phase-result .den {
+  opacity: 1;
+  visibility: visible;
+}
+.gather-eq {
+  opacity: 0;
+  font-size: 32px;
+  color: #fff;
+  margin-top: 10px;
+  transition: opacity 0.35s ease;
+}
+.gather-eq.show { opacity: 1; }
+
+/* Sci equation stage — fixed seats, big RHS */
+.sci-eq-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 1040px;
+  min-height: 9em;
+}
+.sci-lhs {
+  font-size: 48px;
+  line-height: 1.2;
+  color: #fff;
+  min-height: 1.3em;
+}
+.sci-rhs-live {
+  width: 100%;
+  min-height: 2.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.sci-jump-eq.sci-big {
+  font-size: 44px;
+  line-height: 1.25;
+  gap: 0.12em;
+  align-items: baseline;
+}
+.sci-jump-eq.sci-big .dp-live,
+.sci-jump-eq.sci-big .dp {
+  color: var(--strike);
+  font-size: 1em;
+  padding: 0 1px;
+}
+.sci-jump-eq {
+  display: none;
+  font-size: 34px;
+  color: #fff;
+  min-height: 1.4em;
+}
+.sci-jump-eq.is-on {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: enterFade 0.35s ease both;
+}
+
+.pv-drag-box {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  box-sizing: border-box;
+  border: 2px solid var(--pow);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 22px;
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease;
+  box-shadow: 0 0 0 1px rgba(255, 213, 79, 0.35);
+}
+.pv-drag-box.fade-frame {
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 0.15;
+}
+.expand-term .term-times {
+  opacity: 0;
+  margin: 0 0.08em;
+  transition: opacity 0.3s ease;
+}
+.expand-term.combining .term-times,
+.expand-term.landed .term-times {
+  opacity: 1;
+}
+.expand-term .term-digit { color: #fff; }
+.expand-term .term-place { color: var(--note); }
+
+.conv-subj {
+  display: inline-block;
+  min-width: 1.4em;
+  color: var(--sym-y);
+  font-weight: normal;
+}
+.conv-row {
+  opacity: 0.35;
+  transition: opacity 0.4s ease;
+}
+.conv-row.visible,
+.conv-row.rhs-in {
+  opacity: 1;
 }
 
 .m-sub.note-tone { color: var(--note); }
@@ -677,18 +871,6 @@ html, body {
   align-items: center;
   gap: 12px;
 }
-.sci-jump-eq {
-  display: none;
-  font-size: 34px;
-  color: #fff;
-  min-height: 1.4em;
-}
-.sci-jump-eq.is-on {
-  display: block;
-  animation: enterFade 0.35s ease both;
-}
-.sci-jump-eq .pow,
-.sci-jump-eq sup.pow { color: var(--pow) !important; }
 .dp-jump-row {
   display: flex;
   align-items: baseline;
@@ -818,7 +1000,7 @@ html, body {
   pointer-events: none !important;
 }
 
-.reveal .fragment:not(.step-row):not(.step-block):not(.work-row):not(.m-sub):not(.desc-enter):not(.note):not(.m-eq):not(.m-result):not(.work-slot):not(.enter-wipe):not(.enter-bounce):not(.enter-fade):not(.enter-pop):not(.law-card):not(.sci-jump):not(.pv-expand):not(.cancel-seq):not(.conv-seq) {
+.reveal .fragment:not(.step-row):not(.step-block):not(.work-row):not(.m-sub):not(.desc-enter):not(.note):not(.m-eq):not(.m-result):not(.work-slot):not(.enter-wipe):not(.enter-bounce):not(.enter-fade):not(.enter-pop):not(.law-card):not(.sci-jump):not(.pv-expand):not(.cancel-seq):not(.conv-seq):not(.frac-phase):not(.conv-row) {
   animation: manimFadeIn 0.4s ease both;
 }
 
