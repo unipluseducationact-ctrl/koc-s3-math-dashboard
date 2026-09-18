@@ -1471,9 +1471,13 @@ body.loi-tight .m-sub {
 }
 body.loi-tight .cancel-caption { margin-top: 4px; }
 body.loi-tight .laws-grid {
-  gap: 12px 40px;
+  gap: 22px 48px;
   flex: 0 0 auto;
-  margin: 8px auto 0;
+  margin: 20px auto 0;
+  font-size: 46px;
+}
+body.loi-tight .laws-grid .full.box-final {
+  padding: 0.22em 0.55em;
 }
 body.loi-tight .m-stage.fill-center {
   justify-content: flex-start !important;
