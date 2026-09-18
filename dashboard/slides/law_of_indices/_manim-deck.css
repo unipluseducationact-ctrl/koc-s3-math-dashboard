@@ -1438,16 +1438,25 @@ body.loi-tight .story-stack {
   gap: 2px;
 }
 body.loi-tight .story-band { min-height: 0; }
-body.loi-tight .story-band-example { min-height: 1.55em; }
-body.loi-tight .story-band-work { min-height: 2.05em; }
-body.loi-tight .story-band-frac { min-height: 4.1em; }
+body.loi-tight .story-band-example { min-height: 1.7em; }
+body.loi-tight .story-band-work { min-height: 2.45em; }
+body.loi-tight .story-band-frac { min-height: 4.6em; }
 body.loi-tight .story-band-count,
 body.loi-tight .story-band-note { min-height: 1.35em; }
 body.loi-tight .story-band-eq { min-height: 1.55em; }
 body.loi-tight .story-band-result { min-height: 2.05em; }
-body.loi-tight .work-fixed-frame { min-height: 2.05em; }
-body.loi-tight .frac-build { min-height: 4.2em; }
-body.loi-tight .two-method .frac-build { min-height: 3.4em; }
+body.loi-tight .work-fixed-frame { min-height: 2.45em; }
+body.loi-tight .frac-build { min-height: 4.8em; }
+body.loi-tight .two-method .frac-build { min-height: 4em; }
+body.loi-tight .example-row { font-size: 38px; }
+body.loi-tight .work-fixed-frame .token,
+body.loi-tight .frac-stack .token {
+  font-size: 52px;
+}
+body.loi-tight .two-method .frac-stack .token {
+  font-size: 40px;
+}
+body.loi-tight .frac-bar { min-width: 220px; }
 body.loi-tight .two-method .method-col {
   padding: 2px 14px;
   gap: 6px;
