@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="../_manim-deck.css?v=20260917n">
+  <link rel="stylesheet" href="../_manim-deck.css?v=20260918a">
 </head>
 <body>
   <div class="reveal">
@@ -18,10 +18,10 @@
         <h2 class="m-title">Scientific Notation</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <p class="m-sub fragment">Write a number as <span class="sym-a">a</span> × 10<sup class="pow">n</sup> where 1 ≤ <span class="sym-a">a</span> &lt; 10.</p>
-        <p class="m-sub fragment">Move the decimal to just after the first non-zero digit.</p>
-        <p class="m-sub note-tone fragment">Left → 10<sup class="pow">+n</sup>. &nbsp; Right → 10<sup class="pow">−n</sup>.</p>
+        <div class="m-stage fill-center">
+        <p class="m-sub lead fragment enter-wipe">Write a number as <span class="sym-a">a</span> × 10<sup class="pow">n</sup> where 1 ≤ <span class="sym-a">a</span> &lt; 10.</p>
+        <p class="m-sub fragment enter-fade">Move the decimal to just after the first non-zero digit.</p>
+        <p class="m-sub emphasis fragment enter-bounce">Left → 10<sup class="pow">+n</sup>. &nbsp; Right → 10<sup class="pow">−n</sup>.</p>
         </div>
       </section>
 
@@ -30,20 +30,33 @@
         <h2 class="m-title">Large numbers — move left</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <p class="m-sub">Decimal left by \(n\) places \(\Rightarrow \times 10^{\textcolor{#facc15}{n}}\)</p>
-        <div class="digit-row fragment step-row">
-          <span class="digit focus">5</span>
-          <span class="digit dim">0</span>
-          <span class="digit dim">0</span>
-          <span class="digit dim">0</span>
-          <span class="dp">.</span>
+        <div class="m-stage fill-center">
+        <p class="m-sub lead">Decimal left by \(n\) places \(\Rightarrow \times 10^{\textcolor{#ffd54f}{n}}\)</p>
+        <div class="sci-jump fragment">
+          <div class="dp-jump-row">
+            <span class="digit focus" data-dp-slot="3">5</span>
+            <span data-dp-slot="2"></span>
+            <span class="digit dim">0</span>
+            <span data-dp-slot="1"></span>
+            <span class="digit dim">0</span>
+            <span data-dp-slot="0"></span>
+            <span class="digit dim">0</span>
+            <span class="dp" data-dp-slot="-1">.</span>
+          </div>
+          <div class="sci-jump-eq is-on">
+            <span class="sym-a">5000</span> = <span class="sym-a">5000.</span> × 10<sup class="pow">0</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">5000</span> = <span class="sym-a">500.0</span> × 10<sup class="pow">1</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">5000</span> = <span class="sym-a">50.00</span> × 10<sup class="pow">2</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">5000</span> = <span class="sym-a">5</span> × 10<sup class="pow">3</sup>
+          </div>
         </div>
-        <svg class="arc-svg fragment" viewBox="0 0 420 40" aria-hidden="true">
-          <path d="M380 28 C 300 2, 180 2, 50 28"/>
-          <text x="175" y="14">← 3 jumps</text>
-        </svg>
-        <div class="m-result fragment">\[ 5000 = 5 \times 10^{\textcolor{#facc15}{3}} \]</div>
+        <div class="m-result fragment enter-bounce"><span class="m-logic">∴</span> \[ 5000 = 5 \times 10^{\textcolor{#ffd54f}{3}} \]</div>
         </div>
       </section>
 
@@ -52,21 +65,37 @@
         <h2 class="m-title">Example: \(234560\)</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <div class="digit-row fragment step-row">
-          <span class="digit focus">2</span>
-          <span class="digit">3</span>
-          <span class="digit">4</span>
-          <span class="digit">5</span>
-          <span class="digit">6</span>
-          <span class="digit dim">0</span>
-          <span class="dp">.</span>
+        <div class="m-stage fill-center">
+        <div class="sci-jump fragment">
+          <div class="dp-jump-row">
+            <span class="digit focus">2</span>
+            <span class="digit">3</span>
+            <span class="digit">4</span>
+            <span class="digit">5</span>
+            <span class="digit">6</span>
+            <span class="digit dim">0</span>
+            <span class="dp">.</span>
+          </div>
+          <div class="sci-jump-eq is-on">
+            <span class="sym-a">234560</span> = <span class="sym-a">234560.</span> × 10<sup class="pow">0</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">234560</span> = <span class="sym-a">23456.0</span> × 10<sup class="pow">1</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">234560</span> = <span class="sym-a">2345.60</span> × 10<sup class="pow">2</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">234560</span> = <span class="sym-a">234.560</span> × 10<sup class="pow">3</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">234560</span> = <span class="sym-a">23.4560</span> × 10<sup class="pow">4</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">234560</span> = <span class="sym-a">2.34560</span> × 10<sup class="pow">5</sup>
+          </div>
         </div>
-        <svg class="arc-svg fragment" viewBox="0 0 480 40" aria-hidden="true">
-          <path d="M430 28 C 320 0, 160 0, 40 28"/>
-          <text x="195" y="14">← 5 jumps</text>
-        </svg>
-        <div class="m-result fragment">\[ 234560 = 2.3456 \times 10^{\textcolor{#facc15}{5}} \]</div>
+        <div class="m-result fragment enter-bounce"><span class="m-logic">∴</span> \[ 234560 = 2.3456 \times 10^{\textcolor{#ffd54f}{5}} \]</div>
         </div>
       </section>
 
@@ -75,11 +104,21 @@
         <h2 class="m-title">Already has a power of 10</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <div class="m-eq">\[ 428.9 \times 10^{\textcolor{#facc15}{5}} \]</div>
-        <p class="m-sub fragment">Move left 2 places:</p>
-        <div class="m-eq fragment">\[ = 4.289 \times 10^{\textcolor{#facc15}{2}} \times 10^{\textcolor{#facc15}{5}} \]</div>
-        <div class="m-result fragment">\[ = 4.289 \times 10^{\textcolor{#facc15}{7}} \]</div>
+        <div class="m-stage fill-center">
+        <div class="m-eq">\[ 428.9 \times 10^{\textcolor{#ffd54f}{5}} \]</div>
+        <p class="m-sub lead fragment enter-wipe"><span class="m-logic">∵</span> Move left 2 places:</p>
+        <div class="sci-jump fragment">
+          <div class="sci-jump-eq is-on">
+            <span class="sym-a">428.9</span> × 10<sup class="pow">5</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">42.89</span> × 10<sup class="pow">1</sup> × 10<sup class="pow">5</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">4.289</span> × 10<sup class="pow">2</sup> × 10<sup class="pow">5</sup>
+          </div>
+        </div>
+        <div class="m-result fragment enter-bounce"><span class="m-logic">∴</span> \[ = 4.289 \times 10^{\textcolor{#ffd54f}{7}} \]</div>
         </div>
       </section>
 
@@ -88,22 +127,29 @@
         <h2 class="m-title">Small numbers — move right</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <p class="m-sub">Decimal right by \(n\) places \(\Rightarrow \times 10^{-\textcolor{#facc15}{n}}\)</p>
-        <div class="digit-row fragment step-row">
-          <span class="digit dim">0</span>
-          <span class="dp">.</span>
-          <span class="digit dim">0</span>
-          <span class="digit focus">9</span>
-          <span class="digit">1</span>
-          <span class="digit">2</span>
-          <span class="digit">3</span>
+        <div class="m-stage fill-center">
+        <p class="m-sub lead">Decimal right by \(n\) places \(\Rightarrow \times 10^{-\textcolor{#ffd54f}{n}}\)</p>
+        <div class="sci-jump fragment">
+          <div class="dp-jump-row">
+            <span class="digit dim">0</span>
+            <span class="dp">.</span>
+            <span class="digit dim">0</span>
+            <span class="digit focus">9</span>
+            <span class="digit">1</span>
+            <span class="digit">2</span>
+            <span class="digit">3</span>
+          </div>
+          <div class="sci-jump-eq is-on">
+            <span class="sym-a">0.09123</span> = <span class="sym-a">0.09123</span> × 10<sup class="pow">0</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.09123</span> = <span class="sym-a">0.9123</span> × 10<sup class="pow">−1</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.09123</span> = <span class="sym-a">9.123</span> × 10<sup class="pow">−2</sup>
+          </div>
         </div>
-        <svg class="arc-svg fragment" viewBox="0 0 420 40" aria-hidden="true">
-          <path d="M70 28 C 140 2, 220 2, 250 28"/>
-          <text x="140" y="14">2 jumps →</text>
-        </svg>
-        <div class="m-result fragment">\[ 0.09123 = 9.123 \times 10^{\textcolor{#facc15}{-2}} \]</div>
+        <div class="m-result fragment enter-bounce"><span class="m-logic">∴</span> \[ 0.09123 = 9.123 \times 10^{\textcolor{#ffd54f}{-2}} \]</div>
         </div>
       </section>
 
@@ -112,21 +158,37 @@
         <h2 class="m-title">Example: \(0.00008\)</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <div class="digit-row fragment step-row">
-          <span class="digit dim">0</span>
-          <span class="dp">.</span>
-          <span class="digit dim">0</span>
-          <span class="digit dim">0</span>
-          <span class="digit dim">0</span>
-          <span class="digit dim">0</span>
-          <span class="digit focus">8</span>
+        <div class="m-stage fill-center">
+        <div class="sci-jump fragment">
+          <div class="dp-jump-row">
+            <span class="digit dim">0</span>
+            <span class="dp">.</span>
+            <span class="digit dim">0</span>
+            <span class="digit dim">0</span>
+            <span class="digit dim">0</span>
+            <span class="digit dim">0</span>
+            <span class="digit focus">8</span>
+          </div>
+          <div class="sci-jump-eq is-on">
+            <span class="sym-a">0.00008</span> = <span class="sym-a">0.00008</span> × 10<sup class="pow">0</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.00008</span> = <span class="sym-a">0.0008</span> × 10<sup class="pow">−1</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.00008</span> = <span class="sym-a">0.008</span> × 10<sup class="pow">−2</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.00008</span> = <span class="sym-a">0.08</span> × 10<sup class="pow">−3</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.00008</span> = <span class="sym-a">0.8</span> × 10<sup class="pow">−4</sup>
+          </div>
+          <div class="sci-jump-eq">
+            <span class="sym-a">0.00008</span> = <span class="sym-a">8</span> × 10<sup class="pow">−5</sup>
+          </div>
         </div>
-        <svg class="arc-svg fragment" viewBox="0 0 480 40" aria-hidden="true">
-          <path d="M70 28 C 180 0, 320 0, 400 28"/>
-          <text x="200" y="14">5 jumps →</text>
-        </svg>
-        <div class="m-result fragment">\[ 0.00008 = 8 \times 10^{\textcolor{#facc15}{-5}} \]</div>
+        <div class="m-result fragment enter-bounce"><span class="m-logic">∴</span> \[ 0.00008 = 8 \times 10^{\textcolor{#ffd54f}{-5}} \]</div>
         </div>
       </section>
 
@@ -135,10 +197,10 @@
         <h2 class="m-title">Combine negative powers</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <div class="m-eq">\[ 0.097 \times 10^{\textcolor{#facc15}{-2}} \]</div>
-        <div class="m-eq fragment">\[ = 9.7 \times 10^{\textcolor{#facc15}{-2}} \times 10^{\textcolor{#facc15}{-2}} \]</div>
-        <div class="m-result fragment">\[ = 9.7 \times 10^{\textcolor{#facc15}{-4}} \]</div>
+        <div class="m-stage fill-center">
+        <div class="m-eq">\[ 0.097 \times 10^{\textcolor{#ffd54f}{-2}} \]</div>
+        <div class="m-eq fragment enter-fade"><span class="m-logic">∵</span> \[ = 9.7 \times 10^{\textcolor{#ffd54f}{-2}} \times 10^{\textcolor{#ffd54f}{-2}} \]</div>
+        <div class="m-result fragment enter-bounce"><span class="m-logic">∴</span> \[ = 9.7 \times 10^{\textcolor{#ffd54f}{-4}} \]</div>
         </div>
       </section>
 
@@ -147,11 +209,11 @@
         <h2 class="m-title">Negative numbers</h2>
         <div class="m-line"></div>
         </header>
-        <div class="m-stage">
-        <p class="m-sub fragment">1. Ignore the minus sign.</p>
-        <p class="m-sub fragment">2. Convert the magnitude.</p>
-        <p class="m-sub fragment">3. Put the minus back.</p>
-        <div class="m-result fragment">\[ -428.9 \times 10^{\textcolor{#facc15}{5}} = -4.289 \times 10^{\textcolor{#facc15}{7}} \]</div>
+        <div class="m-stage fill-center">
+        <p class="m-sub lead fragment enter-wipe">1. Ignore the minus sign.</p>
+        <p class="m-sub fragment enter-fade">2. Convert the magnitude.</p>
+        <p class="m-sub emphasis fragment enter-pop">3. Put the minus back.</p>
+        <div class="m-result fragment enter-bounce">\[ -428.9 \times 10^{\textcolor{#ffd54f}{5}} = -4.289 \times 10^{\textcolor{#ffd54f}{7}} \]</div>
         </div>
       </section>
 
@@ -161,7 +223,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script src="../_manim-boot.js?v=20260917n"></script>
-  <script src="../../../shared/manim-deck-nav.js?v=20260917n"></script>
+  <script src="../_manim-boot.js?v=20260918a"></script>
+  <script src="../../../shared/manim-deck-nav.js?v=20260918a"></script>
 </body>
 </html>
