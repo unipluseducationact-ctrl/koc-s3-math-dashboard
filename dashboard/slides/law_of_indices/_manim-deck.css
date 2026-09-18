@@ -1377,6 +1377,22 @@ html, body {
   animation-duration: 0.48s;
 }
 
+/* Opening definition card: one short line of maths should read as the slide,
+   not as a caption under a large empty stage. */
+.hero-slide .m-sub.lead {
+  font-size: 42px;
+}
+.hero-slide .token-row.hero-eq {
+  gap: 8px 14px;
+  margin: 22px 0;
+}
+.hero-slide .token-row.hero-eq .token {
+  font-size: 72px;
+}
+.hero-slide .m-sub.note-proc {
+  font-size: 34px;
+}
+
 .m-stage.fill-center {
   justify-content: center !important;
 }
@@ -1396,4 +1412,7 @@ html, body {
   .sci-jump-eq.sci-big { font-size: 28px; }
   .laws-grid, .two-col { grid-template-columns: 1fr; }
   .laws-grid { font-size: 22px; }
+  .hero-slide .m-sub.lead { font-size: 32px; }
+  .hero-slide .token-row.hero-eq .token { font-size: 52px; }
+  .hero-slide .m-sub.note-proc { font-size: 26px; }
 }
