@@ -91,9 +91,11 @@
       if (e.key === "ArrowRight" || e.key === "Enter") {
         e.preventDefault();
         deckStep(frame, "next");
-      } else if (e.key === "ArrowLeft") {
+      } else if (e.key === "ArrowLeft" || e.key === "Backspace") {
         e.preventDefault();
         deckStep(frame, "prev");
+      } else if (e.key === "Escape") {
+        e.preventDefault();
       }
     });
   }

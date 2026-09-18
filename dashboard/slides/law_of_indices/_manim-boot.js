@@ -81,6 +81,12 @@
     });
   }
 
+  function clearAllExpandFrames(scope) {
+    (scope || document).querySelectorAll(".expand-framed").forEach(function (el) {
+      el.classList.remove("expand-framed");
+    });
+  }
+
   function markSource(sel, spent) {
     if (!sel) return;
     var src = document.querySelector(sel);
@@ -97,6 +103,24 @@
   function setExpandFrame(el, on) {
     if (!el) return;
     el.classList.toggle("expand-framed", !!on);
+  }
+
+  /** Yellow frame belongs on the Example-row term being expanded (not the work row). */
+  function frameExampleSrc(pane) {
+    clearAllExpandFrames();
+    if (!pane) return null;
+    var sel = pane.getAttribute("data-ex-src");
+    if (!sel) {
+      var fly = pane.querySelector("[data-fly-from]");
+      if (fly) sel = fly.getAttribute("data-fly-from");
+    }
+    if (!sel) return null;
+    var src = document.querySelector(sel);
+    if (src) {
+      setExpandFrame(src, true);
+      markSource(sel, false);
+    }
+    return src;
   }
 
   /** Manim Indicate — one-beat flash */
@@ -206,13 +230,13 @@
     if (!frame) return;
     frame.querySelectorAll(".stage-pane").forEach(function (p) {
       p.classList.remove("is-active", "peel-arrive", "is-measure");
-      if (p !== pane) setExpandFrame(p.querySelector(".expand-framed, .expand-src, .token"), false);
     });
     pane.classList.add("is-active");
     if (opts.peel) pane.classList.add("peel-arrive");
+    frameExampleSrc(pane);
+    renderMath(pane);
     var flyNodes = pane.querySelectorAll("[data-fly-from]");
     if (flyNodes.length) {
-      clearSourceMarks();
       Array.prototype.forEach.call(flyNodes, function (toEl, i) {
         var sel = toEl.getAttribute("data-fly-from");
         if (!sel) return;
@@ -229,8 +253,8 @@
       if (done) done();
       return;
     }
-    var expandTok = fromPane.querySelector(".token.expand-src, .token");
-    setExpandFrame(expandTok, true);
+    /* Frame the Example-row term for the pane we are expanding from */
+    frameExampleSrc(fromPane);
 
     var pow = fromPane.querySelector("sup.pow.outer");
     if (!pow) {
@@ -240,7 +264,6 @@
     if (!pow) {
       activatePane(toPane, { peel: true });
       later(function () {
-        setExpandFrame(expandTok, false);
         if (done) done();
       }, 360);
       return;
@@ -267,7 +290,7 @@
       midY = tr.top + tr.height / 2;
     } else {
       midX = (fromR.left + fromR.width / 2 + targetR.left + targetR.width / 2) / 2;
-      midY = (fromR.top + targetR.top) / 2 + 8;
+      midY = (fromR.top + targetR.top) / 2;
     }
     var landX = targetR.left + targetR.width / 2;
     var landY = targetR.top + targetR.height / 2;
@@ -275,13 +298,14 @@
 
     var startX = fromR.left + fromR.width / 2;
     var startY = fromR.top + fromR.height / 2;
-    var dip = Math.max(32, Math.abs(landX - startX) * 0.32);
+    /* Upward parabola (screen y decreases upward) */
+    var lift = Math.max(56, Math.abs(landX - startX) * 0.48);
 
     var ghost = document.createElement("span");
     ghost.className = "peel-ghost";
     ghost.textContent = pow.textContent;
-    ghost.style.left = fromR.left + "px";
-    ghost.style.top = fromR.top + "px";
+    ghost.style.left = (startX - fromR.width / 2) + "px";
+    ghost.style.top = (startY - fromR.height / 2) + "px";
     ghost.style.fontSize = window.getComputedStyle(pow).fontSize;
     document.body.appendChild(ghost);
     pow.style.opacity = "0";
@@ -304,48 +328,40 @@
       fromPane.classList.remove("is-active");
       pow.style.opacity = "";
       activatePane(toPane, { peel: true });
-      setExpandFrame(expandTok, false);
-      var nextExpand = toPane.querySelector(".token.peel-target, .token.next-factor");
-      if (nextExpand && nextExpand.querySelector("sup.pow")) {
-        setExpandFrame(nextExpand, true);
-      }
       later(function () {
         toPane.classList.remove("peel-arrive");
         anim.busy = false;
         anim.finish = null;
         if (done) done();
-      }, skip ? 40 : 320);
+      }, skip ? 40 : 280);
     }
 
     anim.busy = true;
     anim.finish = function () { cleanup(true); };
 
     var t0 = null;
+    var FADE_TAIL = 0.18;
     function frame(now) {
       if (playToken !== peelToken || finished) return;
       if (anim.skip) { cleanup(true); return; }
       if (t0 == null) t0 = now;
       var p = Math.min(1, (now - t0) / PEEL_MS);
-      var ease = 1 - Math.pow(1 - p, 2.4);
-      var x1 = midX - startX;
-      var x2 = landX - startX;
-      var y2 = landY - startY;
-      var x, y;
-      if (ease < 0.55) {
-        var u = ease / 0.55;
-        x = x1 * u;
-        y = (midY - startY) * u + Math.sin(Math.PI * u) * dip;
-      } else {
-        var v = (ease - 0.55) / 0.45;
-        x = x1 + (x2 - x1) * v;
-        y = (midY - startY) + (y2 - (midY - startY)) * v;
+      var ease = 1 - Math.pow(1 - Math.min(1, p / (1 - FADE_TAIL * 0.35)), 2.4);
+      var x = (landX - startX) * ease;
+      var y = (landY - startY) * ease - Math.sin(Math.PI * ease) * lift;
+      var scale = 1 + 0.16 * Math.sin(Math.PI * Math.min(1, ease));
+      var opacity = 1;
+      if (p > 1 - FADE_TAIL) {
+        opacity = Math.max(0, 1 - (p - (1 - FADE_TAIL)) / FADE_TAIL);
       }
-      ghost.style.transform = "translate(" + x + "px, " + y + "px) scale(" + (1 + 0.18 * Math.sin(Math.PI * ease)) + ")";
-      if (ease >= 0.35 && ease <= 0.75) {
-        timesGhost.style.opacity = String(Math.min(1, (ease - 0.35) / 0.15));
+      ghost.style.opacity = String(opacity);
+      ghost.style.transform = "translate(" + x + "px, " + y + "px) scale(" + scale + ")";
+      /* Mid × pops near the apex of the upward arc */
+      if (ease >= 0.28 && ease <= 0.72) {
+        timesGhost.style.opacity = String(Math.min(1, (ease - 0.28) / 0.12) * opacity);
         timesGhost.style.transform = "translate(-50%, -50%) scale(1)";
-      } else if (ease > 0.75) {
-        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.75) / 0.25));
+      } else if (ease > 0.72) {
+        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.72) / 0.28) * opacity);
       }
       if (p < 1) raf(frame);
       else cleanup(false);
@@ -374,8 +390,6 @@
       return;
     }
     activatePane(pane);
-    var src = pane.querySelector(".expand-src, .token");
-    if (src && src.querySelector(".pow")) setExpandFrame(src, true);
   }
 
   function runGatherOnce(pane) {
@@ -400,18 +414,22 @@
     var phase = root.getAttribute("data-phase");
     var frac = build.querySelector(".frac-stack");
     if (!frac || !phase) return;
-    if (phase === "bar") {
-      frac.classList.add("phase-bar");
+    if (phase === "bar" || phase === "compact") {
+      frac.classList.add("phase-bar", "phase-compact");
+      runFlyIns(frac.querySelector(".compact-view") || frac);
       return;
     }
-    if (phase === "num") {
-      frac.classList.add("phase-num");
-      runFlyIns(frac.querySelector(".num"));
+    if (phase === "num" || phase === "expand") {
+      frac.classList.remove("phase-compact");
+      frac.classList.add("phase-bar", "phase-num", "phase-expand", "phase-den");
+      runFlyIns(frac.querySelector(".num .expand-view") || frac.querySelector(".num"));
+      runFlyIns(frac.querySelector(".den .expand-view") || frac.querySelector(".den"));
       return;
     }
     if (phase === "den") {
       frac.classList.add("phase-den");
-      runFlyIns(frac.querySelector(".den"));
+      var denHost = frac.querySelector(".den .expand-view") || frac.querySelector(".den");
+      runFlyIns(denHost);
       return;
     }
     if (phase === "cancel") {
@@ -429,8 +447,10 @@
 
   function runCancelOnly(frac) {
     anim.busy = true;
-    var numCancels = frac.querySelectorAll(".num .token.cancelable");
-    var denCancels = frac.querySelectorAll(".den .token.cancelable");
+    var numCancels = frac.querySelectorAll(".num .token.cancelable, .num .expand-view .token.cancelable");
+    var denCancels = frac.querySelectorAll(".den .token.cancelable, .den .expand-view .token.cancelable");
+    if (!numCancels.length) numCancels = frac.querySelectorAll(".num .token.cancelable");
+    if (!denCancels.length) denCancels = frac.querySelectorAll(".den .token.cancelable");
     var pairs = Math.min(numCancels.length, denCancels.length);
     var steps = [];
     var i;
@@ -470,30 +490,58 @@
     frac.classList.add("gathering");
     var rem = frac.querySelectorAll(".token.remain, .token.is-remaining");
     Array.prototype.forEach.call(rem, function (t) { t.classList.add("is-remaining"); });
-    if (rem.length >= 2) {
-      rem[0].classList.add("gather-right");
-      rem[rem.length - 1].classList.add("gather-left");
-    }
+
+    var side = frac.querySelector(".gather-side");
     var eq = frac.querySelector(".gather-eq");
+    var result = frac.querySelector(".cancel-result");
     if (eq) eq.classList.add("show");
+
+    /* Pull remaining factors down toward the = seat (right of fraction), then merge */
+    var target = side || result || eq;
+    var targetR = target ? target.getBoundingClientRect() : null;
+    var ghosts = [];
+    Array.prototype.forEach.call(rem, function (t, i) {
+      if (!targetR) return;
+      var r = t.getBoundingClientRect();
+      var g = t.cloneNode(true);
+      g.classList.add("fly-ghost", "flying");
+      g.style.left = r.left + "px";
+      g.style.top = r.top + "px";
+      g.style.width = r.width + "px";
+      g.style.height = r.height + "px";
+      document.body.appendChild(g);
+      ghosts.push(g);
+      t.style.opacity = "0";
+      var dx = targetR.left + targetR.width * 0.35 - r.left + i * 18;
+      var dy = targetR.top + 8 - r.top;
+      raf(function () {
+        raf(function () {
+          g.style.transform = "translate(" + dx + "px, " + dy + "px) scale(0.92)";
+        });
+      });
+    });
+
     function end() {
+      ghosts.forEach(function (g) {
+        if (g.parentNode) g.parentNode.removeChild(g);
+      });
       frac.classList.add("gathered");
-      var result = frac.querySelector(".cancel-result");
       if (result) {
         result.classList.add("show");
         renderMath(result);
       }
       Array.prototype.forEach.call(rem, function (t) {
         t.classList.remove("gather-left", "gather-right", "gather-mid");
+        t.style.opacity = "";
       });
       anim.busy = false;
       anim.finish = null;
     }
     anim.finish = end;
-    later(end, 700);
+    later(end, 720);
   }
 
-  /** One decimal-jump step (one next_slide) */
+  /** One decimal-jump step — pendulum lower semicircle; direction from dx (left +n / right −n) */
   function runSciStep(eq) {
     if (!eq) return;
     var host = eq.parentElement;
@@ -537,7 +585,8 @@
     dp.style.opacity = "0";
     var dx = tr.left - fr.left;
     var dy = tr.top - fr.top;
-    var dip = Math.max(30, Math.abs(dx) * 0.4);
+    /* Lower semicircle (pendulum): parametric x linear, y dips below baseline */
+    var radius = Math.max(36, Math.abs(dx) * 0.55);
     var t0 = null;
     var token = playToken;
     function frame(now) {
@@ -554,8 +603,10 @@
       if (t0 == null) t0 = now;
       var p = Math.min(1, (now - t0) / JUMP_MS);
       var ease = 1 - Math.pow(1 - p, 2.2);
+      /* θ from π → 0 (left jump) or 0 → π mapped onto lower half via sin */
+      var arcY = Math.sin(Math.PI * ease) * radius;
       ghost.style.transform =
-        "translate(" + (dx * ease) + "px, " + (dy * ease + Math.sin(Math.PI * ease) * dip) + "px)";
+        "translate(" + (dx * ease) + "px, " + (dy * ease + arcY) + "px)";
       if (p < 1) raf(frame);
       else {
         if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
@@ -711,19 +762,77 @@
     purgeGhosts();
     var frag = ev && ev.fragment;
     if (!frag) return;
+
     if (frag.classList.contains("stage-pane")) {
       frag.classList.remove("is-active", "peel-arrive");
-      frag.querySelectorAll(".expand-framed").forEach(function (el) {
-        el.classList.remove("expand-framed");
-      });
-      /* Keep previous visible pane active when going back */
+      clearAllExpandFrames(frag.parentElement);
       var frame = frag.parentElement;
       if (frame) {
         var panes = frame.querySelectorAll(".stage-pane.visible");
         var last = panes[panes.length - 1];
-        if (last && last !== frag) last.classList.add("is-active");
+        if (last && last !== frag) {
+          last.classList.add("is-active");
+          frameExampleSrc(last);
+        }
       }
+      return;
     }
+
+    if (frag.classList.contains("frac-phase") || frag.getAttribute("data-phase")) {
+      var build = frag.closest(".frac-build");
+      var frac = build && build.querySelector(".frac-stack");
+      if (!frac) return;
+      var phase = frag.getAttribute("data-phase");
+      var cap = build.querySelector(".cancel-caption");
+      if (phase === "result") {
+        frac.classList.remove("gathered", "gathering");
+        frac.querySelectorAll(".cancel-result, .gather-eq").forEach(function (el) {
+          el.classList.remove("show");
+        });
+        frac.querySelectorAll(".token.remain").forEach(function (t) {
+          t.style.opacity = "";
+          t.classList.add("is-remaining");
+        });
+      } else if (phase === "cancel") {
+        frac.classList.remove("cancelled", "cancel-done");
+        frac.querySelectorAll(".token.struck, .token.is-remaining").forEach(function (t) {
+          t.classList.remove("struck", "is-remaining");
+        });
+        if (cap) cap.classList.remove("show");
+      } else if (phase === "den") {
+        frac.classList.remove("phase-den");
+      } else if (phase === "num" || phase === "expand") {
+        frac.classList.remove("phase-num", "phase-expand");
+        frac.classList.add("phase-compact");
+      } else if (phase === "bar" || phase === "compact") {
+        frac.classList.remove("phase-bar", "phase-compact", "phase-num", "phase-expand", "phase-den");
+      }
+      return;
+    }
+
+    if (frag.classList.contains("sci-jump-eq")) {
+      var host = frag.parentElement;
+      if (!host) return;
+      var eqs = host.querySelectorAll(".sci-jump-eq");
+      frag.classList.remove("is-on");
+      var visible = [];
+      eqs.forEach(function (el) {
+        if (el.classList.contains("visible") && el !== frag) visible.push(el);
+      });
+      eqs.forEach(function (el) { el.classList.remove("is-on"); });
+      if (visible.length) visible[visible.length - 1].classList.add("is-on");
+    }
+  }
+
+  function playTitleEnter(slide) {
+    if (!slide) return;
+    var head = slide.querySelector(".m-head");
+    if (!head) return;
+    head.classList.remove("title-enter");
+    void head.offsetWidth;
+    head.classList.add("title-enter");
+    later(function () { syncTitleBars(slide); }, 80);
+    later(function () { syncTitleBars(slide); }, 420);
   }
 
   Reveal.initialize({
@@ -736,7 +845,19 @@
     progress: false,
     slideNumber: false,
     history: false,
-    keyboard: true,
+    overview: false,
+    keyboard: {
+      27: null,       /* disable ESC overview */
+      13: "next",
+      32: "next",
+      39: "next",
+      37: "prev",
+      8: "prev",       /* Backspace = go back one fragment */
+      33: "prev",
+      34: "next",
+      38: null,
+      40: null
+    },
     touch: true,
     center: false,
     embedded: false,
@@ -750,12 +871,24 @@
     syncTitleBars();
     try { Reveal.layout(); } catch (e) { /* */ }
     later(function () { syncTitleBars(); }, 80);
+    playTitleEnter(Reveal.getCurrentSlide && Reveal.getCurrentSlide());
 
     if (Reveal.next) {
       var origNext = Reveal.next.bind(Reveal);
       Reveal.next = function () {
         if (trySkipAnim()) return;
         return origNext();
+      };
+    }
+    if (Reveal.prev) {
+      var origPrev = Reveal.prev.bind(Reveal);
+      Reveal.prev = function () {
+        clearAutoTimers();
+        purgeGhosts();
+        anim.busy = false;
+        anim.skip = false;
+        anim.finish = null;
+        return origPrev();
       };
     }
   }
@@ -767,13 +900,15 @@
   if (Reveal.on) {
     Reveal.on("fragmentshown", onFragmentShown);
     Reveal.on("fragmenthidden", onFragmentHidden);
-    Reveal.on("slidechanged", function () {
+    Reveal.on("slidechanged", function (ev) {
       clearAutoTimers();
       restoreVisualState(document);
       syncTitleBars();
       document.querySelectorAll(".stage-pane").forEach(function (p) {
         p.classList.remove("is-active", "peel-arrive");
       });
+      clearAllExpandFrames();
+      playTitleEnter(ev && ev.currentSlide);
     });
   }
 

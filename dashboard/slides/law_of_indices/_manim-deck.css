@@ -100,6 +100,26 @@ html, body {
   pointer-events: none;
 }
 
+/* Manim title_bar: Write(title) + GrowFromCenter(accent) */
+.m-head.title-enter .m-title {
+  animation: titleWrite 0.85s ease both;
+}
+.m-head.title-enter .m-line {
+  animation: titleGrowLine 0.7s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+  animation-delay: 0.12s;
+}
+@keyframes titleWrite {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+@keyframes titleGrowLine {
+  from { opacity: 0; transform: scaleX(0.12); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+.m-line {
+  transform-origin: center;
+}
+
 .m-title.m-title-eq {
   display: flex;
   flex-direction: column;
@@ -252,13 +272,19 @@ html, body {
   min-width: 280px;
 }
 .frac-build .frac-stack.phase-bar .frac-bar,
+.frac-build .frac-stack.phase-compact .frac-bar,
 .frac-build .frac-stack.phase-num .frac-bar,
+.frac-build .frac-stack.phase-expand .frac-bar,
 .frac-build .frac-stack.phase-den .frac-bar,
 .frac-build .frac-stack.phase-cancel .frac-bar,
 .frac-build .frac-stack.phase-result .frac-bar {
   transform: scaleX(1);
 }
+.frac-build .frac-stack.phase-compact .num,
+.frac-build .frac-stack.phase-compact .den,
 .frac-build .frac-stack.phase-num .num,
+.frac-build .frac-stack.phase-expand .num,
+.frac-build .frac-stack.phase-expand .den,
 .frac-build .frac-stack.phase-den .num,
 .frac-build .frac-stack.phase-cancel .num,
 .frac-build .frac-stack.phase-result .num {
@@ -266,6 +292,7 @@ html, body {
   visibility: visible;
 }
 .frac-build .frac-stack.phase-den .den,
+.frac-build .frac-stack.phase-expand .den,
 .frac-build .frac-stack.phase-cancel .den,
 .frac-build .frac-stack.phase-result .den {
   opacity: 1;
@@ -273,12 +300,86 @@ html, body {
 }
 .gather-eq {
   opacity: 0;
-  font-size: 32px;
+  font-size: 36px;
   color: #fff;
-  margin-top: 10px;
+  margin: 0;
   transition: opacity 0.35s ease;
 }
 .gather-eq.show { opacity: 1; }
+/* = sits to the LEFT of the result (not above it) */
+.gather-side {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 1.4em;
+  margin-left: 18px;
+}
+.frac-stack.gathering,
+.frac-stack.gathered {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+}
+.frac-stack .frac-body {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.compact-view { display: none; }
+.expand-view { display: contents; }
+.frac-stack.phase-compact .compact-view { display: contents; }
+.frac-stack.phase-compact .expand-view { display: none !important; }
+.frac-stack.phase-num .compact-view,
+.frac-stack.phase-expand .compact-view,
+.frac-stack.phase-den .compact-view,
+.frac-stack.phase-cancel .compact-view,
+.frac-stack.phase-result .compact-view { display: none !important; }
+.frac-stack.phase-num .expand-view,
+.frac-stack.phase-expand .expand-view,
+.frac-stack.phase-den .expand-view,
+.frac-stack.phase-cancel .expand-view,
+.frac-stack.phase-result .expand-view { display: contents; }
+
+/* Two methods side-by-side with a vertical divider; conclusion returns to center */
+.two-method {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.two-method .method-col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 8px 22px;
+  min-width: 0;
+}
+.two-method .method-div {
+  flex: 0 0 2px;
+  width: 2px;
+  align-self: stretch;
+  background: linear-gradient(180deg, transparent, #64748b 12%, #64748b 88%, transparent);
+  margin: 4px 4px;
+}
+.two-method + .story-band,
+.story-band-conclude {
+  width: 100%;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
 .cancel-caption {
   opacity: 0;
   margin-top: 8px;
@@ -601,7 +702,7 @@ html, body {
   transform: scale(0.9);
   transition: opacity 0.4s ease, transform 0.4s ease;
   font-size: 34px;
-  margin-top: 8px;
+  margin: 0;
   color: var(--sym-a);
 }
 .cancel-result.show {
@@ -832,8 +933,8 @@ html, body {
   to { opacity: 1; clip-path: inset(0 0 0 0); }
 }
 @keyframes enterBounce {
-  0% { opacity: 0; transform: translateY(32px) scale(0.9); }
-  70% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+  0% { opacity: 0; transform: scale(0.94); }
+  70% { opacity: 1; transform: scale(1.02); }
   100% { opacity: 1; transform: none; }
 }
 @keyframes enterFade {
@@ -1148,11 +1249,7 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-.work-fixed-frame.seat-left {
-  justify-content: flex-start;
-  padding-left: 6%;
-  padding-right: 6%;
-}
+/* Entire expansion row is one centered block */
 .work-fixed-frame .stage-pane {
   position: absolute;
   left: 0;
@@ -1167,11 +1264,6 @@ html, body {
   visibility: hidden;
   transform: translateY(-50%);
   pointer-events: none;
-}
-.work-fixed-frame.seat-left .stage-pane {
-  justify-content: flex-start;
-  left: 6%;
-  right: 6%;
 }
 .work-fixed-frame .stage-pane.is-active {
   opacity: 1;
@@ -1190,9 +1282,11 @@ html, body {
   visibility: hidden !important;
   pointer-events: none !important;
 }
-.reveal .m-stage .work-fixed-frame.seat-left .fragment.stage-pane:not(.visible) {
-  left: 6%;
-  right: 6%;
+/* CRITICAL: past fragments keep .visible — only .is-active may paint (prevents stacking) */
+.reveal .m-stage .fragment.stage-pane.visible:not(.is-active) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 .reveal .fragment.stage-pane.visible.is-active {
   opacity: 1 !important;
