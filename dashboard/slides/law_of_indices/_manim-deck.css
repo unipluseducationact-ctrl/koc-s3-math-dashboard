@@ -1480,6 +1480,36 @@ body.loi-tight .m-stage.fill-center {
   padding-top: 18px;
 }
 
+
+/* Quotient-law slide: title already uses a stacked fraction, so the boxed
+   takeaway must stay shorter than the leftover frame. */
+body.loi-tight .m-title.m-title-eq {
+  font-size: 40px !important;
+  line-height: 1.12;
+}
+body.loi-tight .m-result.box-final {
+  font-size: 34px;
+  line-height: 1.15;
+  padding: 0.16em 0.4em;
+}
+body.loi-tight .slide-quot .m-head {
+  padding-top: 12px;
+  padding-bottom: 2px;
+}
+body.loi-tight .slide-quot .story-band-frac {
+  min-height: 2.1em;
+}
+body.loi-tight .slide-quot .story-band-work,
+body.loi-tight .slide-quot .work-fixed-frame {
+  min-height: 2.1em;
+}
+body.loi-tight .slide-quot .work-fixed-frame .token {
+  font-size: 44px;
+}
+body.loi-tight .slide-quot .m-result {
+  font-size: 32px;
+}
+
 @media (max-width: 900px) {
   .m-title { font-size: 36px !important; }
   .m-sub, .note { font-size: 20px; }
