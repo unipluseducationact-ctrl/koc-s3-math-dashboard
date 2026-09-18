@@ -1379,12 +1379,31 @@ html, body {
 
 /* Opening definition card: one short line of maths should read as the slide,
    not as a caption under a large empty stage. */
+.hero-slide .m-head {
+  padding: 28px 48px 8px;
+}
+.hero-slide .m-stage.fill-center {
+  /* Sit the definition under the title, not in a dead-centre void. */
+  justify-content: flex-start !important;
+  padding: 36px 48px 32px;
+}
+.hero-slide .story-stack {
+  gap: 20px;
+}
+.hero-slide .story-band,
+.hero-slide .story-band-note,
+.hero-slide .story-band-work {
+  min-height: 0;
+}
+.hero-slide .m-sub {
+  margin: 0;
+}
 .hero-slide .m-sub.lead {
   font-size: 42px;
 }
 .hero-slide .token-row.hero-eq {
   gap: 8px 14px;
-  margin: 22px 0;
+  margin: 0;
 }
 .hero-slide .token-row.hero-eq .token {
   font-size: 72px;
