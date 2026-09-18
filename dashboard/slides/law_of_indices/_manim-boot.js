@@ -1,9 +1,20 @@
 /**
- * JM24 Concept decks — Manim-slides standard (JM25–27 / 30 / 32):
- *   one click = one next_slide() step
- *   fixed seats (TransformMatchingTex-style replace-in-place)
- *   TransformFromCopy flies, lasting SurroundingRectangle frames
- *   title_bar gold accent sized to title
+ * JM24 Concept decks — Manim vocabulary (JM25–27 / 30 / 32):
+ *
+ * KINDS
+ *   Write / FadeIn(shift)  — new definition or caption
+ *   TransformFromCopy      — data-fly-from (provenance from example)
+ *   TransformMatchingTex   — stage-pane replace-in-place
+ *   Indicate               — one-beat pulse (cancel token / decimal)
+ *   SurroundingRectangle   — .box-final on the takeaway only
+ *   temporary note         — .note-proc / .note-sem / .note-warn under work
+ *
+ * HIGHLIGHT
+ *   COL_A blue / COL_B amber / COL_AB green / COL_REMOVE red / operators INK
+ *   Same quantity keeps its colour across morphs
+ *
+ * POINT SELECTION
+ *   one click = one next_slide() beat; advance mid-anim finishes current beat only
  */
 (function () {
   "use strict";
@@ -86,6 +97,15 @@
   function setExpandFrame(el, on) {
     if (!el) return;
     el.classList.toggle("expand-framed", !!on);
+  }
+
+  /** Manim Indicate — one-beat flash */
+  function indicate(el) {
+    if (!el) return;
+    el.classList.remove("indicate");
+    void el.offsetWidth;
+    el.classList.add("indicate");
+    later(function () { el.classList.remove("indicate"); }, 720);
   }
 
   /** Manim title_bar: accent width = title.width + 0.6 */
@@ -395,10 +415,14 @@
       return;
     }
     if (phase === "cancel") {
+      var cap = build.querySelector(".cancel-caption");
+      if (cap) cap.classList.add("show");
       runCancelOnly(frac);
       return;
     }
     if (phase === "result") {
+      var cap2 = build.querySelector(".cancel-caption");
+      if (cap2) cap2.classList.remove("show");
       runGatherToResult(frac);
     }
   }
@@ -431,7 +455,10 @@
     function next() {
       if (anim.skip) { finishAll(); return; }
       if (step >= steps.length) { finishAll(); return; }
-      if (steps[step]) steps[step].classList.add("struck");
+      if (steps[step]) {
+        indicate(steps[step]);
+        steps[step].classList.add("struck");
+      }
       step += 1;
       later(next, CANCEL_MS);
     }
@@ -498,6 +525,7 @@
 
     anim.busy = true;
     anim.finish = show;
+    indicate(dp);
     var fr = dp.getBoundingClientRect();
     var tr = dpTo.getBoundingClientRect();
     var ghost = document.createElement("span");

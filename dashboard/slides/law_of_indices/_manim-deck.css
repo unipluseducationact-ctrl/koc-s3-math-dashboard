@@ -2,16 +2,18 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {
-  --ink: #f8fafc;
+  /* JM25 shared/styles.py palette — quantity keeps its colour */
+  --ink: #ffffff;
   --muted: #94a3b8;
-  --note: #4fc3f7;       /* reserved: notes / general rule */
-  --pow: #ffd54f;        /* exponents */
-  --sym-a: #ff8a65;      /* variable a — coral */
-  --sym-b: #f06292;      /* variable b — pink */
-  --sym-a2: #ce93d8;     /* second a-group (from a^n) — violet */
-  --sym-y: #ffb74d;      /* y / amber accents */
-  --strike: #f87171;
-  --gold-line: #e6c260;
+  --gold-line: #e6c260;   /* title accent / GOLD captions */
+  --sym-a: #4fc3f7;       /* COL_A — first base / group */
+  --sym-b: #ffd54f;       /* COL_B — second base b */
+  --sym-a2: #81c784;      /* COL_AB — second a-group / product role */
+  --sym-y: #4fc3f7;       /* reuse COL_A for y */
+  --pow: #ffd54f;         /* exponents — amber like COL_B */
+  --note: #e6c260;        /* GOLD procedural captions */
+  --strike: #e57373;      /* COL_REMOVE — cancel / danger */
+  --box: #81c784;         /* SurroundingRectangle on final */
 }
 
 html, body {
@@ -193,13 +195,13 @@ html, body {
 .logic-line {
   display: flex !important;
   align-items: baseline;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 0.25em;
   width: 100%;
   max-width: 980px;
   margin-left: auto;
   margin-right: auto;
-  text-align: left;
+  text-align: center;
 }
 .logic-line .m-logic {
   min-width: 1.1em;
@@ -277,6 +279,14 @@ html, body {
   transition: opacity 0.35s ease;
 }
 .gather-eq.show { opacity: 1; }
+.cancel-caption {
+  opacity: 0;
+  margin-top: 8px;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.cancel-caption.show { opacity: 1; }
+.muted-label { color: var(--muted); }
 
 /* Sci equation stage — fixed seats, big RHS */
 .sci-eq-stage {
@@ -389,6 +399,33 @@ html, body {
 }
 
 .m-sub.note-tone { color: var(--note); }
+.m-sub.note-proc {
+  /* Manim temporary note: INK @ ~0.75–0.8 opacity */
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 24px;
+}
+.m-sub.note-sem {
+  /* Semantic note — colour matches the concept being named */
+  color: var(--sym-a2);
+  font-size: 24px;
+}
+.m-sub.note-warn {
+  color: var(--strike);
+  font-size: 24px;
+}
+
+/* Manim Indicate — one-beat flash, not lasting */
+@keyframes indicatePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  40% { transform: scale(1.35); filter: brightness(1.25); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.token.indicate,
+.dp-live.indicate,
+.src.indicate {
+  animation: indicatePulse 0.7s ease;
+  z-index: 3;
+}
 
 .m-eq {
   font-size: 40px;
@@ -425,19 +462,20 @@ html, body {
 
 .m-result {
   font-size: 42px;
-  color: var(--note);
+  color: var(--ink);
   margin-top: 14px;
   line-height: 1.35;
   max-width: 1000px;
 }
-/* Manim SurroundingRectangle(buff≈0.28) on final identity */
+/* Manim SurroundingRectangle(buff≈0.28) — lasting takeaway only */
 .m-result.box-final,
 .box-final {
   display: inline-block;
   padding: 0.28em 0.45em;
-  border: 3px solid var(--sym-a2);
+  border: 3px solid var(--box);
   border-radius: 4px;
   box-shadow: none;
+  color: var(--ink);
 }
 
 .example-row {
@@ -711,8 +749,13 @@ html, body {
 .laws-grid .law-a .katex { color: var(--sym-a); }
 .laws-grid .law-b .katex { color: var(--sym-b); }
 .laws-grid .law-a2 .katex { color: var(--sym-a2); }
-.laws-grid .law-y .katex { color: var(--sym-y); }
-.laws-grid .law-note .katex { color: var(--note); }
+.laws-grid .law-y .katex { color: var(--sym-b); }
+.laws-grid .law-note .katex { color: var(--ink); }
+.laws-grid .full.box-final {
+  border-color: var(--box);
+  padding: 0.28em 0.5em;
+  justify-self: center;
+}
 .reveal .fragment.law-card.visible {
   animation: enterPop 0.6s cubic-bezier(0.22, 1.35, 0.36, 1) both;
 }
