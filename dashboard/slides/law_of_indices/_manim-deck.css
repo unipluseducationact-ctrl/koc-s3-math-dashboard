@@ -75,8 +75,9 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 32px 48px 8px;
+  /* Manim title_bar: to_edge(UP, buff=0.5) ≈ 36px @720p; accent buff=0.14 */
+  gap: 10px;
+  padding: 36px 48px 12px;
   pointer-events: none;
 }
 
@@ -87,10 +88,10 @@ html, body {
   right: auto !important;
   z-index: 5;
   font-family: "Times New Roman", Times, Georgia, serif !important;
-  /* Match JM25–32 Manim title_bar (~font_size 52) */
-  font-size: 50px !important;
+  /* Manim title_bar: font_size=52, color=INK */
+  font-size: 52px !important;
   font-weight: normal !important;
-  color: #ffffff;
+  color: #f8fafc;
   margin: 0 !important;
   line-height: 1.25;
   text-align: center;
@@ -109,17 +110,24 @@ html, body {
   line-height: 1.2;
 }
 
+/* Manim gold accent: stroke_width=3, width=title.width+0.6 */
 .m-line {
   position: static !important;
   top: auto !important;
   left: auto !important;
   z-index: 5;
-  width: 160px;
-  height: 2px;
+  width: 280px;
+  height: 3px;
   margin: 0 !important;
-  transform: none;
-  background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  background: var(--gold-line);
+  border-radius: 1px;
   pointer-events: none;
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.reveal .slides > section.present .m-line {
+  transform: scaleX(1);
 }
 
 /* Content stage fills the remaining frame under the header */
@@ -201,21 +209,14 @@ html, body {
 /* Yellow frame while a term is expanding */
 .expand-framed,
 .token.expand-framed,
-.src.expand-framed {
-  box-shadow: 0 0 0 2px var(--pow), 0 0 12px rgba(255, 213, 79, 0.35);
-  border-radius: 6px;
+.src.expand-framed,
+.pv-grid .c.framed {
+  /* Manim SurroundingRectangle: stroke ~3, buff ~0.18–0.28 */
+  outline: 3px solid var(--pow);
+  outline-offset: 6px;
+  border-radius: 4px;
   background: rgba(255, 213, 79, 0.08);
-}
-
-.work-fixed-frame.seat-left {
-  justify-content: flex-start;
-  padding-left: 6%;
-  padding-right: 6%;
-}
-.work-fixed-frame.seat-left .stage-pane {
-  justify-content: flex-start;
-  left: 6%;
-  right: 6%;
+  box-shadow: none;
 }
 
 /* Stepped fraction build */
@@ -296,7 +297,7 @@ html, body {
 }
 .sci-rhs-live {
   width: 100%;
-  min-height: 2.2em;
+  min-height: 2.4em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,11 +321,22 @@ html, body {
   color: #fff;
   min-height: 1.4em;
 }
-.sci-jump-eq.is-on {
+.sci-jump-eq.is-on,
+.sci-jump-eq.visible.is-on {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   animation: enterFade 0.35s ease both;
+}
+/* Keep unseen sci steps from collapsing the fixed seat oddly */
+.reveal .m-stage .fragment.sci-jump-eq:not(.visible) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .pv-drag-box {
@@ -379,8 +391,8 @@ html, body {
 .m-sub.note-tone { color: var(--note); }
 
 .m-eq {
-  font-size: 32px;
-  color: #ffffff;
+  font-size: 40px;
+  color: #f8fafc;
   margin: 8px 0;
   line-height: 1.4;
   max-width: 1100px;
@@ -412,11 +424,20 @@ html, body {
 .sym-y, .token.sym-y { color: var(--sym-y) !important; }
 
 .m-result {
-  font-size: 36px;
+  font-size: 42px;
   color: var(--note);
   margin-top: 14px;
   line-height: 1.35;
   max-width: 1000px;
+}
+/* Manim SurroundingRectangle(buff≈0.28) on final identity */
+.m-result.box-final,
+.box-final {
+  display: inline-block;
+  padding: 0.28em 0.45em;
+  border: 3px solid var(--sym-a2);
+  border-radius: 4px;
+  box-shadow: none;
 }
 
 .example-row {
@@ -1070,24 +1091,24 @@ html, body {
   to { opacity: 1; transform: none; }
 }
 
-/* Expand chain: only the current stage stays on screen (replace-in-place) */
+/* Expand chain: only the current stage stays on screen (replace-in-place = TransformMatchingTex seat) */
 .work-chain .work-row.chain-hidden {
   display: none !important;
 }
 
-/* Fixed-position auto expand slot (one click → staged animation) */
-.work-slot.fragment {
-  width: 100%;
-  max-width: 980px;
-  margin: 8px auto;
-}
+/* Fixed-position stage — each .stage-step is one Manim next_slide() */
 .work-fixed-frame {
   position: relative;
   width: 100%;
-  min-height: 2.6em;
+  min-height: 2.8em;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.work-fixed-frame.seat-left {
+  justify-content: flex-start;
+  padding-left: 6%;
+  padding-right: 6%;
 }
 .work-fixed-frame .stage-pane {
   position: absolute;
@@ -1101,24 +1122,44 @@ html, body {
   gap: 4px 6px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-42%) scale(0.94);
+  transform: translateY(-50%);
   pointer-events: none;
-  transition:
-    opacity 0.38s ease,
-    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    visibility 0s linear 0.38s;
+}
+.work-fixed-frame.seat-left .stage-pane {
+  justify-content: flex-start;
+  left: 6%;
+  right: 6%;
 }
 .work-fixed-frame .stage-pane.is-active {
   opacity: 1;
   visibility: visible;
-  transform: translateY(-50%) scale(1);
-  transition:
-    opacity 0.38s ease,
-    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    visibility 0s;
 }
-.work-slot.playing .stage-pane.is-active .token {
-  animation: landPop 0.32s ease both;
+/* Fragments that are stage-steps stay in the fixed seat (do not collapse to 0×0) */
+.reveal .m-stage .fragment.stage-pane:not(.visible) {
+  position: absolute !important;
+  width: auto !important;
+  height: auto !important;
+  left: 0;
+  right: 0;
+  overflow: visible !important;
+  clip: auto !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.reveal .m-stage .work-fixed-frame.seat-left .fragment.stage-pane:not(.visible) {
+  left: 6%;
+  right: 6%;
+}
+.reveal .fragment.stage-pane.visible.is-active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.work-slot.fragment {
+  width: 100%;
+  max-width: 980px;
+  margin: 8px auto;
 }
 
 .reveal .fragment.step-row.visible .glyph:nth-child(1),
@@ -1215,6 +1256,7 @@ html, body {
   .m-sub, .note { font-size: 20px; }
   .m-sub.lead { font-size: 24px; }
   .m-eq, .m-result, .token, .digit { font-size: 24px; }
+  .sci-jump-eq.sci-big { font-size: 28px; }
   .laws-grid, .two-col { grid-template-columns: 1fr; }
   .laws-grid { font-size: 22px; }
 }
