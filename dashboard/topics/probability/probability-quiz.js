@@ -328,7 +328,7 @@
             var payload = {
               type: 'uniplus:quizAnswer',
               subject: 'MATH',
-              quizId: 'math-probability',
+              quizId: 'Prob1',
               questionId: 'prob-q' + q.id,
               section: 'JM30 Probabilities',
               difficulty: 'standard',

@@ -679,7 +679,7 @@
             var payload = {
               type: 'uniplus:quizAnswer',
               subject: 'MATH',
-              quizId: 'math-inequality',
+              quizId: 'Ine1',
               questionId: 'ineq-q' + q.id,
               section: 'JM26 Inequalities I',
               difficulty: 'standard',

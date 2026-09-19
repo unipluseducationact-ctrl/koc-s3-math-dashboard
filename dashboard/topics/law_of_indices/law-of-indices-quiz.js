@@ -835,7 +835,7 @@
             var payload = {
               type: 'uniplus:quizAnswer',
               subject: 'MATH',
-              quizId: 'math-law-of-indices',
+              quizId: 'Index',
               questionId: activeSet.idPrefix + q.id,
               section: 'JM24 Law of Indices',
               difficulty: 'standard',

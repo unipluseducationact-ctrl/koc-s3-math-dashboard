@@ -709,7 +709,7 @@
             var payload = {
               type: 'uniplus:quizAnswer',
               subject: 'MATH',
-              quizId: 'math-factorization',
+              quizId: 'MFact',
               questionId: 'fac-q' + q.id,
               section: 'JM25 More about Factorization of Polynomials',
               difficulty: 'standard',
