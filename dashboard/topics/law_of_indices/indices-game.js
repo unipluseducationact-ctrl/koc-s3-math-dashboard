@@ -22,7 +22,13 @@ window.IndicesGame = (function () {
   var questions = [];
   var questionIndex = 0;
   var presetId = "rules";
-  var fallSpeed = 0.35;
+  var BASE_FALL = 0.35;
+  var BASE_PLAYER = 6;
+  var BASE_BULLET = 9;
+  var SPEED_STEPS = [1, 2, 3];
+  var speedStep = 0;
+  var fallSpeed = BASE_FALL;
+  var bulletSpeed = BASE_BULLET;
   var audioCtx = null;
   var toastTimer = null;
   var topicMisses = {};
@@ -133,6 +139,39 @@ window.IndicesGame = (function () {
       var current = total ? Math.min(questionIndex + 1, total) : 0;
       p.textContent = total ? "Q " + current + "/" + total : "—";
     }
+    updateSpeedHud();
+  }
+
+  function speedMultiplier() {
+    return SPEED_STEPS[speedStep] || 1;
+  }
+
+  function updateSpeedHud() {
+    var el = document.getElementById("btn-speed");
+    if (el) el.textContent = "Speed " + speedMultiplier() + "×";
+  }
+
+  function applySpeed() {
+    var mult = speedMultiplier();
+    fallSpeed = BASE_FALL * mult;
+    player.speed = BASE_PLAYER * (0.85 + 0.15 * mult);
+    bulletSpeed = BASE_BULLET * (0.85 + 0.15 * mult);
+    enemies.forEach(function (e) {
+      e.vy = fallSpeed;
+    });
+    updateSpeedHud();
+  }
+
+  function speedUp() {
+    if (speedStep < SPEED_STEPS.length - 1) speedStep += 1;
+    applySpeed();
+    return speedMultiplier();
+  }
+
+  function cycleSpeed() {
+    speedStep = (speedStep + 1) % SPEED_STEPS.length;
+    applySpeed();
+    return speedMultiplier();
   }
 
   function setQuestionText() {
@@ -208,7 +247,7 @@ window.IndicesGame = (function () {
   function spawnFourAnswers() {
     if (!question) return;
     var choices = shuffle(question.choices.slice());
-    fallSpeed = 0.35;
+    applySpeed();
     var laneW = width / 4;
     var boxW = Math.min(214, laneW - 10);
     enemies = choices.map(function (choice, i) {
@@ -255,7 +294,7 @@ window.IndicesGame = (function () {
     if (!running) return;
     ensureAudio();
     playTone("shoot");
-    bullets.push({ x: player.x, y: player.y - 16, r: 4, vy: -9 });
+    bullets.push({ x: player.x, y: player.y - 16, r: 4, vy: -bulletSpeed });
   }
 
   function burst(x, y, color) {
@@ -504,6 +543,7 @@ window.IndicesGame = (function () {
     enemies = [];
     particles = [];
     player.x = width / 2;
+    applySpeed();
     resetTopicMisses();
     lastWeakestTopic = null;
 
@@ -661,6 +701,15 @@ window.IndicesGame = (function () {
         if (running) e.preventDefault();
       }
       if (e.code === "Space" && running) fire();
+      if (e.key === "+" || e.key === "=") {
+        speedUp();
+        if (running) e.preventDefault();
+      }
+      if (e.key === "-" || e.key === "_") {
+        if (speedStep > 0) speedStep -= 1;
+        applySpeed();
+        if (running) e.preventDefault();
+      }
     };
     onKeyUp = function (e) {
       keys[e.key] = false;
@@ -704,6 +753,14 @@ window.IndicesGame = (function () {
       });
     }
 
+    var speedBtn = document.getElementById("btn-speed");
+    if (speedBtn) {
+      speedBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        cycleSpeed();
+      });
+    }
+
     document.querySelectorAll(".game-preset-pill").forEach(function (pill) {
       pill.addEventListener("click", function () {
         if (running) return;
@@ -724,6 +781,7 @@ window.IndicesGame = (function () {
     resize();
     bindControls();
     showReadyOverlay();
+    applySpeed();
     updateHud();
     draw();
   }
@@ -761,5 +819,14 @@ window.IndicesGame = (function () {
     pause();
   }
 
-  return { init: init, destroy: destroy, start: start, onLangChange: onLangChange, onShow: onShow, onHide: onHide };
+  return {
+    init: init,
+    destroy: destroy,
+    start: start,
+    speedUp: speedUp,
+    cycleSpeed: cycleSpeed,
+    onLangChange: onLangChange,
+    onShow: onShow,
+    onHide: onHide,
+  };
 })();

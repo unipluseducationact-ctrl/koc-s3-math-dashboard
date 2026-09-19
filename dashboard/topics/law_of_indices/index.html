@@ -311,6 +311,16 @@
       color: #f8fafc;
       border: 1px solid #334155;
     }
+    .indices-game-wrap .hud-pill.is-control {
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      background: #0369a1;
+      border-color: #38bdf8;
+    }
+    .indices-game-wrap .hud-pill.is-control:hover {
+      background: #0284c7;
+    }
     #game-question {
       margin: 10px 0 6px;
       font-size: 2.2em;
@@ -997,9 +1007,10 @@
             <div class="hud-pill">Streak: <span id="hud-combo">0</span></div>
             <div class="hud-pill">Best: <span id="hud-best">0</span></div>
             <div class="hud-pill"><span id="hud-progress">Q 0/0</span></div>
+            <button type="button" class="hud-pill is-control" id="btn-speed">Speed 1×</button>
           </div>
           <p id="game-explain" class="hint"></p>
-          <p class="hint">Arrows or A/D move. Space or Shoot fires. Hit the correct box; a miss or a wrong shot costs a life and shows the reason.</p>
+          <p class="hint">Arrows or A/D move. Space or Shoot fires. Hit the correct box; a miss or a wrong shot costs a life and shows the reason. Click Speed or press + to go faster.</p>
           <div id="game-question">Press Start to begin</div>
           <div class="canvas-container" style="position: relative; display: inline-block; max-width: 100%;">
             <canvas id="game-canvas" width="900" height="520" style="width: 100%; max-width: 900px; height: auto; background: #0b1c2e; border: 1px solid var(--line); border-radius: 12px; display: block;"></canvas>
@@ -1056,7 +1067,7 @@
   <script src="comics-manifest.js?v=20260829c"></script>
   <script src="../../shared/jm-comics-engine.js?v=20260830-fu"></script>
   <script src="game-questions.js?v=20260919-indexonly"></script>
-  <script src="indices-game.js?v=20260919-indexonly"></script>
+  <script src="indices-game.js?v=20260919-speed"></script>
   <script src="sci-notation-content.js?v=20260828-sel1"></script>
   <script src="sci-notation-tool.js?v=20260828-sel1"></script>
   <script>
