@@ -21,7 +21,7 @@ window.IndicesGame = (function () {
   var question = null;
   var questions = [];
   var questionIndex = 0;
-  var presetId = "all";
+  var presetId = "rules";
   var fallSpeed = 0.35;
   var audioCtx = null;
   var toastTimer = null;
@@ -210,13 +210,13 @@ window.IndicesGame = (function () {
     var choices = shuffle(question.choices.slice());
     fallSpeed = 0.35;
     var laneW = width / 4;
-    var boxW = Math.min(200, laneW - 12);
+    var boxW = Math.min(214, laneW - 10);
     enemies = choices.map(function (choice, i) {
       return {
         x: laneW * i + (laneW - boxW) / 2,
         y: 56,
         w: boxW,
-        h: 52,
+        h: 58,
         vy: fallSpeed,
         vx: 0,
         textEn: choice.textEn,
@@ -448,18 +448,18 @@ window.IndicesGame = (function () {
     }
 
     enemies.forEach(function (e) {
-      ctx.fillStyle = "rgba(28, 107, 156, 0.95)";
-      roundRect(ctx, e.x, e.y, e.w, e.h, 10);
+      ctx.fillStyle = "rgba(14, 116, 166, 0.96)";
+      roundRect(ctx, e.x, e.y, e.w, e.h, 14);
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.strokeStyle = "rgba(255,255,255,0.28)";
       ctx.stroke();
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 22px 'DM Sans', sans-serif";
+      ctx.font = "700 26px 'DM Sans', sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       var label = e.label;
-      if (ctx.measureText(label).width > e.w - 16) {
-        ctx.font = "bold 18px 'DM Sans', sans-serif";
+      if (ctx.measureText(label).width > e.w - 18) {
+        ctx.font = "700 20px 'DM Sans', sans-serif";
       }
       ctx.fillText(label, e.x + e.w / 2, e.y + e.h / 2);
     });
@@ -487,15 +487,10 @@ window.IndicesGame = (function () {
     if (running) rafId = requestAnimationFrame(loop);
   }
 
-  function getSelectedPreset() {
-    var active = document.querySelector(".game-preset-pill.is-active");
-    return active ? active.getAttribute("data-preset") || "all" : presetId;
-  }
-
   function start() {
-    presetId = getSelectedPreset();
+    presetId = "rules";
     questions = window.getJM24GameQuestions
-      ? window.getJM24GameQuestions(presetId)
+      ? window.getJM24GameQuestions("rules")
       : [];
     if (!questions.length) return;
 
