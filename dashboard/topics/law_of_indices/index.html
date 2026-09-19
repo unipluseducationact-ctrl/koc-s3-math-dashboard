@@ -294,6 +294,13 @@
       white-space: nowrap;
     }
     #game-toast.is-visible { opacity: 1; }
+    #game-question {
+      margin-bottom: 12px;
+      font-size: 1.85em;
+      line-height: 1.35;
+      font-weight: 700;
+      color: #4FC3F7;
+    }
     #game-explain { min-height: 1.4em; margin: 0 0 10px; font-size: 14px; line-height: 1.45; }
     #game-explain.is-ok { color: var(--good); }
     #game-explain.is-bad { color: var(--bad); }
@@ -949,7 +956,7 @@
             <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;">Best: <span id="hud-best">0</span></div>
             <div class="hud-pill" style="background: rgba(30,41,59,0.8); border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;"><span id="hud-progress">Q 0/0</span></div>
           </div>
-          <div style="margin-bottom: 10px; font-size: 1.1em; font-weight: 600; color: #4FC3F7;" id="game-question">Select a topic and press Start</div>
+          <div id="game-question">Select a topic and press Start</div>
           <p id="game-explain" class="hint"></p>
           <p class="hint">Arrows or A/D move. Space or Shoot fires. Hit the correct box; a miss or a wrong shot costs a life and shows the reason.</p>
           <div class="canvas-container" style="position: relative; display: inline-block; max-width: 100%;">
@@ -1013,7 +1020,7 @@
   <script src="comics-manifest.js?v=20260829c"></script>
   <script src="../../shared/jm-comics-engine.js?v=20260830-fu"></script>
   <script src="game-questions.js?v=20260917-tools"></script>
-  <script src="indices-game.js?v=20260917-tools"></script>
+  <script src="indices-game.js?v=20260919-gamefont"></script>
   <script src="sci-notation-content.js?v=20260828-sel1"></script>
   <script src="sci-notation-tool.js?v=20260828-sel1"></script>
   <script>

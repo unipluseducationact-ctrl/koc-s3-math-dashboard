@@ -210,13 +210,13 @@ window.IndicesGame = (function () {
     var choices = shuffle(question.choices.slice());
     fallSpeed = 0.35;
     var laneW = width / 4;
-    var boxW = Math.min(170, laneW - 16);
+    var boxW = Math.min(200, laneW - 12);
     enemies = choices.map(function (choice, i) {
       return {
         x: laneW * i + (laneW - boxW) / 2,
         y: 56,
         w: boxW,
-        h: 36,
+        h: 52,
         vy: fallSpeed,
         vx: 0,
         textEn: choice.textEn,
@@ -454,12 +454,12 @@ window.IndicesGame = (function () {
       ctx.strokeStyle = "rgba(255,255,255,0.25)";
       ctx.stroke();
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 14px 'DM Sans', sans-serif";
+      ctx.font = "bold 22px 'DM Sans', sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       var label = e.label;
-      if (ctx.measureText(label).width > e.w - 12) {
-        ctx.font = "bold 12px 'DM Sans', sans-serif";
+      if (ctx.measureText(label).width > e.w - 16) {
+        ctx.font = "bold 18px 'DM Sans', sans-serif";
       }
       ctx.fillText(label, e.x + e.w / 2, e.y + e.h / 2);
     });
