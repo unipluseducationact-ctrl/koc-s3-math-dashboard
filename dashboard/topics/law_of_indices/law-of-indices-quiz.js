@@ -208,9 +208,9 @@
   ];
 
   const QUIZ_SETS = [
-    { key: "l01", label: "L01 \u00b7 Zero and Negative Indices", idPrefix: "loi-l01-q", questions: QUIZ_L01 },
+    { key: "l01", label: "L01 \u00b7 Positive, Zero and Negative Indices", idPrefix: "loi-l01-q", questions: QUIZ_L01 },
     { key: "l02", label: "L02 \u00b7 Scientific Notation", idPrefix: "loi-l02-q", questions: QUIZ_L02 },
-    { key: "l03", label: "L03 \u00b7 Binary Numbers", idPrefix: "loi-l03-q", questions: QUIZ_L03 },
+    { key: "l03", label: "L03 \u00b7 Binary and Denary Numbers", idPrefix: "loi-l03-q", questions: QUIZ_L03 },
   ];
 
   let activeSet = QUIZ_SETS[0];
