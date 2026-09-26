@@ -108,6 +108,7 @@
   /** Yellow frame belongs on the Example-row term being expanded (not the work row). */
   function frameExampleSrc(pane) {
     clearAllExpandFrames();
+    clearSourceMarks();
     if (!pane) return null;
     var sel = pane.getAttribute("data-ex-src");
     if (!sel) {
@@ -116,10 +117,7 @@
     }
     if (!sel) return null;
     var src = document.querySelector(sel);
-    if (src) {
-      setExpandFrame(src, true);
-      markSource(sel, false);
-    }
+    if (src) setExpandFrame(src, true);
     return src;
   }
 
@@ -149,23 +147,35 @@
       t.classList.remove(
         "struck", "gather-left", "gather-right", "gather-mid", "is-remaining",
         "expand-framed", "framed", "dragged", "landed", "awaiting",
-        "dragging", "spent", "is-on", "fly-wait", "fly-land", "combined", "combining"
+        "dragging", "spent", "is-on", "fly-wait", "fly-land", "combined", "combining",
+        "fade-out-step", "fade-in-step"
       );
+      t.style.opacity = "";
     });
     root.querySelectorAll(".frac-stack, .frac-build").forEach(function (f) {
       f.classList.remove(
         "cancelled", "cancel-done", "gathering", "gathered",
-        "phase-bar", "phase-num", "phase-den", "phase-cancel", "phase-result"
+        "phase-bar", "phase-compact", "phase-num", "phase-expand",
+        "phase-den", "phase-cancel", "phase-result"
       );
     });
     root.querySelectorAll("sup.pow, .pow").forEach(function (p) { p.style.opacity = ""; });
-    root.querySelectorAll(".cancel-result, .gather-eq").forEach(function (r) {
-      r.classList.remove("show");
+    root.querySelectorAll(".cancel-result, .gather-eq, .neg-link-eq, .neg-drag-seat").forEach(function (r) {
+      r.classList.remove("show", "indicated", "linked");
+    });
+    root.querySelectorAll(".stage-pane").forEach(function (p) {
+      p.classList.remove("is-active", "peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
+      p.style.opacity = "";
     });
     clearSourceMarks();
+    clearAllExpandFrames(root);
     purgeGhosts();
   }
 
+  /**
+   * TransformFromCopy: frame source → clone at source (no layout shift) →
+   * drag clone to target → reveal target → remove frame.
+   */
   function flyFromTo(fromEl, toEl, delay) {
     if (!fromEl || !toEl) {
       if (toEl) {
@@ -177,31 +187,39 @@
     toEl.classList.add("fly-wait");
     toEl.classList.remove("fly-land");
     later(function () {
+      setExpandFrame(fromEl, true);
       var from = fromEl.getBoundingClientRect();
       var to = toEl.getBoundingClientRect();
-      if (!from.width || !to.width) {
+      if (!from.width) {
         toEl.classList.remove("fly-wait");
         toEl.classList.add("fly-land");
+        setExpandFrame(fromEl, false);
         return;
       }
       var ghost = fromEl.cloneNode(true);
+      ghost.classList.remove("expand-framed", "is-source", "is-spent", "fly-wait", "fly-land");
       ghost.classList.add("fly-ghost", "flying");
       ghost.style.left = from.left + "px";
       ghost.style.top = from.top + "px";
       ghost.style.width = from.width + "px";
       ghost.style.height = from.height + "px";
+      ghost.style.fontSize = window.getComputedStyle(fromEl).fontSize;
+      ghost.style.transform = "translate(0,0)";
       document.body.appendChild(ghost);
-      var dx = to.left - from.left + (to.width - from.width) / 2;
-      var dy = to.top - from.top + (to.height - from.height) / 2;
+      var destW = to.width || from.width;
+      var destH = to.height || from.height;
+      var dx = to.left - from.left + (destW - from.width) / 2;
+      var dy = to.top - from.top + (destH - from.height) / 2;
       raf(function () {
         raf(function () {
-          ghost.style.transform = "translate(" + dx + "px, " + dy + "px) scale(1.05)";
+          ghost.style.transform = "translate(" + dx + "px, " + dy + "px)";
         });
       });
       later(function () {
         toEl.classList.remove("fly-wait");
         toEl.classList.add("fly-land");
         if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+        setExpandFrame(fromEl, false);
       }, FLY_MS);
     }, delay || 0);
   }
@@ -229,22 +247,46 @@
     var frame = pane && pane.parentElement;
     if (!frame) return;
     frame.querySelectorAll(".stage-pane").forEach(function (p) {
-      p.classList.remove("is-active", "peel-arrive", "is-measure");
+      p.classList.remove("is-active", "peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
     });
     pane.classList.add("is-active");
     if (opts.peel) pane.classList.add("peel-arrive");
+    if (opts.fadeIn) pane.classList.add("fade-in-step");
     frameExampleSrc(pane);
     renderMath(pane);
     var flyNodes = pane.querySelectorAll("[data-fly-from]");
-    if (flyNodes.length) {
+    if (flyNodes.length && !opts.skipFly) {
       Array.prototype.forEach.call(flyNodes, function (toEl, i) {
         var sel = toEl.getAttribute("data-fly-from");
         if (!sel) return;
-        markSource(sel, false);
         flyFromTo(document.querySelector(sel), toEl, i * 50);
-        later(function () { markSource(sel, true); }, FLY_MS + i * 50 + 40);
       });
     }
+  }
+
+  /** Fade-out previous pane, fade-in next (no peel power). */
+  function crossfadePanes(fromPane, toPane, done) {
+    anim.busy = true;
+    if (fromPane) {
+      fromPane.classList.add("is-active", "fade-out-step");
+    }
+    later(function () {
+      if (fromPane) fromPane.classList.remove("is-active", "fade-out-step");
+      activatePane(toPane, { fadeIn: true });
+      later(function () {
+        toPane.classList.remove("fade-in-step");
+        anim.busy = false;
+        anim.finish = null;
+        if (done) done();
+      }, 380);
+    }, 320);
+    anim.finish = function () {
+      if (fromPane) fromPane.classList.remove("is-active", "fade-out-step");
+      activatePane(toPane, { skipFly: true });
+      anim.busy = false;
+      anim.finish = null;
+      if (done) done();
+    };
   }
 
   function peelBetween(fromPane, toPane, done) {
@@ -262,10 +304,7 @@
       pow = pows.length ? pows[pows.length - 1] : null;
     }
     if (!pow) {
-      activatePane(toPane, { peel: true });
-      later(function () {
-        if (done) done();
-      }, 360);
+      crossfadePanes(fromPane, toPane, done);
       return;
     }
 
@@ -275,38 +314,40 @@
       var toks = toPane.querySelectorAll(".token:not(.op)");
       rightFactor = toks.length >= 2 ? toks[1] : toks[0];
     }
-    var timesEl = toPane.querySelector(".token.op.peel-times");
     var fromR = pow.getBoundingClientRect();
     var targetEl = rightFactor
       ? (rightFactor.querySelector("sup.pow") || rightFactor)
       : null;
     var targetR = targetEl
       ? targetEl.getBoundingClientRect()
-      : { left: fromR.left + 90, top: fromR.top, width: 20, height: 20 };
-    var midX, midY;
-    if (timesEl) {
-      var tr = timesEl.getBoundingClientRect();
-      midX = tr.left + tr.width / 2;
-      midY = tr.top + tr.height / 2;
-    } else {
-      midX = (fromR.left + fromR.width / 2 + targetR.left + targetR.width / 2) / 2;
-      midY = (fromR.top + targetR.top) / 2;
-    }
+      : { left: fromR.left + 90, top: fromR.top, width: fromR.width, height: fromR.height };
+
     var landX = targetR.left + targetR.width / 2;
     var landY = targetR.top + targetR.height / 2;
     toPane.classList.remove("is-measure");
 
     var startX = fromR.left + fromR.width / 2;
     var startY = fromR.top + fromR.height / 2;
-    /* Upward parabola (screen y decreases upward) */
     var lift = Math.max(56, Math.abs(landX - startX) * 0.48);
+    /* × at apex of upward parabola */
+    var midX = (startX + landX) / 2;
+    var midY = Math.min(startY, landY) - lift;
 
+    var cs = window.getComputedStyle(pow);
     var ghost = document.createElement("span");
     ghost.className = "peel-ghost";
     ghost.textContent = pow.textContent;
-    ghost.style.left = (startX - fromR.width / 2) + "px";
-    ghost.style.top = (startY - fromR.height / 2) + "px";
-    ghost.style.fontSize = window.getComputedStyle(pow).fontSize;
+    ghost.style.left = fromR.left + "px";
+    ghost.style.top = fromR.top + "px";
+    ghost.style.width = fromR.width + "px";
+    ghost.style.height = fromR.height + "px";
+    ghost.style.fontSize = cs.fontSize;
+    ghost.style.lineHeight = cs.lineHeight;
+    ghost.style.fontFamily = cs.fontFamily;
+    ghost.style.color = cs.color;
+    ghost.style.display = "inline-flex";
+    ghost.style.alignItems = "center";
+    ghost.style.justifyContent = "center";
     document.body.appendChild(ghost);
     pow.style.opacity = "0";
 
@@ -327,7 +368,7 @@
       if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
       fromPane.classList.remove("is-active");
       pow.style.opacity = "";
-      activatePane(toPane, { peel: true });
+      activatePane(toPane, { peel: true, skipFly: true });
       later(function () {
         toPane.classList.remove("peel-arrive");
         anim.busy = false;
@@ -349,19 +390,16 @@
       var ease = 1 - Math.pow(1 - Math.min(1, p / (1 - FADE_TAIL * 0.35)), 2.4);
       var x = (landX - startX) * ease;
       var y = (landY - startY) * ease - Math.sin(Math.PI * ease) * lift;
-      var scale = 1 + 0.16 * Math.sin(Math.PI * Math.min(1, ease));
       var opacity = 1;
       if (p > 1 - FADE_TAIL) {
         opacity = Math.max(0, 1 - (p - (1 - FADE_TAIL)) / FADE_TAIL);
       }
       ghost.style.opacity = String(opacity);
-      ghost.style.transform = "translate(" + x + "px, " + y + "px) scale(" + scale + ")";
-      /* Mid × pops near the apex of the upward arc */
-      if (ease >= 0.28 && ease <= 0.72) {
-        timesGhost.style.opacity = String(Math.min(1, (ease - 0.28) / 0.12) * opacity);
-        timesGhost.style.transform = "translate(-50%, -50%) scale(1)";
-      } else if (ease > 0.72) {
-        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.72) / 0.28) * opacity);
+      ghost.style.transform = "translate(" + x + "px, " + y + "px)";
+      if (ease >= 0.22 && ease <= 0.78) {
+        timesGhost.style.opacity = String(Math.min(1, (ease - 0.22) / 0.12));
+      } else if (ease > 0.78) {
+        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.78) / 0.22));
       }
       if (p < 1) raf(frame);
       else cleanup(false);
@@ -382,6 +420,10 @@
     if (prev && prev.querySelector(".pow") && pane.querySelector(".peel-times, .next-factor, .peel-target")) {
       prev.classList.add("is-active");
       peelBetween(prev, pane, function () { /* stop — wait for next click */ });
+      return;
+    }
+    if (prev && prev.classList.contains("visible") && !pane.querySelector("[data-fly-from]")) {
+      crossfadePanes(prev, pane, function () {});
       return;
     }
     if (pane.getAttribute("data-gather") === "1") {
@@ -420,10 +462,41 @@
       return;
     }
     if (phase === "num" || phase === "expand") {
-      frac.classList.remove("phase-compact");
-      frac.classList.add("phase-bar", "phase-num", "phase-expand", "phase-den");
-      runFlyIns(frac.querySelector(".num .expand-view") || frac.querySelector(".num"));
-      runFlyIns(frac.querySelector(".den .expand-view") || frac.querySelector(".den"));
+      anim.busy = true;
+      var compactEls = frac.querySelectorAll(".compact-view");
+      compactEls.forEach(function (el) { el.style.opacity = "0"; });
+      later(function () {
+        frac.classList.remove("phase-compact");
+        frac.classList.add("phase-bar", "phase-num", "phase-expand", "phase-den");
+        compactEls.forEach(function (el) { el.style.opacity = ""; });
+        var expandViews = frac.querySelectorAll(".expand-view");
+        expandViews.forEach(function (ev) {
+          ev.style.opacity = "0";
+        });
+        raf(function () {
+          raf(function () {
+            expandViews.forEach(function (ev) {
+              ev.style.transition = "opacity 0.4s ease";
+              ev.style.opacity = "1";
+            });
+          });
+        });
+        later(function () {
+          expandViews.forEach(function (ev) {
+            ev.style.transition = "";
+            ev.style.opacity = "";
+          });
+          anim.busy = false;
+          anim.finish = null;
+        }, 420);
+      }, 280);
+      anim.finish = function () {
+        frac.classList.remove("phase-compact");
+        frac.classList.add("phase-bar", "phase-num", "phase-expand", "phase-den");
+        compactEls.forEach(function (el) { el.style.opacity = ""; });
+        anim.busy = false;
+        anim.finish = null;
+      };
       return;
     }
     if (phase === "den") {
@@ -488,19 +561,54 @@
   function runGatherToResult(frac) {
     anim.busy = true;
     frac.classList.add("gathering");
-    var rem = frac.querySelectorAll(".token.remain, .token.is-remaining");
-    Array.prototype.forEach.call(rem, function (t) { t.classList.add("is-remaining"); });
+    /* Collect remain tokens + the × ops between consecutive remains */
+    var numKids = Array.prototype.slice.call(
+      (frac.querySelector(".num .expand-view") || frac.querySelector(".num") || frac).children
+    );
+    var denKids = Array.prototype.slice.call(
+      (frac.querySelector(".den .expand-view") || frac.querySelector(".den") || frac).children
+    );
+    var remGroup = [];
+    function collectRem(kids) {
+      var i;
+      for (i = 0; i < kids.length; i++) {
+        if (kids[i].classList && kids[i].classList.contains("remain")) {
+          remGroup.push(kids[i]);
+          kids[i].classList.add("is-remaining");
+          if (i + 1 < kids.length && kids[i + 1].classList.contains("op") &&
+              i + 2 < kids.length && kids[i + 2].classList.contains("remain")) {
+            remGroup.push(kids[i + 1]);
+            kids[i + 1].classList.add("is-remaining");
+          }
+        }
+      }
+    }
+    collectRem(numKids);
+    collectRem(denKids);
+    if (!remGroup.length) {
+      frac.querySelectorAll(".token.remain").forEach(function (t) {
+        remGroup.push(t);
+        t.classList.add("is-remaining");
+      });
+    }
 
     var side = frac.querySelector(".gather-side");
     var eq = frac.querySelector(".gather-eq");
     var result = frac.querySelector(".cancel-result");
     if (eq) eq.classList.add("show");
 
-    /* Pull remaining factors down toward the = seat (right of fraction), then merge */
-    var target = side || result || eq;
+    var target = result || side || eq;
     var targetR = target ? target.getBoundingClientRect() : null;
     var ghosts = [];
-    Array.prototype.forEach.call(rem, function (t, i) {
+    var groupLeft = Infinity;
+    var groupTop = Infinity;
+    remGroup.forEach(function (t) {
+      var r = t.getBoundingClientRect();
+      if (r.left < groupLeft) groupLeft = r.left;
+      if (r.top < groupTop) groupTop = r.top;
+    });
+
+    remGroup.forEach(function (t, i) {
       if (!targetR) return;
       var r = t.getBoundingClientRect();
       var g = t.cloneNode(true);
@@ -512,11 +620,13 @@
       document.body.appendChild(g);
       ghosts.push(g);
       t.style.opacity = "0";
-      var dx = targetR.left + targetR.width * 0.35 - r.left + i * 18;
-      var dy = targetR.top + 8 - r.top;
+      /* Converge toward result seat, keeping relative spacing then morph */
+      var dx = targetR.left + 8 + i * 14 - r.left;
+      var dy = targetR.top + 4 - r.top;
       raf(function () {
         raf(function () {
-          g.style.transform = "translate(" + dx + "px, " + dy + "px) scale(0.92)";
+          g.style.transform = "translate(" + dx + "px, " + dy + "px) scale(0.88)";
+          g.style.opacity = "0.55";
         });
       });
     });
@@ -527,10 +637,10 @@
       });
       frac.classList.add("gathered");
       if (result) {
-        result.classList.add("show");
+        result.classList.add("show", "morph-in");
         renderMath(result);
       }
-      Array.prototype.forEach.call(rem, function (t) {
+      remGroup.forEach(function (t) {
         t.classList.remove("gather-left", "gather-right", "gather-mid");
         t.style.opacity = "";
       });
@@ -538,7 +648,42 @@
       anim.finish = null;
     }
     anim.finish = end;
-    later(end, 720);
+    later(end, 780);
+  }
+
+  /** Negative indices: indicate reciprocal, then drag both sides into linked equation. */
+  function runNegLink(frag) {
+    var slide = frag.closest("section") || document;
+    var leftSrc = slide.querySelector(".neg-left-result");
+    var rightSrc = slide.querySelector(".neg-right-result");
+    var seat = slide.querySelector(".neg-link-eq");
+    if (!seat) return;
+    anim.busy = true;
+    if (rightSrc) {
+      indicate(rightSrc);
+      setExpandFrame(rightSrc, true);
+    }
+    later(function () {
+      setExpandFrame(rightSrc, false);
+      seat.classList.add("show");
+      renderMath(seat);
+      var leftSeat = seat.querySelector(".neg-drag-left");
+      var rightSeat = seat.querySelector(".neg-drag-right");
+      if (leftSrc && leftSeat) flyFromTo(leftSrc, leftSeat, 0);
+      if (rightSrc && rightSeat) flyFromTo(rightSrc, rightSeat, 80);
+      later(function () {
+        seat.classList.add("linked");
+        anim.busy = false;
+        anim.finish = null;
+      }, FLY_MS + 120);
+    }, 520);
+    anim.finish = function () {
+      setExpandFrame(rightSrc, false);
+      seat.classList.add("show", "linked");
+      renderMath(seat);
+      anim.busy = false;
+      anim.finish = null;
+    };
   }
 
   /** One decimal-jump step — pendulum lower semicircle; direction from dx (left +n / right −n) */
@@ -740,6 +885,10 @@
         runFracPhase(frag);
         return;
       }
+      if (frag.classList.contains("neg-link-step")) {
+        runNegLink(frag);
+        return;
+      }
       if (frag.classList.contains("sci-jump-eq")) {
         runSciStep(frag);
         return;
@@ -764,16 +913,37 @@
     if (!frag) return;
 
     if (frag.classList.contains("stage-pane")) {
-      frag.classList.remove("is-active", "peel-arrive");
-      clearAllExpandFrames(frag.parentElement);
+      frag.classList.remove("is-active", "peel-arrive", "fade-out-step", "fade-in-step");
+      frag.querySelectorAll(".token").forEach(function (t) {
+        t.classList.remove("fly-wait", "fly-land");
+        t.style.opacity = "";
+      });
+      frag.querySelectorAll("sup.pow").forEach(function (p) { p.style.opacity = ""; });
+      clearAllExpandFrames();
       var frame = frag.parentElement;
       if (frame) {
         var panes = frame.querySelectorAll(".stage-pane.visible");
         var last = panes[panes.length - 1];
         if (last && last !== frag) {
           last.classList.add("is-active");
+          last.querySelectorAll(".token").forEach(function (t) {
+            t.classList.remove("fly-wait");
+            t.style.opacity = "";
+          });
+          last.querySelectorAll("sup.pow").forEach(function (p) { p.style.opacity = ""; });
           frameExampleSrc(last);
+          renderMath(last);
         }
+      }
+      return;
+    }
+
+    if (frag.classList.contains("neg-link-step")) {
+      var slide = frag.closest("section");
+      if (slide) {
+        var seat = slide.querySelector(".neg-link-eq");
+        if (seat) seat.classList.remove("show", "linked");
+        clearAllExpandFrames(slide);
       }
       return;
     }
@@ -784,10 +954,14 @@
       if (!frac) return;
       var phase = frag.getAttribute("data-phase");
       var cap = build.querySelector(".cancel-caption");
+      frac.querySelectorAll(".token").forEach(function (t) {
+        t.style.opacity = "";
+        t.classList.remove("fly-wait", "fly-land");
+      });
       if (phase === "result") {
         frac.classList.remove("gathered", "gathering");
         frac.querySelectorAll(".cancel-result, .gather-eq").forEach(function (el) {
-          el.classList.remove("show");
+          el.classList.remove("show", "morph-in");
         });
         frac.querySelectorAll(".token.remain").forEach(function (t) {
           t.style.opacity = "";
@@ -795,17 +969,28 @@
         });
       } else if (phase === "cancel") {
         frac.classList.remove("cancelled", "cancel-done");
-        frac.querySelectorAll(".token.struck, .token.is-remaining").forEach(function (t) {
+        frac.querySelectorAll(".token").forEach(function (t) {
           t.classList.remove("struck", "is-remaining");
         });
         if (cap) cap.classList.remove("show");
       } else if (phase === "den") {
         frac.classList.remove("phase-den");
       } else if (phase === "num" || phase === "expand") {
-        frac.classList.remove("phase-num", "phase-expand");
-        frac.classList.add("phase-compact");
+        frac.classList.remove("phase-num", "phase-expand", "phase-den");
+        frac.classList.add("phase-bar", "phase-compact");
       } else if (phase === "bar" || phase === "compact") {
-        frac.classList.remove("phase-bar", "phase-compact", "phase-num", "phase-expand", "phase-den");
+        frac.classList.remove(
+          "phase-bar", "phase-compact", "phase-num", "phase-expand", "phase-den",
+          "cancelled", "cancel-done", "gathering", "gathered"
+        );
+        frac.querySelectorAll(".cancel-result, .gather-eq").forEach(function (el) {
+          el.classList.remove("show", "morph-in");
+        });
+        frac.querySelectorAll(".token").forEach(function (t) {
+          t.classList.remove("struck", "is-remaining");
+          t.style.opacity = "";
+        });
+        if (cap) cap.classList.remove("show");
       }
       return;
     }

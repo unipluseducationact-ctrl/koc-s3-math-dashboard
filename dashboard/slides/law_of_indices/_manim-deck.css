@@ -233,11 +233,11 @@ html, body {
 .token.expand-framed,
 .src.expand-framed,
 .pv-grid .c.framed {
-  /* Manim SurroundingRectangle: stroke ~3, buff ~0.18–0.28 */
+  /* Outline only — no padding/background shift of the source glyph */
   outline: 3px solid var(--pow);
   outline-offset: 6px;
   border-radius: 4px;
-  background: rgba(255, 213, 79, 0.08);
+  background: transparent;
   box-shadow: none;
 }
 
@@ -330,20 +330,6 @@ html, body {
   align-items: center;
   gap: 4px;
 }
-.compact-view { display: none; }
-.expand-view { display: contents; }
-.frac-stack.phase-compact .compact-view { display: contents; }
-.frac-stack.phase-compact .expand-view { display: none !important; }
-.frac-stack.phase-num .compact-view,
-.frac-stack.phase-expand .compact-view,
-.frac-stack.phase-den .compact-view,
-.frac-stack.phase-cancel .compact-view,
-.frac-stack.phase-result .compact-view { display: none !important; }
-.frac-stack.phase-num .expand-view,
-.frac-stack.phase-expand .expand-view,
-.frac-stack.phase-den .expand-view,
-.frac-stack.phase-cancel .expand-view,
-.frac-stack.phase-result .expand-view { display: contents; }
 
 /* Two methods side-by-side with a vertical divider; conclusion returns to center */
 .two-method {
@@ -597,10 +583,115 @@ html, body {
   line-height: 1.2;
 }
 .example-row .src.is-source {
-  box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.55);
+  /* framing uses .expand-framed only — avoid double yellow / layout shift */
+  box-shadow: none;
 }
 .example-row .src.is-spent {
   opacity: 0.45;
+}
+
+/* Compact a/b as vertical fraction (LaTeX look) while keeping peelable HTML */
+.mini-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1.05;
+  margin: 0 0.08em;
+  padding: 0 0.1em;
+}
+.mini-frac .mini-bar {
+  display: block;
+  width: 100%;
+  min-width: 0.85em;
+  height: 2px;
+  background: #fff;
+  margin: 1px 0;
+}
+.eq-lead {
+  margin-right: 0.35em;
+  color: #fff;
+}
+
+.compact-view {
+  display: none;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 6px;
+}
+.expand-view {
+  display: none;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 6px;
+}
+.frac-stack.phase-compact .compact-view { display: flex; }
+.frac-stack.phase-compact .expand-view { display: none !important; }
+.frac-stack.phase-num .compact-view,
+.frac-stack.phase-expand .compact-view,
+.frac-stack.phase-den .compact-view,
+.frac-stack.phase-cancel .compact-view,
+.frac-stack.phase-result .compact-view { display: none !important; }
+.frac-stack.phase-num .expand-view,
+.frac-stack.phase-expand .expand-view,
+.frac-stack.phase-den .expand-view,
+.frac-stack.phase-cancel .expand-view,
+.frac-stack.phase-result .expand-view { display: flex; }
+
+/* Only hide remainders after gather — keep cancelled ops/tokens visible until then */
+.frac-stack.gathered .num .token.is-remaining,
+.frac-stack.gathered .num .token.op.is-remaining,
+.frac-stack.gathered .den .token.is-remaining,
+.frac-stack.gathered .den .token.op.is-remaining {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.frac-stack.gathered .num .token.cancelable,
+.frac-stack.gathered .den .token.cancelable,
+.frac-stack.gathered .num .token.op:not(.is-remaining),
+.frac-stack.gathered .den .token.op:not(.is-remaining) {
+  opacity: 0.35;
+}
+
+.cancel-result.morph-in {
+  animation: morphIn 0.45s cubic-bezier(0.22, 1.15, 0.36, 1) both;
+}
+@keyframes morphIn {
+  from { opacity: 0; transform: scale(0.72); }
+  to { opacity: 1; transform: none; }
+}
+
+.neg-link-eq {
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  min-height: 1.6em;
+  font-size: 34px;
+}
+.neg-link-eq.show {
+  display: flex;
+}
+.neg-link-eq .fly-wait { opacity: 0; }
+.neg-link-eq.linked .fly-wait,
+.neg-link-eq.linked .fly-land { opacity: 1; }
+.neg-link-step {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+}
+
+.story-stack.even-gap {
+  gap: 14px;
+}
+.story-stack.even-gap .story-band {
+  min-height: 2.5em;
 }
 
 .token-row,
@@ -691,11 +782,6 @@ html, body {
 }
 .token.gather-mid {
   transform: scale(1.08);
-}
-.frac-stack.gathered .num .token.is-remaining,
-.frac-stack.gathered .num .token.op {
-  opacity: 0;
-  transform: scale(0.6);
 }
 .cancel-result {
   opacity: 0;
@@ -847,14 +933,12 @@ html, body {
 }
 .laws-grid .full { grid-column: 1 / -1; text-align: center; }
 .laws-grid .katex { font-size: 1em !important; }
-.laws-grid .law-a .katex { color: var(--sym-a); }
-.laws-grid .law-b .katex { color: var(--sym-b); }
-.laws-grid .law-a2 .katex { color: var(--sym-a2); }
-.laws-grid .law-y .katex { color: var(--sym-b); }
-.laws-grid .law-note .katex { color: var(--ink); }
-.laws-grid .full.box-final {
-  border-color: var(--box);
-  padding: 0.28em 0.5em;
+.laws-grid .law-a .katex { color: #4fc3f7; }
+.laws-grid .law-b .katex { color: #ffd54f; }
+.laws-grid .law-a2 .katex { color: #81c784; }
+.laws-grid .law-y .katex { color: #ce93d8; }
+.laws-grid .law-pow .katex { color: #ffab91; }
+.laws-grid .full {
   justify-self: center;
 }
 .reveal .fragment.law-card.visible {
@@ -1020,11 +1104,25 @@ html, body {
   z-index: -1;
 }
 .work-fixed-frame .stage-pane.is-active.peel-arrive {
-  animation: peelArrive 0.48s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: peelArrive 0.4s ease both;
 }
 @keyframes peelArrive {
-  from { opacity: 0; transform: translateY(-50%) translateX(28px) scale(0.96); }
-  to { opacity: 1; transform: translateY(-50%) scale(1); }
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.work-fixed-frame .stage-pane.fade-out-step {
+  animation: stepFadeOut 0.32s ease both;
+}
+.work-fixed-frame .stage-pane.fade-in-step {
+  animation: stepFadeIn 0.38s ease both;
+}
+@keyframes stepFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes stepFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Scientific jump equations */
