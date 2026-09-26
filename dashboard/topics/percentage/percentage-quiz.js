@@ -293,7 +293,7 @@
             var payload = {
               type: 'uniplus:quizAnswer',
               subject: 'MATH',
-              quizId: 'math-percentages',
+              quizId: 'Perc2',
               questionId: 'pct-q' + q.id,
               section: 'JM27 Percentages II',
               difficulty: 'standard',

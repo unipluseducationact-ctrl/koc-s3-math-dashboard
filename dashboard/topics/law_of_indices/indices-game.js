@@ -21,8 +21,14 @@ window.IndicesGame = (function () {
   var question = null;
   var questions = [];
   var questionIndex = 0;
-  var presetId = "all";
-  var fallSpeed = 0.35;
+  var presetId = "rules";
+  var BASE_FALL = 0.35;
+  var BASE_PLAYER = 6;
+  var BASE_BULLET = 9;
+  var SPEED_STEPS = [1, 2, 3];
+  var speedStep = 0;
+  var fallSpeed = BASE_FALL;
+  var bulletSpeed = BASE_BULLET;
   var audioCtx = null;
   var toastTimer = null;
   var topicMisses = {};
@@ -133,6 +139,39 @@ window.IndicesGame = (function () {
       var current = total ? Math.min(questionIndex + 1, total) : 0;
       p.textContent = total ? "Q " + current + "/" + total : "—";
     }
+    updateSpeedHud();
+  }
+
+  function speedMultiplier() {
+    return SPEED_STEPS[speedStep] || 1;
+  }
+
+  function updateSpeedHud() {
+    var el = document.getElementById("btn-speed");
+    if (el) el.textContent = "Speed " + speedMultiplier() + "×";
+  }
+
+  function applySpeed() {
+    var mult = speedMultiplier();
+    fallSpeed = BASE_FALL * mult;
+    player.speed = BASE_PLAYER * (0.85 + 0.15 * mult);
+    bulletSpeed = BASE_BULLET * (0.85 + 0.15 * mult);
+    enemies.forEach(function (e) {
+      e.vy = fallSpeed;
+    });
+    updateSpeedHud();
+  }
+
+  function speedUp() {
+    if (speedStep < SPEED_STEPS.length - 1) speedStep += 1;
+    applySpeed();
+    return speedMultiplier();
+  }
+
+  function cycleSpeed() {
+    speedStep = (speedStep + 1) % SPEED_STEPS.length;
+    applySpeed();
+    return speedMultiplier();
   }
 
   function setQuestionText() {
@@ -208,15 +247,15 @@ window.IndicesGame = (function () {
   function spawnFourAnswers() {
     if (!question) return;
     var choices = shuffle(question.choices.slice());
-    fallSpeed = 0.35;
+    applySpeed();
     var laneW = width / 4;
-    var boxW = Math.min(170, laneW - 16);
+    var boxW = Math.min(214, laneW - 10);
     enemies = choices.map(function (choice, i) {
       return {
         x: laneW * i + (laneW - boxW) / 2,
         y: 56,
         w: boxW,
-        h: 36,
+        h: 58,
         vy: fallSpeed,
         vx: 0,
         textEn: choice.textEn,
@@ -255,7 +294,7 @@ window.IndicesGame = (function () {
     if (!running) return;
     ensureAudio();
     playTone("shoot");
-    bullets.push({ x: player.x, y: player.y - 16, r: 4, vy: -9 });
+    bullets.push({ x: player.x, y: player.y - 16, r: 4, vy: -bulletSpeed });
   }
 
   function burst(x, y, color) {
@@ -448,18 +487,18 @@ window.IndicesGame = (function () {
     }
 
     enemies.forEach(function (e) {
-      ctx.fillStyle = "rgba(28, 107, 156, 0.95)";
-      roundRect(ctx, e.x, e.y, e.w, e.h, 10);
+      ctx.fillStyle = "rgba(14, 116, 166, 0.96)";
+      roundRect(ctx, e.x, e.y, e.w, e.h, 14);
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.strokeStyle = "rgba(255,255,255,0.28)";
       ctx.stroke();
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 14px 'DM Sans', sans-serif";
+      ctx.font = "700 26px 'DM Sans', sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       var label = e.label;
-      if (ctx.measureText(label).width > e.w - 12) {
-        ctx.font = "bold 12px 'DM Sans', sans-serif";
+      if (ctx.measureText(label).width > e.w - 18) {
+        ctx.font = "700 20px 'DM Sans', sans-serif";
       }
       ctx.fillText(label, e.x + e.w / 2, e.y + e.h / 2);
     });
@@ -487,15 +526,10 @@ window.IndicesGame = (function () {
     if (running) rafId = requestAnimationFrame(loop);
   }
 
-  function getSelectedPreset() {
-    var active = document.querySelector(".game-preset-pill.is-active");
-    return active ? active.getAttribute("data-preset") || "all" : presetId;
-  }
-
   function start() {
-    presetId = getSelectedPreset();
+    presetId = "rules";
     questions = window.getJM24GameQuestions
-      ? window.getJM24GameQuestions(presetId)
+      ? window.getJM24GameQuestions("rules")
       : [];
     if (!questions.length) return;
 
@@ -509,6 +543,7 @@ window.IndicesGame = (function () {
     enemies = [];
     particles = [];
     player.x = width / 2;
+    applySpeed();
     resetTopicMisses();
     lastWeakestTopic = null;
 
@@ -666,6 +701,15 @@ window.IndicesGame = (function () {
         if (running) e.preventDefault();
       }
       if (e.code === "Space" && running) fire();
+      if (e.key === "+" || e.key === "=") {
+        speedUp();
+        if (running) e.preventDefault();
+      }
+      if (e.key === "-" || e.key === "_") {
+        if (speedStep > 0) speedStep -= 1;
+        applySpeed();
+        if (running) e.preventDefault();
+      }
     };
     onKeyUp = function (e) {
       keys[e.key] = false;
@@ -709,6 +753,14 @@ window.IndicesGame = (function () {
       });
     }
 
+    var speedBtn = document.getElementById("btn-speed");
+    if (speedBtn) {
+      speedBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        cycleSpeed();
+      });
+    }
+
     document.querySelectorAll(".game-preset-pill").forEach(function (pill) {
       pill.addEventListener("click", function () {
         if (running) return;
@@ -729,6 +781,7 @@ window.IndicesGame = (function () {
     resize();
     bindControls();
     showReadyOverlay();
+    applySpeed();
     updateHud();
     draw();
   }
@@ -766,5 +819,14 @@ window.IndicesGame = (function () {
     pause();
   }
 
-  return { init: init, destroy: destroy, start: start, onLangChange: onLangChange, onShow: onShow, onHide: onHide };
+  return {
+    init: init,
+    destroy: destroy,
+    start: start,
+    speedUp: speedUp,
+    cycleSpeed: cycleSpeed,
+    onLangChange: onLangChange,
+    onShow: onShow,
+    onHide: onHide,
+  };
 })();
