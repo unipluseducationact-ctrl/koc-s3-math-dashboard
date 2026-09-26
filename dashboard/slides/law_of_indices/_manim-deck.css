@@ -228,16 +228,51 @@ html, body {
 }
 .paren { color: #94a3b8; }
 
-/* Yellow frame while a term is expanding — keep clear of title underline */
+/* Yellow frame — roomy so it never clips powers / numerators; Example only */
 .expand-framed,
 .token.expand-framed,
 .src.expand-framed,
+.src-core.expand-framed,
 .pv-grid .c.framed {
   outline: 2px solid var(--pow);
-  outline-offset: 3px;
-  border-radius: 4px;
+  outline-offset: 10px;
+  border-radius: 6px;
   background: transparent;
   box-shadow: none;
+}
+.fly-ghost.expand-framed,
+.fly-ghost .expand-framed {
+  outline: none !important;
+}
+
+/* Core base only — outer power sits outside the yellow frame */
+.example-row .src {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+}
+.example-row .src .src-core {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1.15;
+}
+/* Outer power tucked tight against base (closer, not further) */
+.example-row .src > .pow.outer,
+.example-row .src > .pow,
+.token.expand-src > .pow.outer,
+.token > .pow.outer {
+  margin-left: -0.28em !important;
+  padding-left: 0 !important;
+  top: -0.55em !important;
+  font-size: 0.55em !important;
+  line-height: 0 !important;
+  vertical-align: super !important;
 }
 
 /* Stepped fraction build */
@@ -355,22 +390,25 @@ html, body {
   padding-top: 8px;
 }
 .two-method .method-col:last-child .neg-right-row {
-  /* slightly upper so expand bar ≈ left y^{-2} horizon */
-  margin-top: 1.55em;
+  /* whole RHS moves up */
+  margin-top: 0.55em;
+  transform: translateY(-10px);
 }
 .method-col .neg-right-row .eq-lead {
   margin-left: 0.02em;
   margin-right: 0.15em;
-  /* ~2px down so = sits on the shared frac-bar horizon */
   transform: translateY(2px);
 }
 .method-col .neg-right-result {
   font-size: 30px !important;
   white-space: nowrap;
-  /* keep result frac-bar on same y as expand frac-bar */
   display: inline-flex;
   align-items: center;
   transform: translateY(0);
+}
+.method-col .neg-right-row .frac-build {
+  /* expansion fraction: up overall, then +2px down to ally with = */
+  transform: translateY(-18px);
 }
 .neg-recip {
   display: inline-grid;
@@ -680,7 +718,8 @@ html, body {
 .token > .pow.outer,
 .example-row .src > .pow.outer {
   flex: 0 0 auto;
-  align-self: flex-start;
+  align-self: center;
+  margin-left: -0.28em !important;
 }
 .eq-lead {
   margin-right: 0.35em;
@@ -721,6 +760,7 @@ html, body {
   width: auto;
   display: inline-block;
   min-height: 0;
+  transform: translateY(-18px);
 }
 .method-col .neg-right-row .frac-stack .token {
   font-size: 22px;
@@ -898,18 +938,20 @@ html, body {
 .glyph.gold { color: var(--pow); }
 .token.rose { color: var(--strike); }
 
-/* True superscripts only on <sup class="pow"> inside tokens */
-.reveal .token > .pow,
-.reveal .src > .pow,
-.reveal .example-row .src > .pow,
-.reveal .example-row .src > span + .pow,
-.reveal .stage-pane .token > .pow {
+/* True LaTeX-like superscripts — descendant (not only direct child) so .src-core works */
+.reveal .token .pow,
+.reveal .src .pow,
+.reveal .src-core .pow,
+.reveal .example-row .pow,
+.reveal .stage-pane .pow,
+.reveal .m-eq .pow,
+.fly-ghost .pow {
   color: var(--pow) !important;
-  font-size: 0.62em !important;
+  font-size: 0.58em !important;
   line-height: 0 !important;
   vertical-align: super !important;
   position: relative;
-  top: -0.15em;
+  top: -0.2em;
   font-style: normal;
 }
 
@@ -1092,46 +1134,57 @@ html, body {
 .two-col .m-sub { font-size: 24px; text-align: left; }
 
 .laws-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px 48px;
-  max-width: 1040px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  max-width: 720px;
   width: 100%;
   margin: auto;
-  text-align: left;
+  text-align: center;
   font-size: 30px;
   color: #fff;
-  /* Fixed seats: appearing cards must not push earlier cards */
-  align-items: start;
-  align-content: start;
   flex: 1;
 }
-.laws-grid .full { grid-column: 1 / -1; text-align: center; }
+.laws-grid .full { width: 100%; text-align: center; }
 .laws-grid .katex { font-size: 1em !important; }
 .laws-grid .law-a .katex { color: #4fc3f7; }
 .laws-grid .law-b .katex { color: #ffd54f; }
 .laws-grid .law-a2 .katex { color: #81c784; }
 .laws-grid .law-y .katex { color: #ce93d8; }
 .laws-grid .law-pow .katex { color: #ffab91; }
-.laws-grid .full {
-  justify-self: center;
+/* Single centered column — equal x for every law */
+.laws-grid .law-card {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  transform: none !important;
+  text-align: center;
+  min-height: 0;
+  display: block;
 }
-/* Reserve fraction-tall seat for BOTH mid-row cards so green never jumps when purple appears */
 .laws-grid .law-a2,
 .laws-grid .law-y {
-  min-height: 3.4em;
-  display: flex;
-  align-items: center;
+  min-height: 0;
+  padding-top: 0;
+  display: block;
 }
-.laws-grid .law-y {
-  transform: none;
+.laws-grid .law-card .katex-display {
+  margin: 0.12em 0 !important;
+  text-align: center !important;
+}
+.laws-grid .law-card .katex-display > .katex {
+  text-align: center !important;
+  display: inline-block !important;
+  margin: 0 !important;
 }
 .laws-grid .law-y .katex .mrel {
   margin-left: 0.14em !important;
   margin-right: 0.16em !important;
 }
 .reveal .fragment.law-card.visible {
-  animation: enterPop 0.6s cubic-bezier(0.22, 1.35, 0.36, 1) both;
+  animation: enterFade 0.45s ease both;
 }
 
 .conv-row {
@@ -1145,26 +1198,73 @@ html, body {
 }
 .arrow { color: var(--pow); font-size: 1.1em; }
 
-/* Ghost used by TransformFromCopy-style fly — never scale */
+/* Ghost used by TransformFromCopy — no frame, no scale pop, keep one horizontal line */
 .fly-ghost {
   position: fixed;
   z-index: 9999;
   pointer-events: none;
   margin: 0;
+  padding: 0;
+  outline: none !important;
   transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.2s ease;
   will-change: transform;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
-  white-space: nowrap;
   transform: translate(0, 0) scale(1);
+  box-sizing: border-box;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  height: auto !important;
+  width: auto !important;
 }
 .fly-ghost.flying {
   opacity: 0.95;
 }
-.fly-ghost .mini-frac,
-.fly-ghost:has(.mini-frac) {
+.fly-ghost .src-core,
+.fly-ghost.fly-ghost-frac,
+.fly-ghost.fly-ghost-frac .src-core {
   display: inline-flex !important;
+  flex-direction: row !important;
   flex-wrap: nowrap !important;
+  align-items: center !important;
   white-space: nowrap !important;
+  outline: none !important;
+  height: auto !important;
+}
+/* Keep vertical fraction during fly — never crack into two lines / (a—b) */
+.fly-ghost .mini-frac,
+.fly-ghost.fly-ghost-frac .mini-frac {
+  display: inline-grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto auto auto !important;
+  align-items: center !important;
+  justify-items: center !important;
+  vertical-align: middle !important;
+  line-height: 1.05 !important;
+  white-space: normal !important;
+  margin: 0 0.06em !important;
+}
+.fly-ghost .mini-bar,
+.fly-ghost.fly-ghost-frac .mini-bar {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0.85em !important;
+  height: 2px !important;
+  background: #fff !important;
+  margin: 1px 0 !important;
+}
+.fly-ghost .pow.outer,
+.fly-ghost > .pow,
+.fly-ghost.fly-ghost-frac > .pow,
+.fly-ghost.fly-ghost-frac .pow.outer {
+  margin-left: -0.28em !important;
+  font-size: 0.55em !important;
+  vertical-align: super !important;
+  position: relative !important;
+  top: -0.55em !important;
+  flex: 0 0 auto !important;
 }
 .token.fly-wait,
 .work-row.fly-wait > .token {
@@ -1178,6 +1278,14 @@ html, body {
 @keyframes landFade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Peel: real × stays in CSS seat; factors wait until power lands */
+.work-fixed-frame .stage-pane .token.peel-factor-wait {
+  opacity: 0 !important;
+}
+.work-fixed-frame .stage-pane .token.peel-times.peel-times-live {
+  opacity: 1 !important;
 }
 
 /* PPT-style entrance — final transform always none (fixed seat) */
@@ -1306,7 +1414,7 @@ html, body {
   opacity: 0 !important;
   visibility: visible !important;
   pointer-events: none !important;
-  z-index: -1;
+  z-index: 2;
   position: absolute !important;
   left: 0 !important;
   right: 0 !important;
@@ -1314,6 +1422,38 @@ html, body {
   transform: translateY(-50%) !important;
   height: auto !important;
   overflow: visible !important;
+}
+.work-fixed-frame .stage-pane.is-measure-hide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* Peel seat: always overlay at frame center — ignore data-stack relative layout */
+.work-fixed-frame .stage-pane.is-peel-seat,
+.reveal .m-stage .work-fixed-frame .fragment.stage-pane.is-peel-seat,
+.work-fixed-frame .stage-pane.is-measure.is-peel-seat,
+.reveal .m-stage .work-fixed-frame .fragment.stage-pane.is-measure.is-peel-seat,
+.work-fixed-frame[data-stack="1"] .stage-pane.is-peel-seat,
+.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.is-peel-seat,
+.work-fixed-frame[data-stack="1"] .stage-pane.is-measure.is-peel-seat,
+.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.is-measure.is-peel-seat {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  height: auto !important;
+  overflow: visible !important;
+  z-index: 2;
+}
+.work-fixed-frame .stage-pane.is-measure.is-peel-seat,
+.reveal .m-stage .work-fixed-frame .fragment.stage-pane.is-measure.is-peel-seat {
+  opacity: 0 !important;
+  visibility: visible !important;
+}
+.work-fixed-frame .stage-pane.is-active.is-peel-seat:not(.is-measure) {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 .work-fixed-frame[data-stack="1"] .stage-pane.is-measure,
 .reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.is-measure {
@@ -1329,7 +1469,9 @@ html, body {
   opacity: 0 !important;
 }
 .work-fixed-frame .stage-pane.is-active.peel-arrive {
-  animation: peelArrive 0.4s ease both;
+  /* no transform — only a soft fade so the row never pops */
+  animation: none;
+  opacity: 1;
 }
 @keyframes peelArrive {
   from { opacity: 0; }
@@ -1617,29 +1759,57 @@ html, body {
   visibility: visible !important;
 }
 
-/* Stacked coexistence: consecutive steps stay visible (Law 3–5) */
+/* Stacked coexistence: consecutive steps stay visible (Law 4–5) */
 .work-fixed-frame[data-stack="1"] {
+  position: relative;
+  width: 100%;
+  min-height: 2.8em;
   display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Single pane: absolute center seat — same y before/after fly & peel (no pop) */
+.work-fixed-frame[data-stack="1"]:not(.is-multi) .stage-pane,
+.reveal .m-stage .work-fixed-frame[data-stack="1"]:not(.is-multi) .fragment.stage-pane {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+.reveal .m-stage .work-fixed-frame[data-stack="1"]:not(.is-multi) .fragment.stage-pane:not(.visible) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.reveal .m-stage .work-fixed-frame[data-stack="1"]:not(.is-multi) .fragment.stage-pane.visible.is-active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+/* Two+ panes: true 上下 stack for compare */
+.work-fixed-frame[data-stack="1"].is-multi {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
   min-height: 0;
 }
-.work-fixed-frame[data-stack="1"] .stage-pane {
-  position: relative;
-  left: auto;
-  right: auto;
-  top: auto;
-  transform: none;
-  width: 100%;
-  opacity: 0;
-  visibility: hidden;
-}
-.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane:not(.visible) {
+.work-fixed-frame[data-stack="1"].is-multi .stage-pane,
+.reveal .m-stage .work-fixed-frame[data-stack="1"].is-multi .fragment.stage-pane {
   position: relative !important;
   left: auto !important;
   right: auto !important;
+  top: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  height: auto !important;
+}
+.reveal .m-stage .work-fixed-frame[data-stack="1"].is-multi .fragment.stage-pane:not(.visible) {
   height: 0 !important;
   min-height: 0 !important;
   margin: 0 !important;
@@ -1648,12 +1818,10 @@ html, body {
   opacity: 0 !important;
   visibility: hidden !important;
 }
-.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.visible.is-active,
-.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.visible.is-kept {
+.reveal .m-stage .work-fixed-frame[data-stack="1"].is-multi .fragment.stage-pane.visible.is-active,
+.reveal .m-stage .work-fixed-frame[data-stack="1"].is-multi .fragment.stage-pane.visible.is-kept {
   opacity: 1 !important;
   visibility: visible !important;
-  position: relative !important;
-  height: auto !important;
   pointer-events: none;
 }
 
@@ -1811,7 +1979,7 @@ body.loi-tight .slide-quot .story-band-note {
   margin-top: 10px;
 }
 body.loi-tight .slide-quot .work-fixed-frame .token.mini-frac.result-frac {
-  font-size: 28px;
+  font-size: 34px !important;
 }
 body.loi-tight .two-method {
   max-height: 42vh;
@@ -1889,10 +2057,11 @@ body.loi-tight .m-sub {
 }
 body.loi-tight .cancel-caption { margin-top: 4px; }
 body.loi-tight .laws-grid {
-  gap: 22px 48px;
+  gap: 16px;
   flex: 0 0 auto;
-  margin: 20px auto 0;
-  font-size: 46px;
+  margin: 12px auto 0;
+  font-size: 40px;
+  max-width: 780px;
 }
 body.loi-tight .laws-grid .full.box-final {
   padding: 0.22em 0.55em;
@@ -1925,7 +2094,7 @@ body.loi-tight .slide-quot .work-fixed-frame {
   min-height: 2.1em;
 }
 body.loi-tight .slide-quot .work-fixed-frame .token {
-  font-size: 32px;
+  font-size: 34px;
 }
 body.loi-tight .slide-quot .m-result.box-final {
   font-size: 42px;
@@ -1943,8 +2112,7 @@ body.loi-tight .hero-slide .m-sub.lead {
   .m-sub.lead { font-size: 24px; }
   .m-eq, .m-result, .token, .digit { font-size: 24px; }
   .sci-jump-eq.sci-big { font-size: 28px; }
-  .laws-grid, .two-col { grid-template-columns: 1fr; }
-  .laws-grid { font-size: 22px; }
+  .laws-grid { font-size: 26px; gap: 12px; max-width: 100%; }
   .hero-slide .m-sub.lead { font-size: 32px; }
   .hero-slide .token-row.hero-eq .token { font-size: 48px; }
   .hero-slide .m-sub.note-proc { font-size: 26px; }

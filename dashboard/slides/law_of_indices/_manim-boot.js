@@ -29,6 +29,26 @@
 
   var anim = { busy: false, skip: false, finish: null };
 
+  /** Reveal scales .slides; body-fixed ghosts must match that visual size. */
+  function revealScale() {
+    try {
+      if (window.Reveal && typeof Reveal.getScale === "function") {
+        var s = Reveal.getScale();
+        if (s && s > 0.05) return s;
+      }
+    } catch (e) { /* ignore */ }
+    return 1;
+  }
+
+  function scaledFontPx(elOrFs) {
+    var fs = typeof elOrFs === "string"
+      ? elOrFs
+      : window.getComputedStyle(elOrFs).fontSize;
+    var px = parseFloat(fs);
+    if (!isFinite(px) || px <= 0) px = 34;
+    return (px * revealScale()) + "px";
+  }
+
   function renderMath(root) {
     if (!window.renderMathInElement) return;
     renderMathInElement(root || document.body, {
@@ -76,7 +96,7 @@
   }
 
   function clearSourceMarks() {
-    document.querySelectorAll(".example-row .src").forEach(function (el) {
+    document.querySelectorAll(".example-row .src, .example-row .src-core").forEach(function (el) {
       el.classList.remove("is-source", "is-spent", "expand-framed");
     });
   }
@@ -102,7 +122,9 @@
 
   function setExpandFrame(el, on) {
     if (!el) return;
-    el.classList.toggle("expand-framed", !!on);
+    /* Prefer .src-core so the yellow frame never covers the outer power */
+    var target = el.querySelector && el.querySelector(".src-core");
+    (target || el).classList.toggle("expand-framed", !!on);
   }
 
   /** Yellow frame belongs on the Example-row term being expanded (not the work row). */
@@ -148,9 +170,10 @@
         "struck", "gather-left", "gather-right", "gather-mid", "is-remaining",
         "expand-framed", "framed", "dragged", "landed", "awaiting",
         "dragging", "spent", "is-on", "fly-wait", "fly-land", "combined", "combining",
-        "fade-out-step", "fade-in-step"
+        "fade-out-step", "fade-in-step", "peel-factor-wait", "peel-times-live", "is-peel-pending"
       );
       t.style.opacity = "";
+      t.style.fontSize = "";
     });
     root.querySelectorAll(".frac-stack, .frac-build").forEach(function (f) {
       f.classList.remove(
@@ -164,8 +187,11 @@
       r.classList.remove("show", "indicated", "linked");
     });
     root.querySelectorAll(".stage-pane").forEach(function (p) {
-      p.classList.remove("is-active", "is-kept", "peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
+      p.classList.remove("is-active", "is-kept", "peel-arrive", "is-measure", "is-peel-seat", "is-measure-hide", "fade-out-step", "fade-in-step");
       p.style.opacity = "";
+    });
+    root.querySelectorAll(".work-fixed-frame.is-multi").forEach(function (f) {
+      f.classList.remove("is-multi");
     });
     clearSourceMarks();
     clearAllExpandFrames(root);
@@ -173,8 +199,7 @@
   }
 
   /**
-   * TransformFromCopy: frame source → clone at source (no layout shift) →
-   * drag clone to target → reveal target → remove frame.
+   * TransformFromCopy: frame stays on Example only → clone flies (no frame) → land.
    */
   function flyFromTo(fromEl, toEl, delay) {
     if (!fromEl || !toEl) {
@@ -187,9 +212,11 @@
     toEl.classList.add("fly-wait");
     toEl.classList.remove("fly-land");
     later(function () {
+      /* Yellow frame only on the Example source — never on the flying clone */
       setExpandFrame(fromEl, true);
+      var fromFs = window.getComputedStyle(fromEl).fontSize;
+      toEl.style.fontSize = fromFs;
       var from = fromEl.getBoundingClientRect();
-      var to = toEl.getBoundingClientRect();
       if (!from.width) {
         toEl.classList.remove("fly-wait");
         toEl.classList.add("fly-land");
@@ -198,32 +225,33 @@
       }
       var ghost = fromEl.cloneNode(true);
       ghost.classList.remove("expand-framed", "is-source", "is-spent", "fly-wait", "fly-land");
+      ghost.querySelectorAll(".expand-framed").forEach(function (el) {
+        el.classList.remove("expand-framed");
+      });
       ghost.classList.add("fly-ghost", "flying");
-      /* Lock visual size for whole flight — never scale mid-air */
-      var fromFs = window.getComputedStyle(fromEl).fontSize;
-      var toFs = window.getComputedStyle(toEl).fontSize;
-      var useFs = toFs || fromFs;
+      if (fromEl.querySelector(".mini-frac") || fromEl.classList.contains("mini-frac")) {
+        ghost.classList.add("fly-ghost-frac");
+      }
+      /* Auto size — fixed width/height was cracking (a/b) into two lines */
       ghost.style.left = from.left + "px";
       ghost.style.top = from.top + "px";
       ghost.style.width = "auto";
       ghost.style.height = "auto";
       ghost.style.maxWidth = "none";
+      ghost.style.fontSize = scaledFontPx(fromFs);
+      ghost.style.lineHeight = "1.15";
       ghost.style.whiteSpace = "nowrap";
-      ghost.style.fontSize = useFs;
-      ghost.style.lineHeight = window.getComputedStyle(toEl).lineHeight || "1.2";
+      ghost.style.display = "inline-flex";
+      ghost.style.flexDirection = "row";
+      ghost.style.alignItems = "center";
       ghost.style.transform = "translate(0,0) scale(1)";
-      ghost.style.transformOrigin = "center center";
+      ghost.style.transformOrigin = "left top";
       document.body.appendChild(ghost);
-      /* Re-measure ghost at locked size, then align centers for translation */
-      var gR = ghost.getBoundingClientRect();
-      var destW = to.width || gR.width;
-      var destH = to.height || gR.height;
-      var startLeft = from.left + (from.width - gR.width) / 2;
-      var startTop = from.top + (from.height - gR.height) / 2;
-      ghost.style.left = startLeft + "px";
-      ghost.style.top = startTop + "px";
-      var dx = to.left - startLeft + (destW - gR.width) / 2;
-      var dy = to.top - startTop + (destH - gR.height) / 2;
+      ghost.style.left = from.left + "px";
+      ghost.style.top = from.top + "px";
+      var to2 = toEl.getBoundingClientRect();
+      var dx = to2.left - from.left;
+      var dy = to2.top - from.top;
       raf(function () {
         raf(function () {
           ghost.style.transform = "translate(" + dx + "px, " + dy + "px) scale(1)";
@@ -259,13 +287,23 @@
     return !!(frame && frame.getAttribute("data-stack") === "1");
   }
 
+  /** One visible pane → absolute center seat (no y-pop). Two+ → stacked 上下. */
+  function syncStackMode(frame) {
+    if (!frame || !isStackFrame(frame)) return;
+    var shown = frame.querySelectorAll(
+      ".stage-pane.visible.is-active, .stage-pane.visible.is-kept"
+    );
+    if (shown.length >= 2) frame.classList.add("is-multi");
+    else frame.classList.remove("is-multi");
+  }
+
   function activatePane(pane, opts) {
     opts = opts || {};
     var frame = pane && pane.parentElement;
     if (!frame) return;
     var stack = isStackFrame(frame);
     frame.querySelectorAll(".stage-pane").forEach(function (p) {
-      p.classList.remove("peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
+      p.classList.remove("peel-arrive", "is-measure", "is-peel-seat", "is-measure-hide", "fade-out-step", "fade-in-step");
       if (!stack) {
         p.classList.remove("is-active", "is-kept");
       } else if (p !== pane && p.classList.contains("visible")) {
@@ -281,6 +319,7 @@
     pane.classList.remove("is-kept");
     if (opts.peel) pane.classList.add("peel-arrive");
     if (opts.fadeIn) pane.classList.add("fade-in-step");
+    syncStackMode(frame);
     frameExampleSrc(pane);
     renderMath(pane);
     var flyNodes = pane.querySelectorAll("[data-fly-from]");
@@ -347,7 +386,6 @@
       if (done) done();
       return;
     }
-    /* Frame the Example-row term for the pane we are expanding from */
     if (!fromPane.getAttribute || fromPane.getAttribute("data-peel-live") !== "1") {
       frameExampleSrc(fromPane);
     }
@@ -365,8 +403,19 @@
       return;
     }
 
-    toPane.classList.add("is-measure");
-    /* Force layout so seats are measurable even before fragment .visible */
+    var stack = isStackFrame(fromPane.parentElement);
+    var fromR = pow.getBoundingClientRect();
+
+    /*
+     * Final layout from the first frame — no measure/overlay thrash (that was
+     * popping the whole expression and parking × on the next factor).
+     * Real .peel-times stays visible in its CSS seat; only the power flies.
+     */
+    fromPane.classList.remove("is-active", "is-peel-seat", "is-measure", "is-measure-hide");
+    if (stack && fromPane.getAttribute("data-replace") !== "1") {
+      fromPane.classList.add("is-kept");
+    }
+    activatePane(toPane, { peel: true, skipFly: true });
     void toPane.offsetWidth;
 
     var timesEl = toPane.querySelector(".token.peel-times, .peel-times");
@@ -375,49 +424,30 @@
       var toks = toPane.querySelectorAll(".token:not(.op)");
       rightFactor = toks.length >= 2 ? toks[1] : toks[0];
     }
-    var leftFactor = null;
-    var allToks = toPane.querySelectorAll(".token:not(.op)");
-    if (allToks.length) leftFactor = allToks[0];
 
-    var fromR = pow.getBoundingClientRect();
-    var targetEl = rightFactor
-      ? (rightFactor.querySelector("sup.pow") || rightFactor)
-      : null;
-    var targetR = targetEl
-      ? targetEl.getBoundingClientRect()
-      : { left: fromR.left + 90, top: fromR.top, width: fromR.width, height: fromR.height };
-
-    /*
-     * × sits at the REAL .peel-times seat (final position) from the first frame.
-     * Prefer timesEl rect; nudge slightly right/down if using factor midpoint fallback.
-     */
-    var leftR = leftFactor ? leftFactor.getBoundingClientRect() : null;
-    var rightBox = rightFactor ? rightFactor.getBoundingClientRect() : targetR;
-    var timesR = timesEl ? timesEl.getBoundingClientRect() : null;
-    var midX, midY, timesFs;
-    if (timesR && timesR.width > 1 && timesR.height > 1) {
-      midX = timesR.left + timesR.width / 2;
-      midY = timesR.top + timesR.height / 2;
-    } else if (leftR && leftR.width > 0 && rightBox && rightBox.width > 0) {
-      midX = (leftR.right + rightBox.left) / 2 + 4;
-      midY = ((leftR.top + leftR.height / 2) + (rightBox.top + rightBox.height / 2)) / 2 + 3;
-    } else {
-      midX = (fromR.left + targetR.left) / 2 + 8;
-      midY = (fromR.top + fromR.height / 2 + targetR.top + targetR.height / 2) / 2 + 3;
+    /* Only hide the NEW factor the power is becoming — keep leading a / (ab) visible */
+    if (rightFactor) {
+      rightFactor.classList.add("peel-factor-wait");
     }
-    timesFs = timesEl
-      ? window.getComputedStyle(timesEl).fontSize
-      : window.getComputedStyle(toPane.querySelector(".token") || toPane).fontSize;
+    if (timesEl) {
+      timesEl.classList.remove("is-peel-pending");
+      timesEl.classList.add("peel-times-live");
+    }
+    void toPane.offsetWidth;
 
-    var landX = targetR.left + targetR.width / 2;
-    var landY = targetR.top + targetR.height / 2;
+    function baseBox(tok) {
+      if (!tok) return null;
+      var letter = tok.querySelector(".sym-a, .sym-a2, .sym-b, .sym-y") || tok;
+      return letter.getBoundingClientRect();
+    }
+    var rightBox = baseBox(rightFactor) || (rightFactor ? rightFactor.getBoundingClientRect() : null);
 
-    if (timesEl) timesEl.classList.add("is-peel-pending");
-    toPane.classList.remove("is-measure");
+    var landX = rightBox ? rightBox.left + rightBox.width / 2 : fromR.left + 80;
+    var landY = rightBox ? rightBox.top + rightBox.height / 2 : fromR.top + fromR.height / 2;
 
     var startX = fromR.left + fromR.width / 2;
     var startY = fromR.top + fromR.height / 2;
-    var lift = Math.max(56, Math.abs(landX - startX) * 0.48);
+    var lift = Math.max(10, Math.abs(landX - startX) * 0.1);
 
     var cs = window.getComputedStyle(pow);
     var ghost = document.createElement("span");
@@ -425,60 +455,45 @@
     ghost.textContent = pow.textContent;
     ghost.style.left = fromR.left + "px";
     ghost.style.top = fromR.top + "px";
-    ghost.style.width = fromR.width + "px";
-    ghost.style.height = fromR.height + "px";
-    ghost.style.fontSize = cs.fontSize;
-    ghost.style.lineHeight = cs.lineHeight;
+    ghost.style.fontSize = scaledFontPx(cs.fontSize);
+    ghost.style.lineHeight = "1";
     ghost.style.fontFamily = cs.fontFamily;
     ghost.style.color = cs.color;
-    ghost.style.display = "inline-flex";
-    ghost.style.alignItems = "center";
-    ghost.style.justifyContent = "center";
+    ghost.style.fontWeight = cs.fontWeight;
+    ghost.style.transform = "translate(0,0) scale(1)";
     document.body.appendChild(ghost);
     pow.style.opacity = "0";
 
-    var timesGhost = document.createElement("span");
-    timesGhost.className = "times-ghost";
-    timesGhost.textContent = "\u00d7";
-    timesGhost.style.left = midX + "px";
-    timesGhost.style.top = midY + "px";
-    timesGhost.style.fontSize = timesFs;
-    timesGhost.style.opacity = "0";
-    document.body.appendChild(timesGhost);
-
     var peelToken = playToken;
     var finished = false;
-    var stack = isStackFrame(fromPane.parentElement);
     function cleanup(skip) {
       if (finished) return;
       finished = true;
       if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-      if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
-      if (timesEl) timesEl.classList.remove("is-peel-pending");
-      fromPane.classList.remove("is-active");
-      /* Stack keeps prior steps, unless the prior pane is a replace-source (e.g. (ab)^2) */
-      if (stack && !(fromPane.getAttribute && fromPane.getAttribute("data-replace") === "1")) {
+      if (rightFactor) rightFactor.classList.remove("peel-factor-wait");
+      if (timesEl) timesEl.classList.remove("peel-times-live", "is-peel-pending");
+      fromPane.classList.remove("is-active", "is-peel-seat", "is-measure-hide");
+      if (stack && fromPane.getAttribute("data-replace") !== "1") {
         fromPane.classList.add("is-kept");
+      } else {
+        fromPane.classList.remove("is-kept");
       }
-      /* Live example peel: restore source power; do not keep offscreen host */
       if (fromPane.getAttribute && fromPane.getAttribute("data-peel-live") === "1") {
         fromPane.classList.remove("is-kept");
       }
       pow.style.opacity = "";
-      activatePane(toPane, { peel: true, skipFly: true });
-      later(function () {
-        toPane.classList.remove("peel-arrive");
-        anim.busy = false;
-        anim.finish = null;
-        if (done) done();
-      }, skip ? 40 : 280);
+      toPane.classList.remove("peel-arrive");
+      syncStackMode(toPane.parentElement);
+      anim.busy = false;
+      anim.finish = null;
+      if (done) done();
     }
 
     anim.busy = true;
     anim.finish = function () { cleanup(true); };
 
     var t0 = null;
-    var FADE_TAIL = 0.18;
+    var FADE_TAIL = 0.16;
     function frame(now) {
       if (playToken !== peelToken || finished) return;
       if (anim.skip) { cleanup(true); return; }
@@ -492,11 +507,7 @@
         opacity = Math.max(0, 1 - (p - (1 - FADE_TAIL)) / FADE_TAIL);
       }
       ghost.style.opacity = String(opacity);
-      ghost.style.transform = "translate(" + x + "px, " + y + "px)";
-      /* × already at destination seat — fade in early and stay until handoff */
-      if (ease >= 0.12) {
-        timesGhost.style.opacity = String(Math.min(1, (ease - 0.12) / 0.1));
-      }
+      ghost.style.transform = "translate(" + x + "px, " + y + "px) scale(1)";
       if (p < 1) raf(frame);
       else cleanup(false);
     }
