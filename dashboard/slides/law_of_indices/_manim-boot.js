@@ -199,24 +199,34 @@
       var ghost = fromEl.cloneNode(true);
       ghost.classList.remove("expand-framed", "is-source", "is-spent", "fly-wait", "fly-land");
       ghost.classList.add("fly-ghost", "flying");
-      ghost.style.left = from.left + "px";
-      ghost.style.top = from.top + "px";
-      ghost.style.width = from.width + "px";
-      ghost.style.height = from.height + "px";
-      /* Keep clone at source size; land size matches final token (CSS aligned) */
+      /* Lock visual size for whole flight — never scale mid-air */
       var fromFs = window.getComputedStyle(fromEl).fontSize;
       var toFs = window.getComputedStyle(toEl).fontSize;
-      ghost.style.fontSize = fromFs;
-      ghost.style.transform = "translate(0,0)";
+      var useFs = toFs || fromFs;
+      ghost.style.left = from.left + "px";
+      ghost.style.top = from.top + "px";
+      ghost.style.width = "auto";
+      ghost.style.height = "auto";
+      ghost.style.maxWidth = "none";
+      ghost.style.whiteSpace = "nowrap";
+      ghost.style.fontSize = useFs;
+      ghost.style.lineHeight = window.getComputedStyle(toEl).lineHeight || "1.2";
+      ghost.style.transform = "translate(0,0) scale(1)";
+      ghost.style.transformOrigin = "center center";
       document.body.appendChild(ghost);
-      var destW = to.width || from.width;
-      var destH = to.height || from.height;
-      var dx = to.left - from.left + (destW - from.width) / 2;
-      var dy = to.top - from.top + (destH - from.height) / 2;
+      /* Re-measure ghost at locked size, then align centers for translation */
+      var gR = ghost.getBoundingClientRect();
+      var destW = to.width || gR.width;
+      var destH = to.height || gR.height;
+      var startLeft = from.left + (from.width - gR.width) / 2;
+      var startTop = from.top + (from.height - gR.height) / 2;
+      ghost.style.left = startLeft + "px";
+      ghost.style.top = startTop + "px";
+      var dx = to.left - startLeft + (destW - gR.width) / 2;
+      var dy = to.top - startTop + (destH - gR.height) / 2;
       raf(function () {
         raf(function () {
-          ghost.style.transform = "translate(" + dx + "px, " + dy + "px)";
-          if (toFs && toFs !== fromFs) ghost.style.fontSize = toFs;
+          ghost.style.transform = "translate(" + dx + "px, " + dy + "px) scale(1)";
         });
       });
       later(function () {
@@ -259,8 +269,12 @@
       if (!stack) {
         p.classList.remove("is-active", "is-kept");
       } else if (p !== pane && p.classList.contains("visible")) {
-        p.classList.add("is-kept");
-        p.classList.remove("is-active");
+        if (p.getAttribute("data-replace") === "1") {
+          p.classList.remove("is-kept", "is-active");
+        } else {
+          p.classList.add("is-kept");
+          p.classList.remove("is-active");
+        }
       }
     });
     pane.classList.add("is-active");
@@ -285,8 +299,10 @@
     var stack = isStackFrame(toPane && toPane.parentElement);
     if (stack) {
       if (fromPane) {
-        fromPane.classList.add("is-kept");
         fromPane.classList.remove("is-active");
+        if (fromPane.getAttribute("data-replace") !== "1") {
+          fromPane.classList.add("is-kept");
+        }
       }
       activatePane(toPane, { fadeIn: true });
       later(function () {
@@ -372,22 +388,22 @@
       : { left: fromR.left + 90, top: fromR.top, width: fromR.width, height: fromR.height };
 
     /*
-     * × seat = midpoint between left factor and right factor FINAL positions.
-     * Prefer geometry of the two factors (stable); timesEl only for font-size.
+     * × sits at the REAL .peel-times seat (final position) from the first frame.
+     * Prefer timesEl rect; nudge slightly right/down if using factor midpoint fallback.
      */
     var leftR = leftFactor ? leftFactor.getBoundingClientRect() : null;
     var rightBox = rightFactor ? rightFactor.getBoundingClientRect() : targetR;
     var timesR = timesEl ? timesEl.getBoundingClientRect() : null;
     var midX, midY, timesFs;
-    if (leftR && leftR.width > 0 && rightBox && rightBox.width > 0) {
-      midX = (leftR.right + rightBox.left) / 2;
-      midY = ((leftR.top + leftR.height / 2) + (rightBox.top + rightBox.height / 2)) / 2;
-    } else if (timesR && timesR.width > 1) {
+    if (timesR && timesR.width > 1 && timesR.height > 1) {
       midX = timesR.left + timesR.width / 2;
       midY = timesR.top + timesR.height / 2;
+    } else if (leftR && leftR.width > 0 && rightBox && rightBox.width > 0) {
+      midX = (leftR.right + rightBox.left) / 2 + 4;
+      midY = ((leftR.top + leftR.height / 2) + (rightBox.top + rightBox.height / 2)) / 2 + 3;
     } else {
-      midX = (fromR.left + targetR.left) / 2 + Math.abs(targetR.left - fromR.left) * 0.35;
-      midY = (fromR.top + fromR.height / 2 + targetR.top + targetR.height / 2) / 2;
+      midX = (fromR.left + targetR.left) / 2 + 8;
+      midY = (fromR.top + fromR.height / 2 + targetR.top + targetR.height / 2) / 2 + 3;
     }
     timesFs = timesEl
       ? window.getComputedStyle(timesEl).fontSize
@@ -440,7 +456,10 @@
       if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
       if (timesEl) timesEl.classList.remove("is-peel-pending");
       fromPane.classList.remove("is-active");
-      if (stack) fromPane.classList.add("is-kept");
+      /* Stack keeps prior steps, unless the prior pane is a replace-source (e.g. (ab)^2) */
+      if (stack && !(fromPane.getAttribute && fromPane.getAttribute("data-replace") === "1")) {
+        fromPane.classList.add("is-kept");
+      }
       /* Live example peel: restore source power; do not keep offscreen host */
       if (fromPane.getAttribute && fromPane.getAttribute("data-peel-live") === "1") {
         fromPane.classList.remove("is-kept");
@@ -833,8 +852,15 @@
       if (!panes.length) return;
       if (stack) {
         panes.forEach(function (p, i) {
-          if (i < panes.length - 1) p.classList.add("is-kept");
-          else p.classList.add("is-active");
+          if (i < panes.length - 1) {
+            if (p.getAttribute("data-replace") === "1") {
+              p.classList.remove("is-kept", "is-active");
+            } else {
+              p.classList.add("is-kept");
+            }
+          } else {
+            p.classList.add("is-active");
+          }
           p.querySelectorAll(".token, .fly-wait").forEach(function (t) {
             t.classList.remove("fly-wait");
             t.classList.add("fly-land");

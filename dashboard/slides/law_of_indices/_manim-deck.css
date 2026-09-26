@@ -228,14 +228,13 @@ html, body {
 }
 .paren { color: #94a3b8; }
 
-/* Yellow frame while a term is expanding */
+/* Yellow frame while a term is expanding — keep clear of title underline */
 .expand-framed,
 .token.expand-framed,
 .src.expand-framed,
 .pv-grid .c.framed {
-  /* Outline only — no padding/background shift of the source glyph */
-  outline: 3px solid var(--pow);
-  outline-offset: 6px;
+  outline: 2px solid var(--pow);
+  outline-offset: 3px;
   border-radius: 4px;
   background: transparent;
   box-shadow: none;
@@ -356,8 +355,47 @@ html, body {
   padding-top: 8px;
 }
 .two-method .method-col:last-child .neg-right-row {
-  /* drop so frac-bar shares horizon with left y^{-2} */
-  margin-top: 2.6em;
+  /* slightly upper so expand bar ≈ left y^{-2} horizon */
+  margin-top: 1.55em;
+}
+.method-col .neg-right-row .eq-lead {
+  margin-left: 0.02em;
+  margin-right: 0.15em;
+  /* ~2px down so = sits on the shared frac-bar horizon */
+  transform: translateY(2px);
+}
+.method-col .neg-right-result {
+  font-size: 30px !important;
+  white-space: nowrap;
+  /* keep result frac-bar on same y as expand frac-bar */
+  display: inline-flex;
+  align-items: center;
+  transform: translateY(0);
+}
+.neg-recip {
+  display: inline-grid;
+  grid-template-rows: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  vertical-align: middle;
+  line-height: 1.05;
+}
+/* Keep y^{-2} as one glyph cluster (prevent cracked −2 during fly) */
+.neg-left-result,
+.neg-drag-left,
+.neg-drag-right,
+.neg-right-result {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.neg-left-result .pow,
+.neg-drag-left .pow,
+.neg-drag-right .pow,
+.neg-right-result .pow {
+  display: inline-block;
+  white-space: nowrap;
+  letter-spacing: 0;
 }
 .two-method .method-div {
   flex: 0 0 2px;
@@ -627,14 +665,22 @@ html, body {
 .example-row .src:has(.mini-frac) {
   display: inline-flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   vertical-align: middle;
   gap: 0;
+  white-space: nowrap;
 }
 .token .paren,
 .example-row .src .paren {
   align-self: center;
   line-height: 1;
+  flex: 0 0 auto;
+}
+.token > .pow.outer,
+.example-row .src > .pow.outer {
+  flex: 0 0 auto;
+  align-self: flex-start;
 }
 .eq-lead {
   margin-right: 0.35em;
@@ -685,10 +731,13 @@ html, body {
 .method-col .neg-right-row .eq-lead {
   margin-left: 0.02em;
   margin-right: 0.15em;
+  transform: translateY(2px);
 }
 .method-col .neg-right-result {
   font-size: 30px !important;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 .method-col .neg-left-result {
   font-size: 30px !important;
@@ -1052,8 +1101,9 @@ html, body {
   text-align: left;
   font-size: 30px;
   color: #fff;
-  align-items: center; /* same horizon for side-by-side laws */
-  align-content: center;
+  /* Fixed seats: appearing cards must not push earlier cards */
+  align-items: start;
+  align-content: start;
   flex: 1;
 }
 .laws-grid .full { grid-column: 1 / -1; text-align: center; }
@@ -1066,9 +1116,15 @@ html, body {
 .laws-grid .full {
   justify-self: center;
 }
-/* Quotient card: nudge down so frac-bar shares y with division law; tighten = spacing */
+/* Reserve fraction-tall seat for BOTH mid-row cards so green never jumps when purple appears */
+.laws-grid .law-a2,
 .laws-grid .law-y {
-  transform: translateY(0.4em);
+  min-height: 3.4em;
+  display: flex;
+  align-items: center;
+}
+.laws-grid .law-y {
+  transform: none;
 }
 .laws-grid .law-y .katex .mrel {
   margin-left: 0.14em !important;
@@ -1089,7 +1145,7 @@ html, body {
 }
 .arrow { color: var(--pow); font-size: 1.1em; }
 
-/* Ghost used by TransformFromCopy-style fly */
+/* Ghost used by TransformFromCopy-style fly — never scale */
 .fly-ghost {
   position: fixed;
   z-index: 9999;
@@ -1098,9 +1154,17 @@ html, body {
   transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.2s ease;
   will-change: transform;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  white-space: nowrap;
+  transform: translate(0, 0) scale(1);
 }
 .fly-ghost.flying {
   opacity: 0.95;
+}
+.fly-ghost .mini-frac,
+.fly-ghost:has(.mini-frac) {
+  display: inline-flex !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
 }
 .token.fly-wait,
 .work-row.fly-wait > .token {
@@ -1108,12 +1172,12 @@ html, body {
 }
 .token.fly-land,
 .work-row .token.fly-land {
-  animation: landPop 0.28s ease both;
+  animation: landFade 0.22s ease both;
 }
 
-@keyframes landPop {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: none; }
+@keyframes landFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* PPT-style entrance — final transform always none (fixed seat) */
@@ -1217,8 +1281,9 @@ html, body {
   font-family: "Times New Roman", Times, Georgia, serif;
   font-size: 30px;
   line-height: 1;
-  transform: translate(-50%, -50%) scale(0.7);
-  will-change: transform, opacity;
+  transform: translate(-50%, -50%) scale(1);
+  will-change: opacity;
+  transition: opacity 0.12s linear;
 }
 .dp-ghost {
   position: fixed;
@@ -1514,7 +1579,7 @@ html, body {
   right: 0;
   top: 50%;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 4px 6px;
@@ -1522,6 +1587,7 @@ html, body {
   visibility: hidden;
   transform: translateY(-50%);
   pointer-events: none;
+  white-space: nowrap;
 }
 .work-fixed-frame .stage-pane.is-active {
   opacity: 1;
@@ -1725,8 +1791,41 @@ html, body {
 /* Positive Indices: tight vertical rhythm — work sits under Example (not bottom-void);
    mid steps smaller than boxed rule (rule is the takeaway). */
 body.loi-tight .m-head {
-  padding: 18px 40px 4px;
+  padding: 14px 40px 10px;
   gap: 6px;
+}
+body.loi-tight .story-band-example {
+  min-height: 2.1em;
+  padding-top: 8px;
+}
+body.loi-tight .story-band-note {
+  min-height: 1.5em;
+  margin-top: 4px;
+  padding-top: 4px;
+}
+body.loi-tight .story-band-result {
+  min-height: 2.0em;
+  margin-top: 2px;
+}
+body.loi-tight .slide-quot .story-band-note {
+  margin-top: 10px;
+}
+body.loi-tight .slide-quot .work-fixed-frame .token.mini-frac.result-frac {
+  font-size: 28px;
+}
+body.loi-tight .two-method {
+  max-height: 42vh;
+}
+body.loi-tight .two-method .frac-stack .token {
+  font-size: 20px;
+}
+body.loi-tight .neg-link-eq {
+  font-size: 34px;
+  min-height: 1.4em;
+}
+body.loi-tight .m-result.box-final {
+  font-size: 40px;
+  padding: 0.14em 0.36em;
 }
 body.loi-tight .m-title.m-title-eq { gap: 2px; }
 body.loi-tight .m-stage {
@@ -1737,13 +1836,23 @@ body.loi-tight .story-stack {
   gap: 4px;
 }
 body.loi-tight .story-band { min-height: 0; }
-body.loi-tight .story-band-example { min-height: 1.55em; }
+body.loi-tight .story-band-example {
+  min-height: 2.15em;
+  padding-top: 8px;
+}
 body.loi-tight .story-band-work { min-height: 2.1em; }
 body.loi-tight .story-band-frac { min-height: 3.6em; }
-body.loi-tight .story-band-count,
-body.loi-tight .story-band-note { min-height: 1.2em; }
+body.loi-tight .story-band-count { min-height: 1.2em; }
+body.loi-tight .story-band-note {
+  min-height: 1.45em;
+  margin-top: 6px;
+  padding-top: 2px;
+}
 body.loi-tight .story-band-eq { min-height: 1.35em; }
-body.loi-tight .story-band-result { min-height: 2.2em; }
+body.loi-tight .story-band-result {
+  min-height: 2.0em;
+  margin-top: 4px;
+}
 body.loi-tight .work-fixed-frame { min-height: 2.1em; }
 body.loi-tight .work-fixed-frame[data-stack="1"] { min-height: 0; }
 body.loi-tight .frac-build { min-height: 3.8em; }
@@ -1755,7 +1864,12 @@ body.loi-tight .frac-stack .token {
   font-size: 34px;
 }
 body.loi-tight .two-method .frac-stack .token {
-  font-size: 28px;
+  font-size: 20px;
+}
+body.loi-tight .m-result.box-final {
+  font-size: 42px;
+  line-height: 1.15;
+  padding: 0.16em 0.4em;
 }
 body.loi-tight .frac-bar { min-width: 180px; }
 body.loi-tight .two-method .method-col {
@@ -1791,13 +1905,13 @@ body.loi-tight .m-stage.fill-center {
 
 /* Boxed rule is the takeaway — larger than mid derivation steps */
 body.loi-tight .m-title.m-title-eq {
-  font-size: 40px !important;
+  font-size: 38px !important;
   line-height: 1.12;
 }
 body.loi-tight .m-result.box-final {
-  font-size: 46px;
+  font-size: 42px;
   line-height: 1.15;
-  padding: 0.18em 0.42em;
+  padding: 0.16em 0.4em;
 }
 body.loi-tight .slide-quot .m-head {
   padding-top: 12px;
