@@ -228,17 +228,20 @@ html, body {
 }
 .paren { color: #94a3b8; }
 
-/* Yellow frame while a term is expanding */
+/* Yellow frame while a term is expanding — offset must not collide with title bar */
 .expand-framed,
 .token.expand-framed,
 .src.expand-framed,
 .pv-grid .c.framed {
-  /* Outline only — no padding/background shift of the source glyph */
   outline: 3px solid var(--pow);
-  outline-offset: 6px;
-  border-radius: 4px;
+  outline-offset: 5px;
+  border-radius: 6px;
   background: transparent;
   box-shadow: none;
+}
+.example-row .src.expand-framed {
+  /* keep frame inside the example band, clear of the gold title line */
+  outline-offset: 4px;
 }
 
 /* Stepped fraction build */
@@ -356,8 +359,24 @@ html, body {
   padding-top: 8px;
 }
 .two-method .method-col:last-child .neg-right-row {
-  /* drop so frac-bar shares horizon with left y^{-2} */
-  margin-top: 2.6em;
+  /* slightly higher than before so RHS sits with left column */
+  margin-top: 1.55em;
+}
+.method-col .neg-right-row .eq-lead {
+  margin-left: 0.02em;
+  margin-right: 0.15em;
+  position: relative;
+  top: 2px; /* ~2px down to share frac-bar horizon */
+}
+.method-col .neg-right-result {
+  font-size: 30px !important;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.method-col .neg-right-result .neg-recip {
+  /* share y with expand frac-bar (align-items:center on row) */
+  transform: none;
 }
 .two-method .method-div {
   flex: 0 0 2px;
@@ -624,17 +643,31 @@ html, body {
 }
 /* Parentheses + mini-frac + outer power share one vertical center (the bar) */
 .token:has(.mini-frac),
-.example-row .src:has(.mini-frac) {
+.example-row .src:has(.mini-frac),
+.token.expand-src:has(.mini-frac) {
   display: inline-flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   vertical-align: middle;
   gap: 0;
+  white-space: nowrap;
 }
 .token .paren,
 .example-row .src .paren {
   align-self: center;
   line-height: 1;
+  flex: 0 0 auto;
+}
+.pow-neg {
+  display: inline-block;
+  white-space: nowrap;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  vertical-align: super;
+  font-size: 0.62em !important;
+  position: relative;
+  top: -0.12em;
 }
 .eq-lead {
   margin-right: 0.35em;
@@ -1052,8 +1085,8 @@ html, body {
   text-align: left;
   font-size: 30px;
   color: #fff;
-  align-items: center; /* same horizon for side-by-side laws */
-  align-content: center;
+  align-items: stretch;
+  align-content: start; /* fixed seats — later cards must not shove earlier ones */
   flex: 1;
 }
 .laws-grid .full { grid-column: 1 / -1; text-align: center; }
@@ -1066,16 +1099,36 @@ html, body {
 .laws-grid .full {
   justify-self: center;
 }
-/* Quotient card: nudge down so frac-bar shares y with division law; tighten = spacing */
+.laws-grid .law-card {
+  min-height: 3.4em;
+  display: flex;
+  align-items: center;
+}
+/* Reserve grid seats even before fragment.visible — green must not jump when purple appears */
+.reveal .slides section .fragment.law-card {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: flex !important;
+  align-items: center;
+  min-height: 3.4em;
+  height: auto !important;
+}
+.reveal .slides section .fragment.law-card.visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  animation: enterFade 0.45s ease both;
+}
+/* Quotient card: = 2px down for same horizon as frac bars; no translateY (that moved neighbors) */
 .laws-grid .law-y {
-  transform: translateY(0.4em);
+  transform: none;
 }
 .laws-grid .law-y .katex .mrel {
   margin-left: 0.14em !important;
   margin-right: 0.16em !important;
-}
-.reveal .fragment.law-card.visible {
-  animation: enterPop 0.6s cubic-bezier(0.22, 1.35, 0.36, 1) both;
+  position: relative;
+  top: 2px;
 }
 
 .conv-row {
@@ -1089,31 +1142,28 @@ html, body {
 }
 .arrow { color: var(--pow); font-size: 1.1em; }
 
-/* Ghost used by TransformFromCopy-style fly */
+/* Ghost used by TransformFromCopy-style fly — never scale */
 .fly-ghost {
   position: fixed;
   z-index: 9999;
   pointer-events: none;
   margin: 0;
-  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.2s ease;
   will-change: transform;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
-}
-.fly-ghost.flying {
-  opacity: 0.95;
+  filter: none;
+  box-sizing: border-box;
+  overflow: visible;
+  white-space: nowrap;
 }
 .token.fly-wait,
-.work-row.fly-wait > .token {
+.work-row.fly-wait > .token,
+.src.fly-wait {
   opacity: 0 !important;
 }
 .token.fly-land,
 .work-row .token.fly-land {
-  animation: landPop 0.28s ease both;
-}
-
-@keyframes landPop {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: none; }
+  /* Instant reveal at final size — no scale pop (looks like enlarge) */
+  animation: none;
+  opacity: 1;
 }
 
 /* PPT-style entrance — final transform always none (fixed seat) */
@@ -1184,16 +1234,17 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-.story-band-example { min-height: 2.5em; }
+.story-band-example { min-height: 2.5em; padding-top: 10px; }
 .story-band-work { min-height: 3em; }
 .story-band-frac { min-height: 5.8em; }
 .story-band-count { min-height: 2.3em; }
 .story-band-eq { min-height: 2.6em; }
 .story-band-result { min-height: 2.8em; }
-.story-band-note { min-height: 2.3em; }
+.story-band-note { min-height: 2.3em; padding-top: 6px; }
 
 .story-band > .example-row {
   margin: 0;
+  padding: 4px 8px;
 }
 
 /* Peel-right ghost for power → factor expand (JS drives transform) */
@@ -1217,8 +1268,9 @@ html, body {
   font-family: "Times New Roman", Times, Georgia, serif;
   font-size: 30px;
   line-height: 1;
-  transform: translate(-50%, -50%) scale(0.7);
-  will-change: transform, opacity;
+  /* Fixed final seat — no scale (scale made × look wrong then jump) */
+  transform: translate(-50%, -50%);
+  will-change: opacity;
 }
 .dp-ghost {
   position: fixed;
@@ -1514,7 +1566,7 @@ html, body {
   right: 0;
   top: 50%;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 4px 6px;
@@ -1522,6 +1574,10 @@ html, body {
   visibility: hidden;
   transform: translateY(-50%);
   pointer-events: none;
+}
+.work-fixed-frame .stage-pane .token.op.eq-lead {
+  position: relative;
+  top: 2px; /* share horizon with fraction bars */
 }
 .work-fixed-frame .stage-pane.is-active {
   opacity: 1;
@@ -1737,7 +1793,48 @@ body.loi-tight .story-stack {
   gap: 4px;
 }
 body.loi-tight .story-band { min-height: 0; }
-body.loi-tight .story-band-example { min-height: 1.55em; }
+body.loi-tight .story-band-example {
+  min-height: 1.85em;
+  padding-top: 12px;
+}
+body.loi-tight .story-band-note {
+  min-height: 1.35em;
+  padding-top: 8px;
+}
+body.loi-tight .example-row {
+  font-size: 34px;
+  padding: 6px 10px;
+}
+
+/* Negative-indices slide: keep everything on-frame */
+body.loi-tight .slide-neg .m-head {
+  padding-top: 10px;
+  padding-bottom: 2px;
+}
+body.loi-tight .slide-neg .story-stack.even-gap {
+  gap: 6px;
+}
+body.loi-tight .slide-neg .two-method .frac-stack .token {
+  font-size: 20px;
+}
+body.loi-tight .slide-neg .neg-left-result,
+body.loi-tight .slide-neg .neg-right-result {
+  font-size: 28px !important;
+}
+body.loi-tight .slide-neg .m-result.box-final {
+  font-size: 36px;
+  padding: 0.12em 0.35em;
+}
+body.loi-tight .slide-neg .story-band-result {
+  min-height: 1.7em;
+}
+body.loi-tight .slide-quot .story-band-note {
+  min-height: 1.5em;
+  margin-top: 4px;
+}
+body.loi-tight .slide-quot .m-title.m-title-eq {
+  font-size: 36px !important;
+}
 body.loi-tight .story-band-work { min-height: 2.1em; }
 body.loi-tight .story-band-frac { min-height: 3.6em; }
 body.loi-tight .story-band-count,
