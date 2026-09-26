@@ -164,7 +164,7 @@
       r.classList.remove("show", "indicated", "linked");
     });
     root.querySelectorAll(".stage-pane").forEach(function (p) {
-      p.classList.remove("is-active", "peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
+      p.classList.remove("is-active", "is-kept", "peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
       p.style.opacity = "";
     });
     clearSourceMarks();
@@ -203,7 +203,10 @@
       ghost.style.top = from.top + "px";
       ghost.style.width = from.width + "px";
       ghost.style.height = from.height + "px";
-      ghost.style.fontSize = window.getComputedStyle(fromEl).fontSize;
+      /* Keep clone at source size; land size matches final token (CSS aligned) */
+      var fromFs = window.getComputedStyle(fromEl).fontSize;
+      var toFs = window.getComputedStyle(toEl).fontSize;
+      ghost.style.fontSize = fromFs;
       ghost.style.transform = "translate(0,0)";
       document.body.appendChild(ghost);
       var destW = to.width || from.width;
@@ -213,6 +216,7 @@
       raf(function () {
         raf(function () {
           ghost.style.transform = "translate(" + dx + "px, " + dy + "px)";
+          if (toFs && toFs !== fromFs) ghost.style.fontSize = toFs;
         });
       });
       later(function () {
@@ -230,9 +234,8 @@
     Array.prototype.forEach.call(nodes, function (toEl, i) {
       var sel = toEl.getAttribute("data-fly-from");
       if (!sel) return;
-      markSource(sel, false);
-      flyFromTo(document.querySelector(sel), toEl, i * 50);
-      later(function () { markSource(sel, true); }, FLY_MS + i * 50 + 40);
+      /* Frame briefly while copying — do NOT permanently dim the example term */
+      flyFromTo(document.querySelector(sel), toEl, i * 40);
     });
   }
 
@@ -242,14 +245,26 @@
     return Array.prototype.indexOf.call(frame.querySelectorAll(".stage-pane"), pane);
   }
 
+  function isStackFrame(frame) {
+    return !!(frame && frame.getAttribute("data-stack") === "1");
+  }
+
   function activatePane(pane, opts) {
     opts = opts || {};
     var frame = pane && pane.parentElement;
     if (!frame) return;
+    var stack = isStackFrame(frame);
     frame.querySelectorAll(".stage-pane").forEach(function (p) {
-      p.classList.remove("is-active", "peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
+      p.classList.remove("peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
+      if (!stack) {
+        p.classList.remove("is-active", "is-kept");
+      } else if (p !== pane && p.classList.contains("visible")) {
+        p.classList.add("is-kept");
+        p.classList.remove("is-active");
+      }
     });
     pane.classList.add("is-active");
+    pane.classList.remove("is-kept");
     if (opts.peel) pane.classList.add("peel-arrive");
     if (opts.fadeIn) pane.classList.add("fade-in-step");
     frameExampleSrc(pane);
@@ -267,6 +282,27 @@
   /** Fade-out previous pane, fade-in next (no peel power). */
   function crossfadePanes(fromPane, toPane, done) {
     anim.busy = true;
+    var stack = isStackFrame(toPane && toPane.parentElement);
+    if (stack) {
+      if (fromPane) {
+        fromPane.classList.add("is-kept");
+        fromPane.classList.remove("is-active");
+      }
+      activatePane(toPane, { fadeIn: true });
+      later(function () {
+        toPane.classList.remove("fade-in-step");
+        anim.busy = false;
+        anim.finish = null;
+        if (done) done();
+      }, 380);
+      anim.finish = function () {
+        activatePane(toPane, { skipFly: true });
+        anim.busy = false;
+        anim.finish = null;
+        if (done) done();
+      };
+      return;
+    }
     if (fromPane) {
       fromPane.classList.add("is-active", "fade-out-step");
     }
@@ -309,11 +345,15 @@
     }
 
     toPane.classList.add("is-measure");
+    var timesEl = toPane.querySelector(".token.peel-times, .peel-times");
     var rightFactor = toPane.querySelector(".token.next-factor, .token.peel-target");
     if (!rightFactor) {
       var toks = toPane.querySelectorAll(".token:not(.op)");
       rightFactor = toks.length >= 2 ? toks[1] : toks[0];
     }
+    var leftFactor = null;
+    var allToks = toPane.querySelectorAll(".token:not(.op)");
+    if (allToks.length) leftFactor = allToks[0];
     var fromR = pow.getBoundingClientRect();
     var targetEl = rightFactor
       ? (rightFactor.querySelector("sup.pow") || rightFactor)
@@ -322,6 +362,25 @@
       ? targetEl.getBoundingClientRect()
       : { left: fromR.left + 90, top: fromR.top, width: fromR.width, height: fromR.height };
 
+    /* × must sit at its final seat (midpoint between left-a and right-factor destinations) */
+    var timesR = timesEl ? timesEl.getBoundingClientRect() : null;
+    var leftR = leftFactor ? leftFactor.getBoundingClientRect() : null;
+    var rightBox = rightFactor ? rightFactor.getBoundingClientRect() : targetR;
+    var midX, midY, timesFs;
+    if (timesR && timesR.width > 0) {
+      midX = timesR.left + timesR.width / 2;
+      midY = timesR.top + timesR.height / 2;
+      timesFs = window.getComputedStyle(timesEl).fontSize;
+    } else if (leftR && rightBox) {
+      midX = (leftR.right + rightBox.left) / 2;
+      midY = ((leftR.top + leftR.height / 2) + (rightBox.top + rightBox.height / 2)) / 2;
+      timesFs = window.getComputedStyle(toPane.querySelector(".token") || toPane).fontSize;
+    } else {
+      midX = (fromR.left + targetR.left) / 2;
+      midY = (fromR.top + targetR.top) / 2;
+      timesFs = "30px";
+    }
+
     var landX = targetR.left + targetR.width / 2;
     var landY = targetR.top + targetR.height / 2;
     toPane.classList.remove("is-measure");
@@ -329,9 +388,6 @@
     var startX = fromR.left + fromR.width / 2;
     var startY = fromR.top + fromR.height / 2;
     var lift = Math.max(56, Math.abs(landX - startX) * 0.48);
-    /* × at apex of upward parabola */
-    var midX = (startX + landX) / 2;
-    var midY = Math.min(startY, landY) - lift;
 
     var cs = window.getComputedStyle(pow);
     var ghost = document.createElement("span");
@@ -353,20 +409,23 @@
 
     var timesGhost = document.createElement("span");
     timesGhost.className = "times-ghost";
-    timesGhost.textContent = "×";
+    timesGhost.textContent = "\u00d7";
     timesGhost.style.left = midX + "px";
     timesGhost.style.top = midY + "px";
+    timesGhost.style.fontSize = timesFs;
     timesGhost.style.opacity = "0";
     document.body.appendChild(timesGhost);
 
     var peelToken = playToken;
     var finished = false;
+    var stack = isStackFrame(fromPane.parentElement);
     function cleanup(skip) {
       if (finished) return;
       finished = true;
       if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
       if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
       fromPane.classList.remove("is-active");
+      if (stack) fromPane.classList.add("is-kept");
       pow.style.opacity = "";
       activatePane(toPane, { peel: true, skipFly: true });
       later(function () {
@@ -396,10 +455,11 @@
       }
       ghost.style.opacity = String(opacity);
       ghost.style.transform = "translate(" + x + "px, " + y + "px)";
-      if (ease >= 0.22 && ease <= 0.78) {
-        timesGhost.style.opacity = String(Math.min(1, (ease - 0.22) / 0.12));
-      } else if (ease > 0.78) {
-        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.78) / 0.22));
+      /* × fades in at its destination seat (never follows the parabola apex) */
+      if (ease >= 0.18 && ease <= 0.85) {
+        timesGhost.style.opacity = String(Math.min(1, (ease - 0.18) / 0.14));
+      } else if (ease > 0.85) {
+        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.85) / 0.15));
       }
       if (p < 1) raf(frame);
       else cleanup(false);
@@ -458,7 +518,8 @@
     if (!frac || !phase) return;
     if (phase === "bar" || phase === "compact") {
       frac.classList.add("phase-bar", "phase-compact");
-      runFlyIns(frac.querySelector(".compact-view") || frac);
+      /* Fly every compact term (numerator AND denominator) — do not dim sources */
+      runFlyIns(frac);
       return;
     }
     if (phase === "num" || phase === "expand") {
@@ -651,7 +712,7 @@
     later(end, 780);
   }
 
-  /** Negative indices: indicate reciprocal, then drag both sides into linked equation. */
+  /** Negative indices: frame BOTH columns together, then drag into linked equation. */
   function runNegLink(frag) {
     var slide = frag.closest("section") || document;
     var leftSrc = slide.querySelector(".neg-left-result");
@@ -659,31 +720,145 @@
     var seat = slide.querySelector(".neg-link-eq");
     if (!seat) return;
     anim.busy = true;
-    if (rightSrc) {
-      indicate(rightSrc);
-      setExpandFrame(rightSrc, true);
-    }
+    clearAllExpandFrames(slide);
+    if (leftSrc) setExpandFrame(leftSrc, true);
+    if (rightSrc) setExpandFrame(rightSrc, true);
     later(function () {
+      setExpandFrame(leftSrc, false);
       setExpandFrame(rightSrc, false);
       seat.classList.add("show");
       renderMath(seat);
       var leftSeat = seat.querySelector(".neg-drag-left");
       var rightSeat = seat.querySelector(".neg-drag-right");
-      if (leftSrc && leftSeat) flyFromTo(leftSrc, leftSeat, 0);
-      if (rightSrc && rightSeat) flyFromTo(rightSrc, rightSeat, 80);
+      /* Same-size clones: match seat font before fly */
+      if (leftSrc && leftSeat) {
+        leftSeat.style.fontSize = window.getComputedStyle(leftSrc).fontSize;
+        flyFromTo(leftSrc, leftSeat, 0);
+      }
+      if (rightSrc && rightSeat) {
+        rightSeat.style.fontSize = window.getComputedStyle(rightSrc).fontSize;
+        flyFromTo(rightSrc, rightSeat, 0);
+      }
       later(function () {
         seat.classList.add("linked");
         anim.busy = false;
         anim.finish = null;
-      }, FLY_MS + 120);
-    }, 520);
+      }, FLY_MS + 80);
+    }, 480);
     anim.finish = function () {
+      setExpandFrame(leftSrc, false);
       setExpandFrame(rightSrc, false);
       seat.classList.add("show", "linked");
       renderMath(seat);
       anim.busy = false;
       anim.finish = null;
     };
+  }
+
+  /** Re-apply visual state from currently-visible fragments (slide return). */
+  function rebuildFromVisible(slide) {
+    if (!slide) return;
+    slide.querySelectorAll(".work-fixed-frame").forEach(function (frame) {
+      var stack = isStackFrame(frame);
+      var panes = Array.prototype.slice.call(frame.querySelectorAll(".stage-pane.visible"));
+      frame.querySelectorAll(".stage-pane").forEach(function (p) {
+        p.classList.remove("is-active", "is-kept", "peel-arrive", "is-measure");
+      });
+      if (!panes.length) return;
+      if (stack) {
+        panes.forEach(function (p, i) {
+          if (i < panes.length - 1) p.classList.add("is-kept");
+          else p.classList.add("is-active");
+          p.querySelectorAll(".token, .fly-wait").forEach(function (t) {
+            t.classList.remove("fly-wait");
+            t.classList.add("fly-land");
+            t.style.opacity = "";
+          });
+        });
+      } else {
+        var last = panes[panes.length - 1];
+        last.classList.add("is-active");
+        last.querySelectorAll(".token").forEach(function (t) {
+          t.classList.remove("fly-wait");
+          t.classList.add("fly-land");
+          t.style.opacity = "";
+        });
+      }
+    });
+
+    slide.querySelectorAll(".frac-build").forEach(function (build) {
+      var frac = build.querySelector(".frac-stack");
+      if (!frac) return;
+      var phases = Array.prototype.slice.call(build.querySelectorAll(".frac-phase.visible"));
+      frac.classList.remove(
+        "phase-bar", "phase-compact", "phase-num", "phase-expand", "phase-den",
+        "phase-cancel", "phase-result", "cancelled", "cancel-done", "gathering", "gathered"
+      );
+      frac.querySelectorAll(".cancel-result, .gather-eq").forEach(function (el) {
+        el.classList.remove("show", "morph-in");
+      });
+      var cap = build.querySelector(".cancel-caption");
+      if (cap) cap.classList.remove("show");
+      if (!phases.length) return;
+      var applied = {};
+      phases.forEach(function (ph) {
+        var phase = ph.getAttribute("data-phase");
+        if (!phase) return;
+        applied[phase] = true;
+      });
+      if (applied.compact || applied.bar) frac.classList.add("phase-bar", "phase-compact");
+      if (applied.expand || applied.num) {
+        frac.classList.remove("phase-compact");
+        frac.classList.add("phase-bar", "phase-num", "phase-expand", "phase-den");
+      }
+      if (applied.cancel) {
+        frac.classList.add("cancelled", "cancel-done", "phase-cancel");
+        frac.querySelectorAll(".token.cancelable").forEach(function (t) {
+          t.classList.add("struck");
+        });
+        frac.querySelectorAll(".token.remain").forEach(function (t) {
+          t.classList.add("is-remaining");
+        });
+        if (cap) cap.classList.add("show");
+      }
+      if (applied.result) {
+        frac.classList.add("gathered", "phase-result");
+        frac.querySelectorAll(".cancel-result, .gather-eq").forEach(function (el) {
+          el.classList.add("show");
+        });
+      }
+      frac.querySelectorAll("[data-fly-from]").forEach(function (t) {
+        t.classList.remove("fly-wait");
+        t.classList.add("fly-land");
+      });
+    });
+
+    var negStep = slide.querySelector(".neg-link-step.visible");
+    var seat = slide.querySelector(".neg-link-eq");
+    if (seat) {
+      if (negStep) {
+        seat.classList.add("show", "linked");
+        seat.querySelectorAll(".fly-wait").forEach(function (t) {
+          t.classList.remove("fly-wait");
+          t.classList.add("fly-land");
+        });
+        renderMath(seat);
+      } else {
+        seat.classList.remove("show", "linked");
+      }
+    }
+
+    slide.querySelectorAll(".sci-jump").forEach(function (host) {
+      var eqs = Array.prototype.slice.call(host.querySelectorAll(".sci-jump-eq.visible"));
+      host.querySelectorAll(".sci-jump-eq").forEach(function (el) {
+        el.classList.remove("is-on");
+      });
+      if (eqs.length) eqs[eqs.length - 1].classList.add("is-on");
+    });
+
+    clearAllExpandFrames(slide);
+    clearSourceMarks();
+    renderMath(slide);
   }
 
   /** One decimal-jump step — pendulum lower semicircle; direction from dx (left +n / right −n) */
@@ -913,7 +1088,7 @@
     if (!frag) return;
 
     if (frag.classList.contains("stage-pane")) {
-      frag.classList.remove("is-active", "peel-arrive", "fade-out-step", "fade-in-step");
+      frag.classList.remove("is-active", "is-kept", "peel-arrive", "fade-out-step", "fade-in-step");
       frag.querySelectorAll(".token").forEach(function (t) {
         t.classList.remove("fly-wait", "fly-land");
         t.style.opacity = "";
@@ -922,17 +1097,33 @@
       clearAllExpandFrames();
       var frame = frag.parentElement;
       if (frame) {
-        var panes = frame.querySelectorAll(".stage-pane.visible");
-        var last = panes[panes.length - 1];
-        if (last && last !== frag) {
-          last.classList.add("is-active");
-          last.querySelectorAll(".token").forEach(function (t) {
-            t.classList.remove("fly-wait");
-            t.style.opacity = "";
+        var panes = Array.prototype.slice.call(frame.querySelectorAll(".stage-pane.visible"));
+        frame.querySelectorAll(".stage-pane").forEach(function (p) {
+          p.classList.remove("is-active", "is-kept");
+        });
+        if (isStackFrame(frame)) {
+          panes.forEach(function (p, i) {
+            if (i < panes.length - 1) p.classList.add("is-kept");
+            else p.classList.add("is-active");
+            p.querySelectorAll(".token").forEach(function (t) {
+              t.classList.remove("fly-wait");
+              t.style.opacity = "";
+            });
+            p.querySelectorAll("sup.pow").forEach(function (pw) { pw.style.opacity = ""; });
           });
-          last.querySelectorAll("sup.pow").forEach(function (p) { p.style.opacity = ""; });
-          frameExampleSrc(last);
-          renderMath(last);
+          if (panes.length) frameExampleSrc(panes[panes.length - 1]);
+        } else {
+          var last = panes[panes.length - 1];
+          if (last && last !== frag) {
+            last.classList.add("is-active");
+            last.querySelectorAll(".token").forEach(function (t) {
+              t.classList.remove("fly-wait");
+              t.style.opacity = "";
+            });
+            last.querySelectorAll("sup.pow").forEach(function (p) { p.style.opacity = ""; });
+            frameExampleSrc(last);
+            renderMath(last);
+          }
         }
       }
       return;
@@ -1087,12 +1278,13 @@
     Reveal.on("fragmenthidden", onFragmentHidden);
     Reveal.on("slidechanged", function (ev) {
       clearAutoTimers();
-      restoreVisualState(document);
+      purgeGhosts();
+      if (ev && ev.previousSlide) restoreVisualState(ev.previousSlide);
+      if (ev && ev.currentSlide) {
+        restoreVisualState(ev.currentSlide);
+        rebuildFromVisible(ev.currentSlide);
+      }
       syncTitleBars();
-      document.querySelectorAll(".stage-pane").forEach(function (p) {
-        p.classList.remove("is-active", "peel-arrive");
-      });
-      clearAllExpandFrames();
       playTitleEnter(ev && ev.currentSlide);
     });
   }

@@ -587,19 +587,24 @@ html, body {
   box-shadow: none;
 }
 .example-row .src.is-spent {
-  opacity: 0.45;
+  /* Never permanently dim example terms after TransformFromCopy */
+  opacity: 1;
 }
 
 /* Compact a/b as vertical fraction (LaTeX look) while keeping peelable HTML */
 .mini-frac {
-  display: inline-flex;
-  flex-direction: column;
+  display: inline-grid;
+  grid-template-rows: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
+  justify-items: center;
   vertical-align: middle;
   line-height: 1.05;
   margin: 0 0.08em;
   padding: 0 0.1em;
+}
+.mini-frac > .sym-a,
+.mini-frac > .sym-b {
+  line-height: 1;
 }
 .mini-frac .mini-bar {
   display: block;
@@ -607,11 +612,68 @@ html, body {
   min-width: 0.85em;
   height: 2px;
   background: #fff;
-  margin: 1px 0;
+  margin: 0;
+  align-self: center;
+}
+/* Parentheses + mini-frac + outer power share one vertical center (the bar) */
+.token:has(.mini-frac),
+.example-row .src:has(.mini-frac) {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: middle;
+  gap: 0;
+}
+.token .paren,
+.example-row .src .paren {
+  align-self: center;
+  line-height: 1;
 }
 .eq-lead {
   margin-right: 0.35em;
   color: #fff;
+}
+
+/* Fraction bar = vertical center reference for same-row symbols */
+.frac-align-row {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  max-width: 100%;
+}
+.frac-align-row .frac-build,
+.frac-align-row .frac-stack,
+.frac-align-row .frac-body {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.frac-align-row .op,
+.frac-align-row .eq-lead,
+.frac-align-row .neg-right-result {
+  flex: 0 0 auto;
+  align-self: center;
+  line-height: 1;
+}
+.method-col .neg-right-row {
+  width: 100%;
+  justify-content: center;
+}
+.method-col .neg-right-row .frac-stack .token {
+  font-size: 22px;
+}
+.method-col .neg-right-row .frac-bar {
+  min-width: 120px;
+}
+.method-col .neg-right-result {
+  font-size: 30px !important;
+  white-space: nowrap;
+}
+.method-col .neg-left-result {
+  font-size: 30px !important;
 }
 
 .compact-view {
@@ -671,7 +733,7 @@ html, body {
   justify-content: center;
   gap: 0.45em;
   min-height: 1.6em;
-  font-size: 34px;
+  font-size: 40px;
 }
 .neg-link-eq.show {
   display: flex;
@@ -685,6 +747,23 @@ html, body {
   height: 0 !important;
   overflow: hidden !important;
   opacity: 0 !important;
+}
+
+.neg-left-result,
+.neg-right-result {
+  font-size: 30px;
+  margin: 0;
+  line-height: 1.25;
+}
+.method-col .neg-right-row {
+  width: 100%;
+  justify-content: center;
+}
+.method-col .neg-right-row .frac-stack .token {
+  font-size: 22px;
+}
+.method-col .neg-right-result {
+  font-size: 30px;
 }
 
 .story-stack.even-gap {
@@ -1103,6 +1182,14 @@ html, body {
   pointer-events: none !important;
   z-index: -1;
 }
+.work-fixed-frame[data-stack="1"] .stage-pane.is-measure {
+  position: relative !important;
+  height: auto !important;
+  transform: none !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+}
 .work-fixed-frame .stage-pane.is-active.peel-arrive {
   animation: peelArrive 0.4s ease both;
 }
@@ -1355,7 +1442,7 @@ html, body {
   top: 50%;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   gap: 4px 6px;
   opacity: 0;
@@ -1389,6 +1476,46 @@ html, body {
 .reveal .fragment.stage-pane.visible.is-active {
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* Stacked coexistence: consecutive steps stay visible (Law 3–5) */
+.work-fixed-frame[data-stack="1"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 0;
+}
+.work-fixed-frame[data-stack="1"] .stage-pane {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  transform: none;
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+}
+.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane:not(.visible) {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.visible.is-active,
+.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.visible.is-kept {
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+  height: auto !important;
+  pointer-events: none;
 }
 
 .work-slot.fragment {
@@ -1504,7 +1631,7 @@ html, body {
   margin: 0;
 }
 .hero-slide .token-row.hero-eq .token {
-  font-size: 72px;
+  font-size: 64px;
 }
 .hero-slide .m-sub.note-proc {
   font-size: 34px;
@@ -1522,44 +1649,50 @@ html, body {
 .two-col.fill .m-sub { font-size: 28px; }
 
 
-/* Positive Indices: tight vertical rhythm so the boxed law stays on the frame
-   and the working is not a string of islands in empty space. */
+/* Positive Indices: tight vertical rhythm — work sits under Example (not bottom-void);
+   mid steps smaller than boxed rule (rule is the takeaway). */
 body.loi-tight .m-head {
-  padding: 22px 40px 6px;
-  gap: 8px;
+  padding: 18px 40px 4px;
+  gap: 6px;
 }
 body.loi-tight .m-title.m-title-eq { gap: 2px; }
 body.loi-tight .m-stage {
-  padding: 4px 36px 12px;
+  padding: 2px 36px 10px;
+  justify-content: flex-start;
 }
 body.loi-tight .story-stack {
-  gap: 2px;
+  gap: 4px;
 }
 body.loi-tight .story-band { min-height: 0; }
-body.loi-tight .story-band-example { min-height: 1.7em; }
-body.loi-tight .story-band-work { min-height: 2.45em; }
-body.loi-tight .story-band-frac { min-height: 4.6em; }
+body.loi-tight .story-band-example { min-height: 1.55em; }
+body.loi-tight .story-band-work { min-height: 2.1em; }
+body.loi-tight .story-band-frac { min-height: 3.6em; }
 body.loi-tight .story-band-count,
-body.loi-tight .story-band-note { min-height: 1.35em; }
-body.loi-tight .story-band-eq { min-height: 1.55em; }
-body.loi-tight .story-band-result { min-height: 2.05em; }
-body.loi-tight .work-fixed-frame { min-height: 2.45em; }
-body.loi-tight .frac-build { min-height: 4.8em; }
-body.loi-tight .two-method .frac-build { min-height: 4em; }
-body.loi-tight .example-row { font-size: 38px; }
+body.loi-tight .story-band-note { min-height: 1.2em; }
+body.loi-tight .story-band-eq { min-height: 1.35em; }
+body.loi-tight .story-band-result { min-height: 2.2em; }
+body.loi-tight .work-fixed-frame { min-height: 2.1em; }
+body.loi-tight .work-fixed-frame[data-stack="1"] { min-height: 0; }
+body.loi-tight .frac-build { min-height: 3.8em; }
+body.loi-tight .two-method .frac-build { min-height: 0; }
+body.loi-tight .example-row { font-size: 34px; }
+/* Mid working steps — smaller so boxed rule can dominate */
 body.loi-tight .work-fixed-frame .token,
 body.loi-tight .frac-stack .token {
-  font-size: 52px;
+  font-size: 34px;
 }
 body.loi-tight .two-method .frac-stack .token {
-  font-size: 40px;
+  font-size: 28px;
 }
-body.loi-tight .frac-bar { min-width: 220px; }
+body.loi-tight .frac-bar { min-width: 180px; }
 body.loi-tight .two-method .method-col {
-  padding: 2px 14px;
+  padding: 2px 12px;
   gap: 6px;
 }
-body.loi-tight .m-eq,
+body.loi-tight .m-eq {
+  font-size: 30px;
+  margin: 0;
+}
 body.loi-tight .m-result,
 body.loi-tight .example-row,
 body.loi-tight .frac-stack,
@@ -1583,16 +1716,15 @@ body.loi-tight .m-stage.fill-center {
 }
 
 
-/* Quotient-law slide: title already uses a stacked fraction, so the boxed
-   takeaway must stay shorter than the leftover frame. */
+/* Boxed rule is the takeaway — larger than mid derivation steps */
 body.loi-tight .m-title.m-title-eq {
   font-size: 40px !important;
   line-height: 1.12;
 }
 body.loi-tight .m-result.box-final {
-  font-size: 34px;
+  font-size: 46px;
   line-height: 1.15;
-  padding: 0.16em 0.4em;
+  padding: 0.18em 0.42em;
 }
 body.loi-tight .slide-quot .m-head {
   padding-top: 12px;
@@ -1606,10 +1738,16 @@ body.loi-tight .slide-quot .work-fixed-frame {
   min-height: 2.1em;
 }
 body.loi-tight .slide-quot .work-fixed-frame .token {
-  font-size: 44px;
-}
-body.loi-tight .slide-quot .m-result {
   font-size: 32px;
+}
+body.loi-tight .slide-quot .m-result.box-final {
+  font-size: 42px;
+}
+body.loi-tight .hero-slide .token-row.hero-eq .token {
+  font-size: 58px;
+}
+body.loi-tight .hero-slide .m-sub.lead {
+  font-size: 38px;
 }
 
 @media (max-width: 900px) {
@@ -1621,6 +1759,7 @@ body.loi-tight .slide-quot .m-result {
   .laws-grid, .two-col { grid-template-columns: 1fr; }
   .laws-grid { font-size: 22px; }
   .hero-slide .m-sub.lead { font-size: 32px; }
-  .hero-slide .token-row.hero-eq .token { font-size: 52px; }
+  .hero-slide .token-row.hero-eq .token { font-size: 48px; }
   .hero-slide .m-sub.note-proc { font-size: 26px; }
+  body.loi-tight .m-result.box-final { font-size: 32px; }
 }
