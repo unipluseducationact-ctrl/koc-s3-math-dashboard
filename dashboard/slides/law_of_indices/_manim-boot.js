@@ -332,9 +332,14 @@
       return;
     }
     /* Frame the Example-row term for the pane we are expanding from */
-    frameExampleSrc(fromPane);
+    if (!fromPane.getAttribute || fromPane.getAttribute("data-peel-live") !== "1") {
+      frameExampleSrc(fromPane);
+    }
 
-    var pow = fromPane.querySelector("sup.pow.outer");
+    var pow = fromPane._peelPow || null;
+    if (!pow) {
+      pow = fromPane.querySelector("sup.pow.outer");
+    }
     if (!pow) {
       var pows = fromPane.querySelectorAll("sup.pow");
       pow = pows.length ? pows[pows.length - 1] : null;
@@ -345,6 +350,9 @@
     }
 
     toPane.classList.add("is-measure");
+    /* Force layout so seats are measurable even before fragment .visible */
+    void toPane.offsetWidth;
+
     var timesEl = toPane.querySelector(".token.peel-times, .peel-times");
     var rightFactor = toPane.querySelector(".token.next-factor, .token.peel-target");
     if (!rightFactor) {
@@ -354,6 +362,7 @@
     var leftFactor = null;
     var allToks = toPane.querySelectorAll(".token:not(.op)");
     if (allToks.length) leftFactor = allToks[0];
+
     var fromR = pow.getBoundingClientRect();
     var targetEl = rightFactor
       ? (rightFactor.querySelector("sup.pow") || rightFactor)
@@ -362,27 +371,32 @@
       ? targetEl.getBoundingClientRect()
       : { left: fromR.left + 90, top: fromR.top, width: fromR.width, height: fromR.height };
 
-    /* × must sit at its final seat (midpoint between left-a and right-factor destinations) */
-    var timesR = timesEl ? timesEl.getBoundingClientRect() : null;
+    /*
+     * × seat = midpoint between left factor and right factor FINAL positions.
+     * Prefer geometry of the two factors (stable); timesEl only for font-size.
+     */
     var leftR = leftFactor ? leftFactor.getBoundingClientRect() : null;
     var rightBox = rightFactor ? rightFactor.getBoundingClientRect() : targetR;
+    var timesR = timesEl ? timesEl.getBoundingClientRect() : null;
     var midX, midY, timesFs;
-    if (timesR && timesR.width > 0) {
-      midX = timesR.left + timesR.width / 2;
-      midY = timesR.top + timesR.height / 2;
-      timesFs = window.getComputedStyle(timesEl).fontSize;
-    } else if (leftR && rightBox) {
+    if (leftR && leftR.width > 0 && rightBox && rightBox.width > 0) {
       midX = (leftR.right + rightBox.left) / 2;
       midY = ((leftR.top + leftR.height / 2) + (rightBox.top + rightBox.height / 2)) / 2;
-      timesFs = window.getComputedStyle(toPane.querySelector(".token") || toPane).fontSize;
+    } else if (timesR && timesR.width > 1) {
+      midX = timesR.left + timesR.width / 2;
+      midY = timesR.top + timesR.height / 2;
     } else {
-      midX = (fromR.left + targetR.left) / 2;
-      midY = (fromR.top + targetR.top) / 2;
-      timesFs = "30px";
+      midX = (fromR.left + targetR.left) / 2 + Math.abs(targetR.left - fromR.left) * 0.35;
+      midY = (fromR.top + fromR.height / 2 + targetR.top + targetR.height / 2) / 2;
     }
+    timesFs = timesEl
+      ? window.getComputedStyle(timesEl).fontSize
+      : window.getComputedStyle(toPane.querySelector(".token") || toPane).fontSize;
 
     var landX = targetR.left + targetR.width / 2;
     var landY = targetR.top + targetR.height / 2;
+
+    if (timesEl) timesEl.classList.add("is-peel-pending");
     toPane.classList.remove("is-measure");
 
     var startX = fromR.left + fromR.width / 2;
@@ -424,8 +438,13 @@
       finished = true;
       if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
       if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
+      if (timesEl) timesEl.classList.remove("is-peel-pending");
       fromPane.classList.remove("is-active");
       if (stack) fromPane.classList.add("is-kept");
+      /* Live example peel: restore source power; do not keep offscreen host */
+      if (fromPane.getAttribute && fromPane.getAttribute("data-peel-live") === "1") {
+        fromPane.classList.remove("is-kept");
+      }
       pow.style.opacity = "";
       activatePane(toPane, { peel: true, skipFly: true });
       later(function () {
@@ -455,11 +474,9 @@
       }
       ghost.style.opacity = String(opacity);
       ghost.style.transform = "translate(" + x + "px, " + y + "px)";
-      /* × fades in at its destination seat (never follows the parabola apex) */
-      if (ease >= 0.18 && ease <= 0.85) {
-        timesGhost.style.opacity = String(Math.min(1, (ease - 0.18) / 0.14));
-      } else if (ease > 0.85) {
-        timesGhost.style.opacity = String(Math.max(0, 1 - (ease - 0.85) / 0.15));
+      /* × already at destination seat — fade in early and stay until handoff */
+      if (ease >= 0.12) {
+        timesGhost.style.opacity = String(Math.min(1, (ease - 0.12) / 0.1));
       }
       if (p < 1) raf(frame);
       else cleanup(false);
@@ -477,6 +494,15 @@
     var idx = paneIndex(pane);
     var prev = idx > 0 ? panes[idx - 1] : null;
 
+    var peelFromSel = pane.getAttribute("data-peel-from");
+    if (peelFromSel && pane.querySelector(".peel-times, .next-factor, .peel-target")) {
+      var fromSrc = document.querySelector(peelFromSel);
+      if (fromSrc) {
+        peelFromSource(fromSrc, pane, function () { /* wait */ });
+        return;
+      }
+    }
+
     if (prev && prev.querySelector(".pow") && pane.querySelector(".peel-times, .next-factor, .peel-target")) {
       prev.classList.add("is-active");
       peelBetween(prev, pane, function () { /* stop — wait for next click */ });
@@ -492,6 +518,46 @@
       return;
     }
     activatePane(pane);
+  }
+
+  /**
+   * Peel outer power from an Example-row .src into a work pane
+   * (no intermediate (ab)^2 work step). Geometry starts at the real source.
+   */
+  function peelFromSource(fromSrc, toPane, done) {
+    if (!fromSrc || !toPane) {
+      activatePane(toPane);
+      if (done) done();
+      return;
+    }
+    clearAllExpandFrames();
+    setExpandFrame(fromSrc, true);
+
+    var pow = fromSrc.querySelector("sup.pow.outer");
+    if (!pow) {
+      var pows = fromSrc.querySelectorAll("sup.pow");
+      pow = pows.length ? pows[pows.length - 1] : null;
+    }
+    if (!pow) {
+      setExpandFrame(fromSrc, false);
+      activatePane(toPane);
+      if (done) done();
+      return;
+    }
+
+    var host = document.createElement("div");
+    host.className = "stage-pane is-active";
+    host.setAttribute("data-peel-live", "1");
+    host._peelPow = pow;
+    host.style.cssText = "position:fixed;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none;";
+    document.body.appendChild(host);
+
+    peelBetween(host, toPane, function () {
+      if (host.parentNode) host.parentNode.removeChild(host);
+      setExpandFrame(fromSrc, false);
+      pow.style.opacity = "";
+      if (done) done();
+    });
   }
 
   function runGatherOnce(pane) {

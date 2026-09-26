@@ -335,7 +335,7 @@ html, body {
 .two-method {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: flex-start;
   justify-content: center;
   gap: 0;
   width: 100%;
@@ -348,9 +348,16 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  padding: 8px 22px;
+  gap: 8px;
+  padding: 8px 16px;
   min-width: 0;
+}
+.two-method .method-col:last-child {
+  padding-top: 8px;
+}
+.two-method .method-col:last-child .neg-right-row {
+  /* drop so frac-bar shares horizon with left y^{-2} */
+  margin-top: 2.6em;
 }
 .two-method .method-div {
   flex: 0 0 2px;
@@ -659,8 +666,15 @@ html, body {
   line-height: 1;
 }
 .method-col .neg-right-row {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   justify-content: center;
+  gap: 0.18em; /* pull = and answer left toward the fraction */
+}
+.method-col .neg-right-row .frac-build {
+  width: auto;
+  display: inline-block;
+  min-height: 0;
 }
 .method-col .neg-right-row .frac-stack .token {
   font-size: 22px;
@@ -668,12 +682,60 @@ html, body {
 .method-col .neg-right-row .frac-bar {
   min-width: 120px;
 }
+.method-col .neg-right-row .eq-lead {
+  margin-left: 0.02em;
+  margin-right: 0.15em;
+}
 .method-col .neg-right-result {
   font-size: 30px !important;
   white-space: nowrap;
 }
 .method-col .neg-left-result {
   font-size: 30px !important;
+}
+.neg-left-result .sym-y,
+.neg-right-result .sym-y,
+.neg-drag-left .sym-y,
+.neg-drag-right .sym-y {
+  color: var(--sym-y) !important;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 1em;
+}
+.neg-left-result .pow,
+.neg-right-result .pow,
+.neg-drag-left .pow,
+.neg-drag-right .pow {
+  color: var(--pow) !important;
+  font-size: 0.62em !important;
+  vertical-align: super;
+}
+.neg-recip {
+  display: inline-grid;
+  grid-template-rows: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  vertical-align: middle;
+  line-height: 1.05;
+}
+.neg-recip .mini-bar {
+  display: block;
+  width: 100%;
+  min-width: 1.1em;
+  height: 2px;
+  background: #fff;
+  margin: 0;
+}
+.neg-recip-num {
+  color: #fff;
+  line-height: 1;
+}
+/* Result fractions keep base colors (never KaTeX white flash) */
+.token.mini-frac.result-frac .sym-a,
+.token.mini-frac.result-frac .sym-b {
+  font-size: 1em;
+}
+.token.mini-frac.result-frac .pow {
+  color: var(--pow) !important;
 }
 
 .compact-view {
@@ -747,23 +809,6 @@ html, body {
   height: 0 !important;
   overflow: hidden !important;
   opacity: 0 !important;
-}
-
-.neg-left-result,
-.neg-right-result {
-  font-size: 30px;
-  margin: 0;
-  line-height: 1.25;
-}
-.method-col .neg-right-row {
-  width: 100%;
-  justify-content: center;
-}
-.method-col .neg-right-row .frac-stack .token {
-  font-size: 22px;
-}
-.method-col .neg-right-result {
-  font-size: 30px;
 }
 
 .story-stack.even-gap {
@@ -1007,6 +1052,7 @@ html, body {
   text-align: left;
   font-size: 30px;
   color: #fff;
+  align-items: center; /* same horizon for side-by-side laws */
   align-content: center;
   flex: 1;
 }
@@ -1019,6 +1065,14 @@ html, body {
 .laws-grid .law-pow .katex { color: #ffab91; }
 .laws-grid .full {
   justify-self: center;
+}
+/* Quotient card: nudge down so frac-bar shares y with division law; tighten = spacing */
+.laws-grid .law-y {
+  transform: translateY(0.4em);
+}
+.laws-grid .law-y .katex .mrel {
+  margin-left: 0.14em !important;
+  margin-right: 0.16em !important;
 }
 .reveal .fragment.law-card.visible {
   animation: enterPop 0.6s cubic-bezier(0.22, 1.35, 0.36, 1) both;
@@ -1182,13 +1236,32 @@ html, body {
   pointer-events: none !important;
   z-index: -1;
 }
-.work-fixed-frame[data-stack="1"] .stage-pane.is-measure {
+/* Must beat .fragment.stage-pane:not(.visible){visibility:hidden} or × seat measures as 0 */
+.reveal .m-stage .work-fixed-frame .fragment.stage-pane.is-measure {
+  opacity: 0 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+  z-index: -1;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+.work-fixed-frame[data-stack="1"] .stage-pane.is-measure,
+.reveal .m-stage .work-fixed-frame[data-stack="1"] .fragment.stage-pane.is-measure {
   position: relative !important;
   height: auto !important;
   transform: none !important;
   left: auto !important;
   right: auto !important;
   top: auto !important;
+}
+/* Hide real × until peel ghost finishes — ghost sits at final seat */
+.work-fixed-frame .stage-pane .peel-times.is-peel-pending {
+  opacity: 0 !important;
 }
 .work-fixed-frame .stage-pane.is-active.peel-arrive {
   animation: peelArrive 0.4s ease both;
