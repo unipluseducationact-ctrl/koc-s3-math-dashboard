@@ -198,25 +198,25 @@
       }
       var ghost = fromEl.cloneNode(true);
       ghost.classList.remove("expand-framed", "is-source", "is-spent", "fly-wait", "fly-land");
-      ghost.classList.add("fly-ghost");
-      /* Final size from the first frame — never scale mid-flight */
+      ghost.classList.add("fly-ghost", "flying");
+      ghost.style.left = from.left + "px";
+      ghost.style.top = from.top + "px";
+      ghost.style.width = from.width + "px";
+      ghost.style.height = from.height + "px";
+      /* Keep clone at source size; land size matches final token (CSS aligned) */
+      var fromFs = window.getComputedStyle(fromEl).fontSize;
       var toFs = window.getComputedStyle(toEl).fontSize;
+      ghost.style.fontSize = fromFs;
+      ghost.style.transform = "translate(0,0)";
+      document.body.appendChild(ghost);
       var destW = to.width || from.width;
       var destH = to.height || from.height;
-      ghost.style.left = (from.left + (from.width - destW) / 2) + "px";
-      ghost.style.top = (from.top + (from.height - destH) / 2) + "px";
-      ghost.style.width = destW + "px";
-      ghost.style.height = destH + "px";
-      ghost.style.fontSize = toFs;
-      ghost.style.lineHeight = window.getComputedStyle(toEl).lineHeight;
-      ghost.style.transform = "translate(0,0) scale(1)";
-      ghost.style.transition = "transform " + (FLY_MS / 1000) + "s cubic-bezier(0.22, 0.61, 0.36, 1)";
-      document.body.appendChild(ghost);
-      var dx = to.left - (from.left + (from.width - destW) / 2);
-      var dy = to.top - (from.top + (from.height - destH) / 2);
+      var dx = to.left - from.left + (destW - from.width) / 2;
+      var dy = to.top - from.top + (destH - from.height) / 2;
       raf(function () {
         raf(function () {
-          ghost.style.transform = "translate(" + dx + "px, " + dy + "px) scale(1)";
+          ghost.style.transform = "translate(" + dx + "px, " + dy + "px)";
+          if (toFs && toFs !== fromFs) ghost.style.fontSize = toFs;
         });
       });
       later(function () {
@@ -254,10 +254,9 @@
     var frame = pane && pane.parentElement;
     if (!frame) return;
     var stack = isStackFrame(frame);
-    var replacePrev = pane.getAttribute("data-replace-prev") === "1";
     frame.querySelectorAll(".stage-pane").forEach(function (p) {
       p.classList.remove("peel-arrive", "is-measure", "fade-out-step", "fade-in-step");
-      if (!stack || replacePrev) {
+      if (!stack) {
         p.classList.remove("is-active", "is-kept");
       } else if (p !== pane && p.classList.contains("visible")) {
         p.classList.add("is-kept");
@@ -373,26 +372,23 @@
       : { left: fromR.left + 90, top: fromR.top, width: fromR.width, height: fromR.height };
 
     /*
-     * × sits at its FINAL seat from first appear — never moves.
-     * Prefer the real .peel-times box, then nudge slightly right+down per feedback.
+     * × seat = midpoint between left factor and right factor FINAL positions.
+     * Prefer geometry of the two factors (stable); timesEl only for font-size.
      */
     var leftR = leftFactor ? leftFactor.getBoundingClientRect() : null;
     var rightBox = rightFactor ? rightFactor.getBoundingClientRect() : targetR;
     var timesR = timesEl ? timesEl.getBoundingClientRect() : null;
     var midX, midY, timesFs;
-    if (timesR && timesR.width > 1 && timesR.height > 1) {
-      midX = timesR.left + timesR.width / 2;
-      midY = timesR.top + timesR.height / 2;
-    } else if (leftR && leftR.width > 0 && rightBox && rightBox.width > 0) {
+    if (leftR && leftR.width > 0 && rightBox && rightBox.width > 0) {
       midX = (leftR.right + rightBox.left) / 2;
       midY = ((leftR.top + leftR.height / 2) + (rightBox.top + rightBox.height / 2)) / 2;
+    } else if (timesR && timesR.width > 1) {
+      midX = timesR.left + timesR.width / 2;
+      midY = timesR.top + timesR.height / 2;
     } else {
       midX = (fromR.left + targetR.left) / 2 + Math.abs(targetR.left - fromR.left) * 0.35;
       midY = (fromR.top + fromR.height / 2 + targetR.top + targetR.height / 2) / 2;
     }
-    /* User: a bit more right and down; stay fixed once shown */
-    midX += 10;
-    midY += 8;
     timesFs = timesEl
       ? window.getComputedStyle(timesEl).fontSize
       : window.getComputedStyle(toPane.querySelector(".token") || toPane).fontSize;
@@ -444,8 +440,7 @@
       if (timesGhost.parentNode) timesGhost.parentNode.removeChild(timesGhost);
       if (timesEl) timesEl.classList.remove("is-peel-pending");
       fromPane.classList.remove("is-active");
-      var replacePrev = toPane.getAttribute("data-replace-prev") === "1";
-      if (stack && !replacePrev) fromPane.classList.add("is-kept");
+      if (stack) fromPane.classList.add("is-kept");
       /* Live example peel: restore source power; do not keep offscreen host */
       if (fromPane.getAttribute && fromPane.getAttribute("data-peel-live") === "1") {
         fromPane.classList.remove("is-kept");
@@ -837,12 +832,7 @@
       });
       if (!panes.length) return;
       if (stack) {
-        var keepFrom = 0;
         panes.forEach(function (p, i) {
-          if (p.getAttribute("data-replace-prev") === "1") keepFrom = i;
-        });
-        panes.forEach(function (p, i) {
-          if (i < keepFrom) return;
           if (i < panes.length - 1) p.classList.add("is-kept");
           else p.classList.add("is-active");
           p.querySelectorAll(".token, .fly-wait").forEach(function (t) {
@@ -1178,12 +1168,7 @@
           p.classList.remove("is-active", "is-kept");
         });
         if (isStackFrame(frame)) {
-          var keepFrom = 0;
           panes.forEach(function (p, i) {
-            if (p.getAttribute("data-replace-prev") === "1") keepFrom = i;
-          });
-          panes.forEach(function (p, i) {
-            if (i < keepFrom) return;
             if (i < panes.length - 1) p.classList.add("is-kept");
             else p.classList.add("is-active");
             p.querySelectorAll(".token").forEach(function (t) {
