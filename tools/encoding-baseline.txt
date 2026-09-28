@@ -1,0 +1,21 @@
+# Files that were already corrupted when tools/check_encoding.py was added.
+#
+# They are listed here so the check can be enforced on everything else without
+# blocking deploys. Each one is genuinely damaged and still renders wrongly in
+# the browser, so please repair and delete the line rather than leaving it here.
+# The check fails if a listed file becomes clean, which keeps this list honest.
+#
+# Repairing one means re-saving it as UTF-8 and restoring the characters that
+# were lost - usually an em dash, a middle dot, a multiplication sign or a
+# curly quote. Compare against an older revision in git to see the original.
+
+dashboard/s2.html
+dashboard/s3.html
+dashboard/s3/index.html
+dashboard/shared/chem-light-theme.css
+dashboard/shared/jm26-runner.css
+dashboard/shared/topic-shell.css
+dashboard/tools/frustum-rect/index.html
+dashboard/tools/frustum-square/index.html
+dashboard/tools/water-volume/index.html
+dashboard/topics/area_volume/area-volume-labs-share/index.html
