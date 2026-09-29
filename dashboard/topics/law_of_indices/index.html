@@ -294,6 +294,22 @@
       white-space: nowrap;
     }
     #game-toast.is-visible { opacity: 1; }
+    #game-enemies {
+      position: absolute; inset: 1px; z-index: 2; pointer-events: none;
+      overflow: hidden; border-radius: 11px; font-size: 28px;
+    }
+    #game-enemies .gq-box {
+      position: absolute; box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 0.3em; border-radius: 0.45em; white-space: nowrap; overflow: hidden;
+      color: #06122a; font-weight: 700;
+      background: linear-gradient(180deg, #9fe0ff, #4FC3F7);
+      border: 2px solid #bfeaff;
+      box-shadow: 0 6px 16px rgba(0,0,0,.45), inset 0 0 10px rgba(255,255,255,.4);
+    }
+    #game-enemies .gq-box .katex { font-size: 1.1em; }
+    #game-question .katex { font-size: 1.05em; }
+    #game-explain .katex { font-size: 1.05em; }
     .indices-game-wrap .hud {
       display: flex;
       gap: 10px;
@@ -1013,8 +1029,9 @@
           <p id="game-explain" class="hint"></p>
           <p class="hint">Arrows or A/D move. Space or Shoot fires. Hit the correct box; a miss or a wrong shot costs a life and shows the reason. Click Speed or press + to go faster.</p>
           <div id="game-question">Press Start to begin</div>
-          <div class="canvas-container" style="position: relative; display: inline-block; max-width: 100%;">
-            <canvas id="game-canvas" width="900" height="520" style="width: 100%; max-width: 900px; height: auto; background: #0b1c2e; border: 1px solid var(--line); border-radius: 12px; display: block;"></canvas>
+          <div class="canvas-container" style="position: relative; display: block; width: 100%; max-width: 900px; margin: 0 auto;">
+            <canvas id="game-canvas" width="900" height="520" style="width: 100%; height: auto; aspect-ratio: 900 / 520; background: #0b1c2e; border: 1px solid var(--line); border-radius: 12px; display: block;"></canvas>
+            <div id="game-enemies" aria-hidden="true"></div>
             <div id="game-toast"></div>
             <div id="game-overlay" class="game-overlay is-visible">
               <h3 id="overlay-title" style="font-size: 24px; color: #4FC3F7; margin-bottom: 8px;">Indices Space Shooter</h3>
@@ -1067,8 +1084,8 @@
   <script defer src="law-of-indices-quiz.js?v=20260925-labels"></script>
   <script src="comics-manifest.js?v=20260829c"></script>
   <script src="../../shared/jm-comics-engine.js?v=20260830-fu"></script>
-  <script src="game-questions.js?v=20260919-indexonly"></script>
-  <script src="indices-game.js?v=20260919-speed"></script>
+  <script src="game-questions.js?v=20260929-variety"></script>
+  <script src="indices-game.js?v=20260929-crisp"></script>
   <script src="sci-notation-content.js?v=20260828-sel1"></script>
   <script src="sci-notation-tool.js?v=20260828-sel1"></script>
   <script>
