@@ -1,7 +1,10 @@
 window.IndicesGame = (function () {
   var BEST_KEY = "jm24-indices-game-best";
 
-  var canvas, ctx;
+  var canvas, ctx, layer;
+  var resizeObserver = null;
+  var onWindowResize = null;
+  var BOX_FONT = 28;
   var running = false;
   var rafId = null;
   var width = 900;
@@ -174,10 +177,32 @@ window.IndicesGame = (function () {
     return speedMultiplier();
   }
 
+  /** Plain text with \( ... \) maths, typeset by KaTeX auto-render when available. */
+  function renderRich(el, text) {
+    el.textContent = text || "";
+    if (!text || typeof window.renderMathInElement !== "function") return;
+    try {
+      window.renderMathInElement(el, {
+        delimiters: [{ left: "\\(", right: "\\)", display: false }],
+        throwOnError: false,
+      });
+    } catch (err) {}
+  }
+
+  function renderTex(el, tex) {
+    if (window.katex && typeof window.katex.render === "function") {
+      try {
+        window.katex.render(tex, el, { throwOnError: false, displayMode: false });
+        return;
+      } catch (err) {}
+    }
+    el.textContent = tex;
+  }
+
   function setQuestionText() {
     var el = document.getElementById("game-question");
     if (!el || !question) return;
-    el.textContent = lang() === "zh" ? question.questionZh : question.questionEn;
+    renderRich(el, lang() === "zh" ? question.questionZh : question.questionEn);
   }
 
   function correctChoice(q) {
@@ -191,17 +216,18 @@ window.IndicesGame = (function () {
     if (!q) return "";
     var why = lang() === "zh" ? (q.whyZh || q.whyEn) : (q.whyEn || q.whyZh);
     var ans = correctChoice(q);
-    var label = ans ? getChoiceLabel(ans) : "";
-    if (why && label) return "Correct: " + label + " — " + why;
+    var label = ans ? "\\(" + getChoiceLabel(ans) + "\\)" : "";
+    var prefix = lang() === "zh" ? "正確答案：" : "Correct: ";
+    if (why && label) return prefix + label + " — " + why;
     if (why) return why;
-    if (label) return "Correct answer: " + label;
+    if (label) return prefix + label;
     return "";
   }
 
   function setExplain(text, kind) {
     var el = document.getElementById("game-explain");
     if (!el) return;
-    el.textContent = text || "";
+    renderRich(el, text);
     el.classList.remove("is-ok", "is-bad");
     if (kind) el.classList.add(kind);
   }
@@ -241,7 +267,7 @@ window.IndicesGame = (function () {
   }
 
   function getChoiceLabel(choice) {
-    return lang() === "zh" ? choice.textZh : choice.textEn;
+    return lang() === "zh" ? (choice.texZh || choice.tex) : choice.tex;
   }
 
   function spawnFourAnswers() {
@@ -249,20 +275,51 @@ window.IndicesGame = (function () {
     var choices = shuffle(question.choices.slice());
     applySpeed();
     var laneW = width / 4;
-    var boxW = Math.min(214, laneW - 10);
+    var boxW = Math.min(214, laneW - 12);
     enemies = choices.map(function (choice, i) {
       return {
         x: laneW * i + (laneW - boxW) / 2,
-        y: 56,
+        y: 36,
         w: boxW,
-        h: 58,
+        h: 88,
         vy: fallSpeed,
         vx: 0,
-        textEn: choice.textEn,
-        textZh: choice.textZh,
+        choice: choice,
         label: getChoiceLabel(choice),
         isCorrect: !!choice.correct,
+        el: null,
       };
+    });
+    syncEnemyLayer();
+  }
+
+  function renderEnemyLabel(e) {
+    var inner = e.el.firstChild;
+    inner.style.fontSize = "";
+    renderTex(inner, "\\displaystyle " + e.label);
+    if (inner.scrollWidth > e.el.clientWidth - 8) inner.style.fontSize = "0.78em";
+  }
+
+  /** Answer boxes are DOM + KaTeX over the canvas so maths stays sharp at any zoom. */
+  function syncEnemyLayer() {
+    if (!layer) return;
+    var live = [];
+    enemies.forEach(function (e) {
+      if (!e.el) {
+        e.el = document.createElement("div");
+        e.el.className = "gq-box";
+        e.el.appendChild(document.createElement("span"));
+        layer.appendChild(e.el);
+        e.el.style.left = (e.x / width) * 100 + "%";
+        e.el.style.width = (e.w / width) * 100 + "%";
+        e.el.style.height = (e.h / height) * 100 + "%";
+        renderEnemyLabel(e);
+      }
+      e.el.style.top = (e.y / height) * 100 + "%";
+      live.push(e.el);
+    });
+    Array.prototype.slice.call(layer.children).forEach(function (child) {
+      if (live.indexOf(child) === -1) layer.removeChild(child);
     });
   }
 
@@ -486,22 +543,7 @@ window.IndicesGame = (function () {
       ctx.fillRect(sx, sy, 2, 2);
     }
 
-    enemies.forEach(function (e) {
-      ctx.fillStyle = "rgba(14, 116, 166, 0.96)";
-      roundRect(ctx, e.x, e.y, e.w, e.h, 14);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.28)";
-      ctx.stroke();
-      ctx.fillStyle = "#fff";
-      ctx.font = "700 26px 'DM Sans', sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      var label = e.label;
-      if (ctx.measureText(label).width > e.w - 18) {
-        ctx.font = "700 20px 'DM Sans', sans-serif";
-      }
-      ctx.fillText(label, e.x + e.w / 2, e.y + e.h / 2);
-    });
+    syncEnemyLayer();
 
     bullets.forEach(function (b) {
       ctx.beginPath();
@@ -563,11 +605,28 @@ window.IndicesGame = (function () {
     if (rafId) cancelAnimationFrame(rafId);
   }
 
+  /** Game logic stays in 900x520 units; the backing store follows the on-screen size x DPR. */
   function resize() {
-    if (!canvas) return;
-    width = canvas.width;
-    height = canvas.height;
+    if (!canvas || !ctx) return;
+    var cssW = canvas.clientWidth;
+    if (cssW > 0) {
+      var dpr = Math.min(window.devicePixelRatio || 1, 3);
+      var bw = Math.round(cssW * dpr);
+      var bh = Math.round((cssW * dpr * height) / width);
+      if (canvas.width !== bw || canvas.height !== bh) {
+        canvas.width = bw;
+        canvas.height = bh;
+      }
+      if (layer) layer.style.fontSize = (BOX_FONT * cssW) / width + "px";
+    }
+    ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
     player.y = height - 60;
+    if (layer) {
+      enemies.forEach(function (e) {
+        if (e.el) renderEnemyLabel(e);
+      });
+    }
+    if (!running) draw();
   }
 
   function resetTopicMisses() {
@@ -777,8 +836,19 @@ window.IndicesGame = (function () {
     canvas = document.getElementById("game-canvas");
     if (!canvas) return;
     ctx = canvas.getContext("2d");
+    layer = document.getElementById("game-enemies");
     loadBest();
     resize();
+    onWindowResize = function () {
+      resize();
+    };
+    window.addEventListener("resize", onWindowResize);
+    if (typeof ResizeObserver === "function") {
+      resizeObserver = new ResizeObserver(function () {
+        resize();
+      });
+      resizeObserver.observe(canvas);
+    }
     bindControls();
     showReadyOverlay();
     applySpeed();
@@ -792,15 +862,23 @@ window.IndicesGame = (function () {
     if (onKeyUp) window.removeEventListener("keyup", onKeyUp);
     onKeyDown = null;
     onKeyUp = null;
+    if (onWindowResize) window.removeEventListener("resize", onWindowResize);
+    onWindowResize = null;
+    if (resizeObserver) resizeObserver.disconnect();
+    resizeObserver = null;
     clearTimeout(toastTimer);
+    enemies = [];
+    syncEnemyLayer();
     canvas = null;
     ctx = null;
+    layer = null;
   }
 
   function onLangChange() {
     setQuestionText();
     enemies.forEach(function (e) {
-      e.label = lang() === "zh" ? e.textZh : e.textEn;
+      e.label = getChoiceLabel(e.choice);
+      if (e.el) renderEnemyLabel(e);
     });
     if (!running) {
       if (lastWeakestTopic || lastEndWasVictory) {
@@ -812,6 +890,7 @@ window.IndicesGame = (function () {
   }
 
   function onShow() {
+    resize();
     draw();
   }
 
