@@ -437,13 +437,12 @@
     <a class="jm-back" href="../../index.html#lessons">&larr; S3 Lessons</a>
     <p class="jm-eyebrow">JM25 &middot; Lesson 25</p>
     <h1>More about Factorization and Polynomials</h1>
-    <p class="lead">Interactive tools and comics for factorization and polynomials.</p>
+    <p class="lead">Interactive tools for factorization and polynomials.</p>
 
     <nav class="jm-tabs" aria-label="Lesson sections">
       <button class="jm-tab active" type="button" data-tab="concept">Concept &amp; Formula</button>
       <button class="jm-tab" type="button" data-tab="tools">Interactive Tool</button>
       <button class="jm-tab" type="button" data-tab="game">Game</button>
-      <button class="jm-tab" type="button" data-tab="comic">Comic</button>
       <button class="jm-tab" type="button" data-tab="summary">Summary</button>
       <button class="jm-tab" type="button" data-tab="quiz">Quiz</button>
     </nav>
@@ -688,12 +687,6 @@
       <p class="hint">Controls: Arrow keys / WASD · Mobile: use the direction pad · Click <b>Start Snake</b> to begin</p>
     </div>
     </section>
-        <section id="panel-comic" class="jm-panel hidden">
-          <div class="subnav" id="comics-series-nav" aria-label="Comic series"></div>
-          <div class="subnav" id="comics-subnav" aria-label="Comic pages"></div>
-          <div id="comics-stage"></div>
-          <p class="hint">Read each page. When a concept finishes, answer the two follow-up questions. They stay on this tab only.</p>
-        </section>
 <section id="panel-summary" class="jm-panel hidden">
     <div class="subnav" id="summary-style-nav">
       <button type="button" class="chip active" data-summary-style="style-1">Style 1</button>
@@ -766,9 +759,6 @@
   </main>
 
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script src="comics-manifest.js?v=20260828-sel1"></script>
-  <script src="../../shared/jm-comics-engine.js?v=20260830-fu"></script>
-  <script src="factorization-comics.js?v=20260830-fu"></script>
   <script>
     function renderKatex(root) {
       if (!window.renderMathInElement) return;
