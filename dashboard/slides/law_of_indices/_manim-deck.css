@@ -859,8 +859,8 @@ html, body {
 .frac-stack.gathered .num .token.op.is-remaining,
 .frac-stack.gathered .den .token.is-remaining,
 .frac-stack.gathered .den .token.op.is-remaining {
-  opacity: 0;
-  transform: scale(0.6);
+  opacity: 0.2;
+  transform: none;
 }
 .frac-stack.gathered .num .token.cancelable,
 .frac-stack.gathered .den .token.cancelable,
@@ -2106,15 +2106,193 @@ body.loi-tight .hero-slide .m-sub.lead {
   font-size: 38px;
 }
 
-@media (max-width: 900px) {
-  .m-title { font-size: 36px !important; }
-  .m-sub, .note { font-size: 20px; }
-  .m-sub.lead { font-size: 24px; }
-  .m-eq, .m-result, .token, .digit { font-size: 24px; }
-  .sci-jump-eq.sci-big { font-size: 28px; }
-  .laws-grid { font-size: 26px; gap: 12px; max-width: 100%; }
-  .hero-slide .m-sub.lead { font-size: 32px; }
-  .hero-slide .token-row.hero-eq .token { font-size: 48px; }
-  .hero-slide .m-sub.note-proc { font-size: 26px; }
-  body.loi-tight .m-result.box-final { font-size: 32px; }
+
+/* ── Readable scale + centred stage (all three JM24 decks) ──
+   The frame is 1280×720; everything below is sized for that frame. */
+
+/* Hidden steps keep their seat, so the centred stack never jumps as steps appear */
+.reveal .m-stage .story-band > .fragment.m-sub:not(.visible),
+.reveal .m-stage .story-band > .fragment.m-eq:not(.visible),
+.reveal .m-stage .story-band > .fragment.m-result:not(.visible),
+.reveal .m-stage .story-band > .fragment.token-row:not(.visible),
+.reveal .m-stage .story-stack > .fragment.two-method:not(.visible),
+.reveal .m-stage.fill-center > .fragment.m-sub:not(.visible),
+.reveal .m-stage.fill-center > .fragment.m-eq:not(.visible),
+.reveal .m-stage.fill-center > .fragment.m-result:not(.visible),
+.reveal .m-stage.fill-center > .fragment.token-row:not(.visible),
+.reveal .m-stage .laws-grid > .fragment:not(.visible),
+.reveal .m-stage .two-col > .fragment:not(.visible),
+.reveal .m-stage .conv-seq > .fragment:not(.visible),
+.reveal .m-stage .expand-build > .fragment:not(.visible) {
+  position: relative !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
+.reveal .m-stage.fill-center > .fragment.m-sub:not(.visible),
+.reveal .m-stage.fill-center > .fragment.m-eq:not(.visible) { margin: 10px 0 !important; }
+.reveal .m-stage.fill-center > .fragment.m-result:not(.visible) { margin: 18px 0 0 !important; }
+.reveal .m-stage .two-method.fragment:not(.visible) { display: flex !important; }
+.reveal .m-stage .conv-seq > .fragment.conv-row:not(.visible) { display: flex !important; }
+.reveal .m-stage .expand-build > .fragment:not(.visible) { display: inline-block !important; }
+
+/* Stage content sits in the optical centre of the frame, not stuck under the title */
+.m-stage,
+.m-stage.fill-center,
+.hero-slide .m-stage.fill-center,
+body.loi-tight .m-stage,
+body.loi-tight .m-stage.fill-center {
+  justify-content: safe center !important;
+  padding: 8px 56px 40px;
+}
+.m-stage.fill-center > * + * { margin-top: 10px; }
+
+/* Text */
+.m-sub { font-size: 32px; }
+.m-sub.lead { font-size: 40px; }
+.m-sub.emphasis { font-size: 38px; }
+.m-sub.quiet { font-size: 28px; }
+.m-sub.note-proc,
+.m-sub.note-sem,
+.m-sub.note-warn { font-size: 30px; }
+.m-eq { font-size: 48px; }
+.m-result { font-size: 50px; }
+.token, .glyph { font-size: 40px; }
+.digit { font-size: 44px; }
+.dp { font-size: 42px; }
+
+/* Positive indices deck */
+body.loi-tight .m-head { padding: 22px 40px 6px; }
+body.loi-tight .m-title.m-title-eq {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 44px !important;
+}
+body.loi-tight .story-stack { gap: 16px; }
+body.loi-tight .story-band-example { min-height: 0; padding: 0 0 6px; }
+body.loi-tight .story-band-work { margin-bottom: 4px; }
+body.loi-tight .example-row { font-size: 42px; }
+body.loi-tight .work-fixed-frame .token,
+body.loi-tight .frac-stack .token,
+body.loi-tight .slide-quot .work-fixed-frame .token { font-size: 46px; }
+body.loi-tight .work-fixed-frame { min-height: 1.5em; }
+body.loi-tight .story-band-work { min-height: 70px; }
+body.loi-tight .frac-bar { min-width: 240px; }
+body.loi-tight .frac-build { min-height: 3.2em; }
+body.loi-tight .cancel-result,
+body.loi-tight .gather-eq { font-size: 46px; }
+body.loi-tight .m-eq { font-size: 42px; }
+body.loi-tight .m-result.box-final { font-size: 52px; }
+body.loi-tight .slide-quot .m-result.box-final { font-size: 44px; }
+body.loi-tight .m-sub.note-proc,
+body.loi-tight .m-sub.note-sem,
+body.loi-tight .m-sub.note-warn { font-size: 30px; }
+body.loi-tight .slide-quot .work-fixed-frame .token.mini-frac.result-frac { font-size: 46px !important; }
+
+/* Tight superscript on Example terms (was floating well above the base) */
+.reveal .example-row .src:not(:has(.src-core)) > .pow:not(.outer) {
+  top: 0.05em !important;
+  margin-left: 0.03em !important;
+}
+
+/* A replaced step gives up its slot once the stacked steps below it are shown */
+.reveal .m-stage .work-fixed-frame[data-stack="1"].is-multi .fragment.stage-pane.visible:not(.is-active):not(.is-kept) {
+  display: none !important;
+}
+.example-row .src .src-core { padding: 4px 3px; }
+
+/* Parentheses grow with the fraction they wrap */
+.token:has(.mini-frac) > .paren,
+.example-row .src:has(.mini-frac) .paren {
+  font-size: 1.7em;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* Hero */
+body.loi-tight .hero-slide .m-sub.lead { font-size: 46px; }
+body.loi-tight .hero-slide .token-row.hero-eq .token { font-size: 76px; }
+body.loi-tight .hero-slide .m-sub.note-proc { font-size: 38px; }
+.hero-slide .story-stack { gap: 28px; }
+
+/* All Five Laws */
+body.loi-tight .laws-grid {
+  font-size: 50px;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: 900px;
+}
+
+/* Negative indices — roomier columns so the framed y^-2 never touches its neighbours */
+body.loi-tight .two-method { max-height: none; max-width: 1120px; }
+body.loi-tight .two-method .method-col { gap: 18px; padding: 6px 24px; justify-content: center; align-self: center; }
+body.loi-tight .two-method .method-col .m-sub { font-size: 30px; margin: 0; }
+body.loi-tight .two-method .frac-stack .token { font-size: 30px; }
+body.loi-tight .method-col .neg-right-row .frac-bar { min-width: 200px; }
+.method-col .neg-left-result,
+.method-col .neg-right-result { font-size: 42px !important; }
+.method-col .neg-left-result { margin: 6px 0; }
+.two-method .method-col:last-child .neg-right-row,
+.method-col .neg-right-row .frac-build { transform: none; margin-top: 0; }
+body.loi-tight .neg-link-eq { font-size: 42px; min-height: 0; }
+body.loi-tight .story-stack.even-gap { gap: 10px; }
+body.loi-tight .story-stack.even-gap .story-band { min-height: 0; }
+body.loi-tight section:has(.two-method) .m-result.box-final { font-size: 40px; }
+body.loi-tight section:has(.two-method) .two-method .method-col { gap: 10px; }
+/* Denominator power sits beside y, not on top of it */
+.neg-recip .sym-y .pow,
+.token.mini-frac.result-frac .pow {
+  position: relative;
+  top: -0.35em;
+  vertical-align: baseline !important;
+  margin-left: 0.02em;
+}
+
+/* Scientific notation deck */
+.m-stage.fill-center > .m-eq .katex-display,
+.m-stage.fill-center > .m-result .katex-display { margin: 0; }
+.sci-eq-stage { gap: 16px; min-height: 0; }
+.sci-lhs { font-size: 60px; }
+.sci-jump-eq.sci-big { font-size: 56px; }
+.sci-jump-eq .katex { font-size: 1em; }
+.sci-jump-eq > .pow {
+  font-size: 0.6em;
+  position: relative;
+  top: -0.8em;
+  margin-left: -0.12em;
+  color: var(--pow);
+}
+.sci-rhs-live { min-height: 1.6em; }
+
+/* Denary & Binary deck */
+.pv-grid .d { font-size: 42px; }
+.pv-grid .p { font-size: 32px; }
+.pv-grid.aligned .c { padding: 14px 6px; }
+.pv-grid.aligned { max-width: 1100px; }
+.pv-drag-box { font-size: 32px; }
+/* Frame cells from the inside so neighbouring cells never overlap */
+.pv-grid .c.framed { outline: none; }
+.expand-build { font-size: 36px; margin-top: 24px; gap: 6px 10px; }
+/* A "+" only shows once the term after it has arrived */
+.expand-build > .token.op { font-size: 1em; opacity: 0; transition: opacity 0.3s ease; }
+.expand-build > .token.op:has(+ .expand-term.visible) { opacity: 1; }
+/* Same row width + fixed first columns, so the three rows line up under each other */
+.conv-row {
+  font-size: 40px; gap: 14px; margin: 10px auto;
+  width: 15.5em; flex-wrap: nowrap; justify-content: flex-start;
+}
+.conv-row .katex { font-size: 1em !important; }
+.conv-row > :nth-child(1) { width: 1.6em; text-align: right; }
+.conv-row > :nth-child(2) { width: 4em; text-align: left; }
+/* After its copy drops into the next row, the leftover settles back in its own row (never between rows) */
+.conv-extra.spent { opacity: 0.4; transform: none; }
+.m-stage.fill-center > .token-row .token { font-size: 56px; }
+.token-row .token.rose { font-size: 0.6em !important; }
+.two-col.fill { max-width: 1100px; gap: 40px 72px; }
+.two-col.fill .col-h { font-size: 48px; }
+.two-col.fill .m-sub { font-size: 36px; }
+.two-col.fill .m-sub.lead { font-size: 42px; }

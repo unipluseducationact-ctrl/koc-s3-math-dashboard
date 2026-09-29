@@ -1002,6 +1002,8 @@
     var ghost = document.createElement("span");
     ghost.className = "dp-ghost";
     ghost.textContent = ".";
+    ghost.style.fontSize = scaledFontPx(dp);
+    ghost.style.lineHeight = fr.height + "px";
     ghost.style.left = fr.left + "px";
     ghost.style.top = fr.top + "px";
     document.body.appendChild(ghost);
@@ -1049,6 +1051,8 @@
       var terms = root.querySelectorAll(".expand-term");
       i = Array.prototype.indexOf.call(terms, term);
     }
+    root.querySelectorAll(".c.framed").forEach(function (c) { c.classList.remove("framed"); });
+    purgeGhosts();
     var cells = root.querySelectorAll('[data-pv-pair="' + i + '"]');
     if (!cells.length) {
       term.classList.add("landed");
@@ -1089,6 +1093,7 @@
         box.style.top = rect.top + "px";
         box.style.width = rect.width + "px";
         box.style.height = rect.height + "px";
+        box.style.fontSize = scaledFontPx(window.getComputedStyle(place).fontSize);
         document.body.appendChild(box);
         return box;
       }
@@ -1285,6 +1290,21 @@
           t.style.opacity = "";
         });
         if (cap) cap.classList.remove("show");
+      }
+      return;
+    }
+
+    if (frag.classList.contains("expand-term") || frag.classList.contains("pv-step")) {
+      var pvRoot = frag.closest(".pv-stack");
+      frag.classList.remove("landed", "awaiting", "combining");
+      if (pvRoot) {
+        pvRoot.querySelectorAll(".c.framed").forEach(function (c) { c.classList.remove("framed"); });
+        var pvI = frag.getAttribute("data-pv-i");
+        if (pvI != null) {
+          pvRoot.querySelectorAll('[data-pv-pair="' + pvI + '"]').forEach(function (c) {
+            c.classList.remove("dragged");
+          });
+        }
       }
       return;
     }
