@@ -61,7 +61,7 @@
 
     var hash = (location.hash || "").replace("#", "");
     var normHash = normalizeTab(hash);
-    if (hash && (normHash === "comic" || normHash === "game" || normHash === "tools" || normHash === "summary" || normHash === "quiz")) {
+    if (hash && (normHash === "game" || normHash === "tools" || normHash === "summary" || normHash === "quiz")) {
       showTab(normHash);
     } else if (!hash || normHash === "concept") {
       showTab("concept");
