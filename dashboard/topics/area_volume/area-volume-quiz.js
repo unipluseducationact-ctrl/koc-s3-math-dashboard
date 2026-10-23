@@ -373,6 +373,8 @@
             // Send to the immediate parent (dashboard/index.html, where the tracker
             // and session relay live). window.postMessage() alone only targets this
             // same window and never reaches the tracker in the outer frame.
+            // The topic page owns delivery after navigation away from the hub.
+            if (window.parent !== window) window.postMessage(payload, '*');
             window.parent.postMessage(payload, '*');
             // Also broadcast to top, in case this file is ever loaded with a
             // different iframe depth than the current 3-level structure.

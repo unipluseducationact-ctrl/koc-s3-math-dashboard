@@ -273,6 +273,8 @@
           msTaken: 0,
         };
         // The tracker lives in the outer frame, so post to parent (and top when nested).
+        // Also deliver locally when this topic occupies the platform iframe.
+        if (window.parent !== window) window.postMessage(payload, "*");
         window.parent.postMessage(payload, "*");
         if (window.top !== window.parent) {
           try { window.top.postMessage(payload, "*"); } catch (_) {}
